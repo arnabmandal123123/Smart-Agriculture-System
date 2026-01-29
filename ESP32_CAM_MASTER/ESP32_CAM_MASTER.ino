@@ -27,6 +27,10 @@ const char* command_topic = "esp32/cam/command";
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 
+unsigned long lastMqttHeartbeat = 0;
+unsigned long lastArduinoSeen = 0;
+bool arduinoConnected = false;
+
 // ============ CONFIGURATION ============
 const char* ssid = "Arnabmandal";
 const char* password = "hm403496";
@@ -35,6 +39,23 @@ const char* password = "hm403496";
 WebServer server(80);
 camera_fb_t* capturedFrame = NULL;
 Preferences prefs;
+
+// Stream ownership control to allow UI to take over MJPEG stream reliably
+volatile uint32_t g_streamOwner = 0;
+volatile uint32_t g_streamRequested = 0;
+
+static uint32_t clientId(const WiFiClient &c) {
+  IPAddress ip = c.remoteIP();
+  uint32_t ipInt = ((uint32_t)ip[0] << 24) | ((uint32_t)ip[1] << 16) | ((uint32_t)ip[2] << 8) | (uint32_t)ip[3];
+  return ipInt ^ (uint32_t)c.remotePort();
+}
+
+// Serial logging control: set to true to enable verbose frame-level logs
+static const bool SERIAL_DEBUG = false;
+
+// Logging helpers
+#define LOG_INFO(fmt, ...) Serial.printf((fmt), ##__VA_ARGS__)
+#define LOG_DBG(fmt, ...) if (SERIAL_DEBUG) Serial.printf((fmt), ##__VA_ARGS__)
 
 // Runtime network settings (may be persisted)
 bool useStaticIP = false;
@@ -170,6 +191,17 @@ void setup() {
   });
   
   server.on("/reboot", HTTP_GET, handleReboot);
+  // Temporary debug endpoints to manually trigger pump commands (bypass MQTT)
+  server.on("/pump/on", HTTP_GET, [](){
+    Serial.println("PUMP_ON");
+    if (mqttClient.connected()) mqttClient.publish(status_topic, "PUMP_ON_HTTP");
+    server.send(200, "text/plain", "PUMP_ON sent");
+  });
+  server.on("/pump/off", HTTP_GET, [](){
+    Serial.println("PUMP_OFF");
+    if (mqttClient.connected()) mqttClient.publish(status_topic, "PUMP_OFF_HTTP");
+    server.send(200, "text/plain", "PUMP_OFF sent");
+  });
   server.begin();
 }
 
@@ -181,11 +213,23 @@ void callback(char* topic, byte* payload, unsigned int length) {
     message += (char)payload[i];
   }
 
+  // Log incoming MQTT messages for debugging (info-level)
+  LOG_INFO("MQTT msg on '%s': %s\n", topic, message.c_str());
+  // Extra explicit debug line to make MQTT receipts obvious in the serial log
+  Serial.printf("MQTT RX: %s -> %s\n", topic, message.c_str());
+
   if (String(topic) == command_topic) {
+    // Forward the raw command string to the Arduino over Serial and log clearly
+    LOG_INFO("Forwarding to Arduino: %s\n", message.c_str());
+    Serial.println(message);
+
+    // Also publish an acknowledgement on the status topic for UI visibility
     if (message == "PUMP_ON") {
-      Serial.println("PUMP_ON");
+      mqttClient.publish(status_topic, "PUMP_ON_RECEIVED");
+      LOG_INFO("Published PUMP_ON_RECEIVED\n");
     } else if (message == "PUMP_OFF") {
-      Serial.println("PUMP_OFF");
+      mqttClient.publish(status_topic, "PUMP_OFF_RECEIVED");
+      LOG_INFO("Published PUMP_OFF_RECEIVED\n");
     }
   }
 }
@@ -201,8 +245,9 @@ void reconnect() {
       mqttClient.subscribe(command_topic);
       Serial.println("MQTT connected and subscribed to command topic");
     } else {
-      // Wait 5 seconds before retrying
-      Serial.println("MQTT connect failed, retrying in 5s");
+      // Log connect failure and state, then wait 5 seconds before retrying
+      int st = mqttClient.state();
+      Serial.printf("MQTT connect failed, state=%d, retrying in 5s\n", st);
       delay(5000);
     }
   }
@@ -240,30 +285,45 @@ void loop() {
     }
     mqttClient.loop();
 
-    // Check for data from Arduino
+    // Periodic heartbeat to status topic for visibility
+    if (mqttClient.connected() && (millis() - lastMqttHeartbeat > 30000)) {
+      mqttClient.publish(status_topic, "ESP32 Heartbeat");
+      lastMqttHeartbeat = millis();
+    }
+
+    // Check Arduino serial input (from slave) and update connection state
     if (Serial.available()) {
       String data = Serial.readStringUntil('\n');
       data.trim();
-      
-      // The data from Arduino is "temp:25.00,humidity:60.00,soil:500"
-      // We will re-format it to a JSON string
-      // {"temperature":25.00,"humidity":60.00,"soil":500,"arduinoConnected":true}
-      
-      int tempIndex = data.indexOf("temp:");
-      int humidityIndex = data.indexOf(",humidity:");
-      int soilIndex = data.indexOf(",soil:");
-      
-      if (tempIndex != -1 && humidityIndex != -1 && soilIndex != -1) {
-        String tempStr = data.substring(tempIndex + 5, humidityIndex);
-        String humidityStr = data.substring(humidityIndex + 10, soilIndex);
-        String soilStr = data.substring(soilIndex + 6);
-        
-        char jsonBuffer[256];
-        snprintf(jsonBuffer, sizeof(jsonBuffer), 
-          "{\"temperature\":%s,\"humidity\":%s,\"soilMoisture\":%s,\"arduinoConnected\":true}", 
-          tempStr.c_str(), humidityStr.c_str(), soilStr.c_str());
-          
-        mqttClient.publish(sensor_topic, jsonBuffer);
+      if (data.length() > 0) {
+        lastArduinoSeen = millis();
+        if (!arduinoConnected) {
+          arduinoConnected = true;
+          LOG_INFO("Arduino slave connected\n");
+          if (mqttClient.connected()) mqttClient.publish(status_topic, "ARDUINO_CONNECTED");
+        }
+
+        // Process the incoming sensor line as before
+        int tempIndex = data.indexOf("temp:");
+        int humidityIndex = data.indexOf(",humidity:");
+        int soilIndex = data.indexOf(",soil:");
+        if (tempIndex != -1 && humidityIndex != -1 && soilIndex != -1) {
+          String tempStr = data.substring(tempIndex + 5, humidityIndex);
+          String humidityStr = data.substring(humidityIndex + 10, soilIndex);
+          String soilStr = data.substring(soilIndex + 6);
+          char jsonBuffer[256];
+          snprintf(jsonBuffer, sizeof(jsonBuffer), 
+            "{\"temperature\":%s,\"humidity\":%s,\"soilMoisture\":%s,\"arduinoConnected\":true}", 
+            tempStr.c_str(), humidityStr.c_str(), soilStr.c_str());
+          mqttClient.publish(sensor_topic, jsonBuffer);
+        }
+      }
+    } else {
+      // If no data recently, mark disconnected after timeout
+      if (arduinoConnected && (millis() - lastArduinoSeen > 5000)) {
+        arduinoConnected = false;
+        LOG_INFO("Arduino slave disconnected\n");
+        if (mqttClient.connected()) mqttClient.publish(status_topic, "ARDUINO_DISCONNECTED");
       }
     }
   }
@@ -273,7 +333,7 @@ void loop() {
 
 // ============ CAMERA INIT ============
 bool initCamera() {
-  Serial.println("Initializing camera...");
+  LOG_INFO("Initializing camera...\n");
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;
@@ -297,7 +357,7 @@ bool initCamera() {
   config.pixel_format = PIXFORMAT_JPEG;
 
   if (psramFound()) {
-    Serial.println("PSRAM found. Using optimized settings.");
+    LOG_INFO("PSRAM found. Using optimized settings.\n");
     // Use SVGA for higher resolution when PSRAM is available and allow larger frame buffer
     config.frame_size = FRAMESIZE_SVGA;
     config.jpeg_quality = 16; // balance quality vs size for better FPS
@@ -305,7 +365,7 @@ bool initCamera() {
     config.fb_location = CAMERA_FB_IN_PSRAM;
     config.grab_mode = CAMERA_GRAB_LATEST;
   } else {
-    Serial.println("PSRAM not found. Using fallback settings.");
+    LOG_INFO("PSRAM not found. Using fallback settings.\n");
     // Fallback: still request SVGA but keep conservative memory settings
     config.frame_size = FRAMESIZE_SVGA;
     config.jpeg_quality = 18;
@@ -315,7 +375,7 @@ bool initCamera() {
 
   esp_err_t err = esp_camera_init(&config);
   if (err != ESP_OK) {
-    Serial.printf("Camera initialization failed with error 0x%x\n", err);
+    LOG_INFO("Camera initialization failed with error 0x%x\n", err);
     return false;
   }
 
@@ -323,7 +383,7 @@ bool initCamera() {
   // Ensure frame size is applied at sensor level
   s->set_framesize(s, FRAMESIZE_SVGA);
   s->set_vflip(s, 0);
-  Serial.println("Camera initialized successfully.");
+  LOG_INFO("Camera initialized successfully.\n");
   return true;
 }
 
@@ -332,6 +392,32 @@ void handleStream() {
   WiFiClient client = server.client();
   if (!client) return;
   client.setNoDelay(true);
+
+  // Debug: log incoming request and current stream ownership state
+  Serial.printf("HTTP REQ: /stream from %s:%u owner=%u requested=%u\n",
+                client.remoteIP().toString().c_str(), client.remotePort(), (unsigned)g_streamOwner, (unsigned)g_streamRequested);
+
+  uint32_t myId = clientId(client);
+  LOG_DBG("Stream client connecting id=%u ip=%s port=%u\n", myId, client.remoteIP().toString().c_str(), client.remotePort());
+
+  // Request takeover; existing stream handlers will notice g_streamRequested and exit.
+  g_streamRequested = myId;
+  int wait = 0;
+  while (g_streamOwner != 0 && g_streamOwner != myId && wait++ < 50) {
+    delay(20);
+  }
+
+  if (g_streamOwner != 0 && g_streamOwner != myId) {
+    LOG_INFO("Stream busy, cannot acquire ownership\n");
+    g_streamRequested = 0;
+    server.send(503, "text/plain", "Stream busy");
+    return;
+  }
+
+  // Become owner
+  g_streamOwner = myId;
+  g_streamRequested = 0;
+  LOG_INFO("Stream ownership granted to id=%u\n", myId);
 
   const char HEADER[] = "HTTP/1.1 200 OK\r\n"
                         "Content-Type: multipart/x-mixed-replace; boundary=frame\r\n"
@@ -343,12 +429,12 @@ void handleStream() {
   while (client.connected()) {
     camera_fb_t* fb = esp_camera_fb_get();
     if (!fb) {
-      Serial.println("Camera frame capture failed. Retrying...");
+      LOG_DBG("Camera frame capture failed. Retrying...\n");
       delay(100);
       continue;
     }
 
-    Serial.printf("Streaming frame len=%u\n", (unsigned)fb->len);
+    LOG_DBG("Streaming frame len=%u\n", (unsigned)fb->len);
 
     if (fb->len > 0) {
       char lenBuf[64];
@@ -366,26 +452,42 @@ void handleStream() {
         else break;
       }
       int wroteTail = client.write("\r\n", 2);
-      Serial.printf("Wrote header=%d/%d img=%d/%u tail=%d/2\n", wroteHdr, headerLen, wroteImg, (unsigned)fb->len, wroteTail);
+      LOG_DBG("Wrote header=%d/%d img=%d/%u tail=%d/2\n", wroteHdr, headerLen, wroteImg, (unsigned)fb->len, wroteTail);
       if (wroteHdr != headerLen || wroteImg != fb->len || wroteTail != 2) {
-        Serial.println("Client write failed, ending stream.");
+        LOG_INFO("Client write failed, ending stream.\n");
         esp_camera_fb_return(fb);
         break;
       } else {
-        Serial.println("Stream frame sent successfully.");
+        LOG_DBG("Stream frame sent successfully.\n");
       }
+    }
+
+    // If another client requested the stream, and it's not this owner, stop streaming to allow takeover
+    if (g_streamRequested != 0 && g_streamRequested != g_streamOwner) {
+      Serial.println("Stream takeover requested; closing this stream to allow new client.");
+      esp_camera_fb_return(fb);
+      break;
     }
 
     esp_camera_fb_return(fb);
     yield();
   }
 
+  // Clear ownership if we were the owner
+  if (g_streamOwner == myId) g_streamOwner = 0;
+  g_streamRequested = 0;
   Serial.println("Client disconnected.");
 }
 
 // ============ CAPTURE HANDLERS ============
 void handleCapture() {
-  Serial.println("HTTP /capture requested");
+  LOG_DBG("HTTP /capture requested\n");
+  // Debug: log capture request and stream owner state
+  {
+    WiFiClient client = server.client();
+    if (client) Serial.printf("HTTP REQ: /capture from %s:%u owner=%u requested=%u\n", client.remoteIP().toString().c_str(), client.remotePort(), (unsigned)g_streamOwner, (unsigned)g_streamRequested);
+    else Serial.printf("HTTP REQ: /capture (no client) owner=%u requested=%u\n", (unsigned)g_streamOwner, (unsigned)g_streamRequested);
+  }
   server.sendHeader("Access-Control-Allow-Origin", "*");
   if (capturedFrame) {
     esp_camera_fb_return(capturedFrame);
@@ -400,7 +502,13 @@ void handleCapture() {
 }
 
 void handleCaptureJPG() {
-  Serial.println("HTTP /capture.jpg requested");
+  LOG_DBG("HTTP /capture.jpg requested\n");
+  // Debug: log capture.jpg request and stream owner state
+  {
+    WiFiClient client = server.client();
+    if (client) Serial.printf("HTTP REQ: /capture.jpg from %s:%u owner=%u requested=%u\n", client.remoteIP().toString().c_str(), client.remotePort(), (unsigned)g_streamOwner, (unsigned)g_streamRequested);
+    else Serial.printf("HTTP REQ: /capture.jpg (no client) owner=%u requested=%u\n", (unsigned)g_streamOwner, (unsigned)g_streamRequested);
+  }
   server.sendHeader("Access-Control-Allow-Origin", "*");
   bool usedLocal = false;
   if (!capturedFrame) {
@@ -420,10 +528,10 @@ void handleCaptureJPG() {
   client.setNoDelay(true);
   char hdr[128];
   int hdrLen = snprintf(hdr, sizeof(hdr), "HTTP/1.1 200 OK\r\nContent-Type: image/jpeg\r\nContent-Length: %u\r\nAccess-Control-Allow-Origin: *\r\n\r\n", (unsigned)capturedFrame->len);
-      if (hdrLen > 0) {
-        int hw = client.write(hdr, hdrLen);
-        Serial.printf("Header write: %d/%d\n", hw, hdrLen);
-      }
+          if (hdrLen > 0) {
+            int hw = client.write(hdr, hdrLen);
+            LOG_DBG("Header write: %d/%d\n", hw, hdrLen);
+          }
       // Send image in chunks to avoid large single socket writes
       size_t written = 0;
       const uint8_t* cbuf = (const uint8_t*)capturedFrame->buf;
@@ -434,7 +542,7 @@ void handleCaptureJPG() {
         int r = client.write(cbuf + written, toWrite);
         if (r > 0) { written += r; remaining -= r; } else break;
       }
-      Serial.printf("Image write: %u/%u\n", (unsigned)written, (unsigned)capturedFrame->len);
+      LOG_DBG("Image write: %u/%u\n", (unsigned)written, (unsigned)capturedFrame->len);
   if (usedLocal) {
     esp_camera_fb_return(capturedFrame);
     capturedFrame = NULL;

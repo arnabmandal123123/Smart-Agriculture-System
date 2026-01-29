@@ -3,43 +3,78 @@
 // const int txPin = 9;
 // SoftwareSerial espSerial(rxPin, txPin); // RX, TX
 
-// Sensor and actuator pins
-const int dhtPin = 7; // Assuming a DHT11/22 is connected to pin 7
-const int soilPin = A0; // Soil moisture sensor on A0
-const int pumpPin = 4; // Water pump connected to pin 4
+// Actuator pin
+const int pumpPin = 10; // Water pump connected to pin 10
 
 void setup() {
   // Start the hardware serial for communication with ESP32
-  Serial.begin(9600);
+  // Match baud with ESP32 firmware (115200)
+  Serial.begin(115200);
+
+  // Debug startup message
+  Serial.println("ARDUINO: started, awaiting commands");
 
   // Set up the pump pin as an output
   pinMode(pumpPin, OUTPUT);
   digitalWrite(pumpPin, LOW); // Default to off
 }
 
-void loop() {
-  // Read sensor data (placeholders)
-  float temperature = 25.0; // Placeholder
-  float humidity = 60.0;    // Placeholder
-  int soilMoisture = 500;   // Placeholder
+// Small, heap-free serial command parser
+const unsigned long ALIVE_INTERVAL_MS = 5000;
+static unsigned long lastAliveMillis = 0;
+char cmdBuf[64];
+size_t cmdLen = 0;
 
-  // Create a data string to send to the ESP32
-  String dataString = "temp:" + String(temperature) + ",humidity:" + String(humidity) + ",soil:" + String(soilMoisture);
-  
-  // Send the data to the ESP32
-  Serial.println(dataString);
-  
-  // Check for incoming commands from the ESP32
-  if (Serial.available()) {
-    String command = Serial.readStringUntil('\n');
-    command.trim();
-    
-    if (command == "PUMP_ON") {
-      digitalWrite(pumpPin, HIGH);
-    } else if (command == "PUMP_OFF") {
-      digitalWrite(pumpPin, LOW);
+void handleCommand(const char *cmd) {
+  // Trim leading/trailing whitespace
+  const char *s = cmd;
+  while (*s == ' ' || *s == '\t') s++;
+  size_t len = strlen(s);
+  while (len > 0 && (s[len-1] == ' ' || s[len-1] == '\t' || s[len-1] == '\r' || s[len-1] == '\n')) len--;
+
+  if (len == 0) return;
+
+  // Copy to a local buffer to operate on
+  char t[64];
+  size_t copyLen = (len < sizeof(t)-1) ? len : sizeof(t)-1;
+  memcpy(t, s, copyLen);
+  t[copyLen] = '\0';
+
+  Serial.print("CMD RX: "); Serial.println(t);
+
+  if (strcmp(t, "PUMP_ON") == 0) {
+    digitalWrite(pumpPin, HIGH);
+    Serial.println("ACTION: pump -> ON");
+  } else if (strcmp(t, "PUMP_OFF") == 0) {
+    digitalWrite(pumpPin, LOW);
+    Serial.println("ACTION: pump -> OFF");
+  }
+}
+
+void loop() {
+  // Non-blocking read of serial data into cmdBuf
+  while (Serial.available()) {
+    int c = Serial.read();
+    if (c < 0) break;
+    if (c == '\r') continue; // ignore CR
+    if (c == '\n') {
+      cmdBuf[cmdLen] = '\0';
+      if (cmdLen > 0) handleCommand(cmdBuf);
+      cmdLen = 0;
+    } else {
+      if (cmdLen < sizeof(cmdBuf)-1) {
+        cmdBuf[cmdLen++] = (char)c;
+      } else {
+        // buffer overflow, reset
+        cmdLen = 0;
+      }
     }
   }
-  
-  delay(2000); // Send data every 2 seconds
+
+  // Periodic presence ping (rate-limited)
+  unsigned long now = millis();
+  if (now - lastAliveMillis >= ALIVE_INTERVAL_MS) {
+    Serial.println("ARDUINO_ALIVE");
+    lastAliveMillis = now;
+  }
 }

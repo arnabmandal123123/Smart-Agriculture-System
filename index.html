@@ -3107,8 +3107,8 @@
       document.getElementById('str').style.display = 'none';
       
       const streamImg = document.getElementById('str');
-      // Ensure crossOrigin to allow future processing if needed and avoid mixed-content issues
-      try { streamImg.crossOrigin = 'anonymous'; } catch(e) {}
+      // Remove crossOrigin to avoid strict CORS image handling in some browsers
+      // (ESP responses already include Access-Control-Allow-Origin).
 
       // Consolidated handlers and cache-busting to ensure fresh connection
       let startTimeout = setTimeout(() => {
@@ -3140,9 +3140,27 @@
         startPollingCapture();
       };
 
-      // Start the MJPEG stream with cache-buster
+      // Warm up the camera by requesting a single capture first, then start MJPEG stream.
+      // This helps when the ESP's camera needs an initial request to begin producing frames.
       streamImg.style.display = 'none';
-      streamImg.src = `${BASE_URL}/stream?_t=${Date.now()}`;
+      const warmImg = new Image();
+      let warmTimer = setTimeout(() => {
+        // If warmup times out, still attempt the MJPEG stream
+        warmImg.src = '';
+        streamImg.src = `${BASE_URL}/stream?_t=${Date.now()}`;
+      }, 1500);
+      warmImg.onload = function () {
+        clearTimeout(warmTimer);
+        // After a successful single capture, attach the MJPEG stream
+        streamImg.src = `${BASE_URL}/stream?_t=${Date.now()}`;
+      };
+      warmImg.onerror = function () {
+        clearTimeout(warmTimer);
+        // If warmup fails, still try the MJPEG stream (fallback handles failures)
+        streamImg.src = `${BASE_URL}/stream?_t=${Date.now()}`;
+      };
+      // Trigger short warm-up request (capture.jpg)
+      warmImg.src = `${BASE_URL}/capture.jpg?_t=${Date.now()}`;
     }
 
     // Polling fallback using /capture.jpg when MJPEG /stream isn't available
@@ -3956,7 +3974,7 @@
     });
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
-  <script src="language.js"></script>
+  <!-- language.js removed (not provided). If you need localization, add language.js back into the web root. -->
   <script>
     // ========== MQTT Configuration ==========
     const mqtt_broker = "test.mosquitto.org";
@@ -3980,6 +3998,8 @@
     function onConnect() {
       console.log("Connected to MQTT broker");
       client.subscribe(sensor_topic);
+      // Also subscribe to status topic to receive acks from ESP
+      client.subscribe('esp32/cam/status');
     }
 
     function onConnectionLost(responseObject) {
@@ -3990,25 +4010,36 @@
     }
 
     function onMessageArrived(message) {
-      try {
-        const data = JSON.parse(message.payloadString);
-        
-        document.getElementById('temperature').innerText = data.temperature.toFixed(1);
-        document.getElementById('humidity').innerText = data.humidity.toFixed(1);
-        document.getElementById('soilMoisture').innerText = data.soilMoisture;
+      const payload = message.payloadString;
+      // Try JSON sensor update first
+      if (payload && payload[0] === '{') {
+        try {
+          const data = JSON.parse(payload);
+          if (data.temperature !== undefined) document.getElementById('temperature').innerText = parseFloat(data.temperature).toFixed(1);
+          if (data.humidity !== undefined) document.getElementById('humidity').innerText = parseFloat(data.humidity).toFixed(1);
+          if (data.soilMoisture !== undefined) document.getElementById('soilMoisture').innerText = data.soilMoisture;
 
-        const arduinoDot = document.getElementById('arduinoDot');
-        const arduinoStatus = document.getElementById('arduinoStatus');
-
-        if (data.arduinoConnected) {
-          arduinoDot.classList.remove('offline');
-          arduinoStatus.innerText = 'Connected';
-        } else {
-          arduinoDot.classList.add('offline');
-          arduinoStatus.innerText = 'Not Connected';
+          const arduinoDot = document.getElementById('arduinoDot');
+          const arduinoStatus = document.getElementById('arduinoStatus');
+          if (data.arduinoConnected) {
+            arduinoDot.classList.remove('offline');
+            arduinoStatus.innerText = 'Connected';
+          } else {
+            arduinoDot.classList.add('offline');
+            arduinoStatus.innerText = 'Not Connected';
+          }
+        } catch (e) {
+          console.error("Error parsing MQTT JSON message:", e, payload);
         }
-      } catch (e) {
-        console.error("Error parsing MQTT message:", e);
+        return;
+      }
+
+      // Handle plain-text control/status messages
+      console.log("MQTT message (text) arrived:", payload);
+      if (payload.indexOf('PUMP_ON') !== -1) {
+        console.log('ESP acknowledged PUMP_ON');
+      } else if (payload.indexOf('PUMP_OFF') !== -1) {
+        console.log('ESP acknowledged PUMP_OFF');
       }
     }
 
@@ -4018,7 +4049,7 @@
       
       const message = new Paho.MQTT.Message(command);
       message.destinationName = command_topic;
-      
+      console.log('Publishing pump command:', command, 'to', command_topic);
       client.send(message);
 
       pumpOn = !pumpOn;
