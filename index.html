@@ -24,26 +24,40 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-functions-compat.js"></script>
   <style>
     :root {
-      --primary: #1a73e8;
-      --primary-dark: #1557b0;
-      --surface: #fff;
-      --background: #f8f9fa;
-      --on-surface: #202124;
-      --on-surface-variant: #5f6368;
-      --error: #d93025;
-      --warn: #f9ab00;
-      --success: #1e8e3e;
-      --elevation-1: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
-      --elevation-2: 0 1px 2px 0 rgba(60,64,67,0.3), 0 2px 6px 2px rgba(60,64,67,0.15);
-      --elevation-3: 0 4px 8px 3px rgba(60,64,67,0.15), 0 1px 3px rgba(60,64,67,0.3);
-      --radius: 8px;
+      /* Modern Google-like Palette (Material 3 inspired) */
+      --primary: #0b57d0;
+      --primary-container: #d3e3fd;
+      --on-primary: #ffffff;
+      --on-primary-container: #041e49;
+      --secondary: #00639b;
+      --surface: #ffffff;
+      --surface-container: #f0f4f9;
+      --on-surface: #1f1f1f;
+      --on-surface-variant: #444746;
+      --outline: #747775;
+      --outline-variant: #c4c7c5;
+      --error: #b3261e;
+      --error-container: #f9dedc;
+      --success: #146c2e;
+      --warn: #ef6c00;
+      --elevation-1: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1);
+      --elevation-2: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+      --elevation-3: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+      --radius: 16px;
+      --font-sans: 'Google Sans', 'Roboto', sans-serif;
+      --font-body: 'Roboto', sans-serif;
+      --transition: all 0.2s cubic-bezier(0.2, 0.0, 0, 1.0);
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --surface: #292a2d;
-        --background: #202124;
-        --on-surface: #e8eaed;
-        --on-surface-variant: #9aa0a6;
+        --surface: #1e1e1e;
+        --surface-container: #121212;
+        --on-surface: #e2e2e2;
+        --on-surface-variant: #c4c7c5;
+        --primary: #a8c7fa;
+        --primary-container: #0842a0;
+        --on-primary: #062e6f;
+        --on-primary-container: #d3e3fd;
       }
     }
     * {
@@ -52,14 +66,12 @@
       padding: 0;
     }
     body {
-      font-family: 'Roboto', sans-serif;
-      background: var(--background);
+      font-family: var(--font-body);
+      background-color: #000000;
       color: var(--on-surface);
-      padding: 16px;
+      padding: 24px;
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
-      -webkit-tap-highlight-color: rgba(26, 115, 232, 0.1);
-      touch-action: manipulation;
     }
     .wrap {
       max-width: 1200px;
@@ -67,68 +79,107 @@
       display: flex;
       flex-direction: column;
       gap: 24px;
+      animation: fadeIn 0.6s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes gradient-animation {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
     }
     .hero {
-      background: var(--surface);
-      border-radius: var(--radius);
-      padding: 24px;
-      box-shadow: var(--elevation-1);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      background-size: 200% 200%;
+      animation: gradient-animation 10s ease infinite;
+      border-radius: 24px;
+      padding: 32px;
+      color: white;
+      box-shadow: var(--elevation-2);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0; bottom: 0; left: 0;
+      background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9IndoaXRlIiBmaWxsLW9wYWNpdHk9IjAuMSIvPjwvc3ZnPg==');
+      opacity: 0.3;
     }
     .hero h1 {
-      font-size: 24px;
-      font-weight: 500;
+      font-family: var(--font-sans);
+      font-size: 28px;
+      font-weight: 400;
       margin: 8px 0 4px;
-      color: var(--on-surface);
+      color: white;
     }
     .hero p {
-      font-size: 14px;
-      color: var(--on-surface-variant);
+      font-size: 15px;
+      color: rgba(255,255,255,0.9);
       margin: 0;
+      font-weight: 300;
     }
     .ip-config {
-      background: var(--surface);
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
       border-radius: var(--radius);
-      padding: 16px;
-      box-shadow: var(--elevation-1);
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       display: flex;
       align-items: center;
       gap: 12px;
       flex-wrap: wrap;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: var(--transition);
+    }
+    .ip-config:focus-within {
+      border-color: var(--primary);
+      box-shadow: var(--elevation-2);
     }
     .ip-config input {
       flex: 1;
       min-width: 200px;
-      background: var(--surface);
-      border: 1px solid var(--on-surface-variant);
-      border-radius: var(--radius);
-      padding: 12px 14px;
+      background: var(--surface-container);
+      border: none;
+      border-radius: 8px;
+      padding: 14px 16px;
       color: var(--on-surface);
       font-size: 16px;
       font-family: 'Roboto Mono', 'Courier New', monospace;
-      min-height: 44px;
+      transition: var(--transition);
     }
     .ip-config input:focus {
       outline: 2px solid var(--primary);
-      border-color: var(--primary);
+      background: var(--surface);
     }
     .ip-config button {
       background: var(--primary);
       color: #fff;
       border: none;
-      border-radius: var(--radius);
-      padding: 12px 24px;
+      border-radius: 24px;
+      padding: 0 24px;
+      height: 48px;
       font-weight: 500;
       cursor: pointer;
       font-size: 14px;
-      box-shadow: var(--elevation-1);
-      transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
-      font-family: 'Roboto', sans-serif;
-      min-height: 44px;
-      touch-action: manipulation;
+      font-family: var(--font-sans);
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
     .ip-config button:hover {
-      background: var(--primary-dark);
+      background: #0b4eb3; /* Slightly darker */
       box-shadow: var(--elevation-2);
+      transform: translateY(-1px);
     }
     .status {
       display: grid;
@@ -136,538 +187,227 @@
       gap: 16px;
     }
     .chip {
-      background: var(--surface);
-      border-radius: var(--radius);
-      padding: 16px;
-      box-shadow: var(--elevation-1);
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 50px; /* Pill shape */
+      padding: 12px 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 12px;
       font-size: 14px;
+      font-weight: 500;
       color: var(--on-surface);
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
     .dot {
-      width: 8px;
-      height: 8px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       background: var(--success);
+      box-shadow: 0 0 0 2px rgba(20, 108, 46, 0.2);
     }
     .dot.offline {
       background: var(--error);
-    }
-    .grid {
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
+      box-shadow: 0 0 0 2px rgba(179, 38, 30, 0.2);
     }
     .card {
-      background: var(--surface);
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
       border-radius: var(--radius);
-      padding: 16px;
-      box-shadow: var(--elevation-1);
+      padding: 24px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: var(--transition);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--elevation-3);
     }
     .head {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
     h2 {
-      font-size: 18px;
-      font-weight: 500;
+      font-family: var(--font-sans);
+      font-size: 20px;
+      font-weight: 400;
       color: var(--on-surface);
     }
     .pill {
       padding: 4px 12px;
-      border-radius: 16px;
-      background: var(--primary);
-      color: #fff;
+      border-radius: 12px;
+      background: var(--primary-container);
+      color: var(--on-primary-container);
       font-size: 12px;
-      font-weight: 500;
+      font-weight: 600;
     }
     .frame {
-      border-radius: var(--radius);
+      border-radius: 12px;
       overflow: hidden;
       background: #000;
       min-height: 240px;
       display: grid;
       place-items: center;
-    }
-    .frame img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+      position: relative;
     }
     .actions {
-      margin-top: 16px;
+      margin-top: 24px;
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
     }
     .btn {
       border: none;
-      border-radius: var(--radius);
-      padding: 12px 24px;
+      border-radius: 24px;
+      padding: 0 24px;
+      height: 44px;
       font-weight: 500;
       font-size: 14px;
       cursor: pointer;
-      font-family: 'Roboto', sans-serif;
-      transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
-      box-shadow: var(--elevation-1);
+      font-family: var(--font-sans);
+      transition: var(--transition);
       letter-spacing: 0.25px;
-      min-height: 44px;
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
     .btn.pri {
       background: var(--primary);
       color: #fff;
+      box-shadow: var(--elevation-1);
     }
     .btn.pri:hover {
-      background: var(--primary-dark);
+      background: #0b4eb3;
       box-shadow: var(--elevation-2);
+      transform: translateY(-1px);
     }
     .btn.sec {
-      background: var(--surface);
+      background: transparent;
       color: var(--primary);
-      border: 1px solid var(--on-surface-variant);
+      border: 1px solid var(--outline);
     }
     .btn.sec:hover {
-      background: rgba(26, 115, 232, 0.04);
-      box-shadow: var(--elevation-2);
+      background: var(--primary-container);
+      border-color: var(--primary);
+      color: var(--on-primary-container);
+    }
+    .btn.err {
+      background: var(--error);
+      color: white;
+      border: 1px solid var(--error);
+    }
+    .btn.err:hover {
+      background: #d32f2f; /* Darker red */
+      border-color: #d32f2f;
     }
     .btn:disabled {
-      opacity: 0.38;
-      cursor: not-allowed;
+      background: rgba(0,0,0,0.12);
+      color: rgba(0,0,0,0.38);
+      border: none;
       box-shadow: none;
-    }
-    .btn:not(:disabled):active {
-      box-shadow: var(--elevation-3);
-    }
-    .results {
-      min-height: 120px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+      cursor: not-allowed;
+      transform: none;
     }
     .rc {
-      background: var(--background);
-      border-radius: var(--radius);
-      padding: 16px;
+      background: var(--surface-container);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid rgba(0,0,0,0.05);
     }
-    .rc .t {
+    .rc .t { 
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 16px;
+      margin-bottom: 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
-      font-weight: 500;
-      font-size: 16px;
     }
     .badge {
       padding: 4px 8px;
       border-radius: 4px;
       font-size: 11px;
-      font-weight: 500;
+      font-weight: 600;
       text-transform: uppercase;
     }
     .badge.ok {
-      background: #e6f4ea;
+      background: #c4eed0;
       color: var(--success);
     }
     .badge.warn {
-      background: #fef7e0;
-      color: #f9ab00;
+      background: #ffebb0;
+      color: var(--warn);
     }
     .badge.err {
-      background: #fce8e6;
+      background: var(--error-container);
       color: var(--error);
-    }
-    .conf {
-      background: rgba(0, 0, 0, 0.08);
-      border-radius: 4px;
-      overflow: hidden;
-      height: 20px;
-      margin: 8px 0;
-    }
-    .conf-fill {
-      height: 100%;
-      background: var(--primary);
-      text-align: right;
-      padding-right: 8px;
-      font-size: 12px;
-      line-height: 20px;
-      color: #fff;
-      font-weight: 500;
     }
     .ctx {
-      background: var(--background);
-      border-radius: var(--radius);
-      padding: 16px;
+      background: var(--surface-container);
+      border-radius: 12px;
+      padding: 20px;
       margin-top: 12px;
-    }
-    .ctx h4 {
-      margin: 0 0 8px;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--on-surface-variant);
-    }
-    .ctx ul {
-      margin: 0;
-      padding-left: 20px;
-      color: var(--on-surface);
-      font-size: 14px;
-      line-height: 1.6;
-    }
-    .sg {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 12px;
     }
     .sc {
-      background: var(--background);
-      border-radius: var(--radius);
-      padding: 16px;
-    }
-    .sc .l {
-      margin: 0 0 4px;
-      color: var(--on-surface-variant);
-      font-size: 12px;
-      font-weight: 400;
-    }
-    .sc .v {
-      margin: 0;
-      font-size: 28px;
-      font-weight: 400;
-      color: var(--on-surface);
-    }
-    .sc .u {
-      margin: 0;
-      color: var(--on-surface-variant);
-      font-size: 12px;
-    }
-    .note {
-      color: var(--on-surface-variant);
-      font-size: 12px;
-      margin-top: 12px;
-    }
-    /* Tablet responsiveness */
-    @media (max-width: 768px) {
-      .wrap {
-        gap: 16px;
-      }
-      .hero h1 {
-        font-size: 20px;
-      }
-      .status {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      }
-      .sg {
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      }
-    }
-    
-    /* Mobile responsiveness */
-    @media (max-width: 640px) {
-      .hdr {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 24px;
-      }
-      .hdr h1 {
-        margin: 0;
-      }
-      body {
-        padding: 8px;
-      }
-      .wrap {
-        gap: 12px;
-      }
-      .hero {
-        padding: 16px;
-      }
-      .hero h1 {
-        font-size: 18px;
-        margin: 4px 0 2px;
-      }
-      .hero p {
-        font-size: 12px;
-      }
-      .ip-config {
-        padding: 12px;
-        gap: 8px;
-      }
-      .ip-config input {
-        min-width: 100%;
-        font-size: 16px;
-      }
-      .ip-config button {
-        width: 100%;
-        padding: 14px 24px;
-        font-size: 15px;
-      }
-      .status {
-        grid-template-columns: 1fr;
-        gap: 8px;
-      }
-      .chip {
-        padding: 12px;
-        font-size: 13px;
-      }
-      .card {
-        padding: 12px;
-      }
-      h2 {
-        font-size: 16px;
-      }
-      .actions {
-        flex-direction: column;
-        gap: 8px;
-      }
-      .btn {
-        width: 100%;
-        padding: 14px 24px;
-        font-size: 15px;
-        min-height: 48px;
-      }
-      .frame {
-        min-height: 200px;
-      }
-      .rc {
-        padding: 12px;
-      }
-      .rc .t {
-        font-size: 14px;
-        flex-wrap: wrap;
-        gap: 8px;
-      }
-      .ctx {
-        padding: 12px;
-      }
-      .ctx ul {
-        font-size: 13px;
-        padding-left: 16px;
-      }
-      .sg {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-      }
-      .sc {
-        padding: 12px;
-      }
-      .sc .v {
-        font-size: 24px;
-      }
-    }
-    
-    /* Small mobile devices */
-    @media (max-width: 375px) {
-      body {
-        padding: 6px;
-      }
-      .hero h1 {
-        font-size: 16px;
-      }
-      .hero p {
-        font-size: 11px;
-      }
-      .sg {
-        grid-template-columns: 1fr;
-      }
-      .btn {
-        font-size: 14px;
-      }
-    }
-    
-    /* Landscape mobile orientation */
-    @media (max-height: 500px) and (orientation: landscape) {
-      .frame {
-        min-height: 150px;
-      }
-      .sg {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-    
-    /* Analytics Dashboard Styles */
-    .analytics-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 16px;
-    }
-    .chart-container {
-      position: relative;
-      height: 300px;
-      background: var(--background);
-      border-radius: var(--radius);
-      padding: 12px;
-    }
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-    .stat-box {
-      background: var(--background);
-      border-radius: var(--radius);
+      background: var(--surface-container);
+      border-radius: 12px;
       padding: 16px;
       text-align: center;
+      transition: var(--transition);
     }
-    .stat-box .label {
-      font-size: 12px;
-      color: var(--on-surface-variant);
-      margin-bottom: 8px;
+    .sc:hover {
+      background: #e3e8ef;
     }
-    .stat-box .value {
-      font-size: 24px;
-      font-weight: 500;
-      color: var(--on-surface);
+    .sc .v {
+      font-size: 32px;
+      font-family: var(--font-sans);
+      font-weight: 400;
+      color: var(--primary);
     }
-    .stat-box .change {
-      font-size: 11px;
-      margin-top: 4px;
-    }
-    .stat-box .change.up {
-      color: var(--error);
-    }
-    .stat-box .change.down {
-      color: var(--success);
-    }
-    
-    /* History Panel Styles */
-    .history-panel {
-      max-height: 600px;
-      overflow-y: auto;
-    }
-    .history-item {
-      background: var(--background);
-      border-radius: var(--radius);
+    /* Chart containers */
+    .chart-container {
+      background: var(--surface);
+      border-radius: 12px;
       padding: 16px;
-      margin-bottom: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
-      border-left: 4px solid transparent;
-    }
-    .history-item:hover {
-      background: rgba(26, 115, 232, 0.05);
-      border-left-color: var(--primary);
-    }
-    .history-item.critical {
-      border-left-color: var(--error);
-    }
-    .history-item.high {
-      border-left-color: var(--warn);
-    }
-    .history-item.moderate {
-      border-left-color: #FF9800;
-    }
-    .history-item.low {
-      border-left-color: var(--success);
-    }
-    .history-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-      gap: 8px;
-    }
-    .history-date {
-      font-size: 13px;
-      color: var(--on-surface-variant);
-      flex: 1;
-    }
-    .delete-btn {
-      background: rgba(234, 67, 53, 0.1);
-      color: var(--error);
-      border: none;
-      border-radius: 6px;
-      padding: 6px 12px;
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .delete-btn:hover {
-      background: var(--error);
-      color: white;
-      transform: scale(1.05);
-    }
-    .history-disease {
-      font-weight: 500;
-      font-size: 15px;
-      margin: 4px 0;
-    }
-    .history-confidence {
-      font-size: 12px;
-      color: var(--on-surface-variant);
-    }
-    .history-details {
-      display: none;
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      font-size: 13px;
-    }
-    .history-item.expanded .history-details {
-      display: block;
-    }
-    .history-image {
-      width: 100%;
-      max-width: 300px;
-      border-radius: var(--radius);
-      margin-top: 8px;
+      border: 1px solid var(--surface-container);
+      height: 500px;
     }
     .timeline-container {
       position: relative;
-      height: 400px;
+      height: 500px;
     }
-    .firebase-status {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 500;
-      background: rgba(255, 255, 255, 0.05);
+    /* Plant Selector */
+    #plantSelector button {
+      background: var(--surface) !important;
+      border: 1px solid var(--outline-variant) !important;
+      border-radius: 12px !important;
+      box-shadow: none !important;
     }
-    .firebase-status.connected {
-      background: rgba(52, 168, 83, 0.1);
-      color: var(--success);
+    #plantSelector button:hover {
+      background: var(--surface-container) !important;
+      border-color: var(--primary) !important;
     }
-    .firebase-status.disconnected {
-      background: rgba(234, 67, 53, 0.1);
-      color: var(--error);
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #c4c7c5; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #747775; }
+    .card-enter {
+      animation: card-enter-animation 0.5s ease-out forwards;
+      opacity: 0;
+      transform: translateY(20px);
     }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    #aiToggleBtn {
-      background: rgba(26, 115, 232, 0.1);
-      color: var(--primary);
-      font-weight: 500;
-    }
-    #aiToggleBtn.disabled {
-      background: rgba(95, 99, 104, 0.1);
-      color: var(--on-surface-variant);
-    }
-    @media (max-width: 640px) {
-      .chart-container {
-        height: 250px;
-      }
-      .analytics-grid {
-        grid-template-columns: 1fr;
-      }
-      .timeline-container {
-        height: 300px;
-      }
-      .history-panel {
-        max-height: 400px;
+
+    @keyframes card-enter-animation {
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
     }
   </style>
@@ -677,30 +417,30 @@
     <section class="hero">
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <p>Smart Agricultural Disease Monitor</p>
-          <h1>ESP32-CAM + Roboflow AI + Firebase</h1>
-          <p>Live streaming · AI-powered analysis · Real-time sensors · Expert recommendations</p>
+          <p>Advanced Crop Diagnostics Platform</p>
+          <h1>AgriSentry: AI-Powered Crop Analysis</h1>
+          <p>Real-time analysis, AI-driven insights, and sensor integration.</p>
         </div>
       </div>
     </section>
 
     <div class="ip-config">
-      <span style="font-size: 14px; color: var(--on-surface-variant); font-weight: 500;">ESP32 IP Address:</span>
+      <span style="font-size: 14px; color: var(--on-surface-variant); font-weight: 500;">ESP32 Camera IP:</span>
       <input type="text" id="ipInput" placeholder="10.180.248.XXX" value="10.180.248.33">
       <button onclick="setIP()">Connect</button>
       <span id="connStatus" style="font-size: 13px; color: var(--on-surface-variant);"></span>
     </div>
 
     <section class="status">
-      <div class="chip"><span class="dot" id="camDot"></span><span id="cs">Camera offline</span></div>
-      <div class="chip"><span class="dot" id="aiDot"></span><span id="as">AI ready</span></div>
-      <div class="chip">Time: <span id="ts">--:--:--</span></div>
+      <div class="chip"><span class="dot" id="camDot"></span><span id="cs" style="font-weight: 500;">Camera Status: Offline</span></div>
+      <div class="chip"><span class="dot" id="aiDot"></span><span style="font-weight: 500;">AI Status: Ready</span></div>
+      <div class="chip"><span style="color: var(--primary); margin-right: 8px;">🕒</span><span id="ts" style="font-family: monospace; font-size: 15px;">--:--:--</span></div>
     </section>
 
     <section class="grid">
       <article class="card">
         <div class="head">
-          <h2>Live stream</h2>
+          <h2>Live Camera Stream</h2>
           <span class="pill">Live</span>
         </div>
         <div class="frame">
@@ -709,14 +449,14 @@
         </div>
         
         <!-- Plant Selection -->
-        <div style="padding: 16px; background: rgba(26, 115, 232, 0.05); border-radius: 8px; margin: 12px;">
+        <div style="padding: 20px; background: var(--surface-container); border-radius: 12px; margin-top: 24px;">
           <h4 style="margin: 0 0 12px 0; color: var(--primary); font-size: 14px; font-weight: 600;">
-            🌱 Select Plant Type for Analysis
+            🌱 Select Crop for Analysis
           </h4>
           <div id="plantSelector" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px;">
             <!-- Plant buttons will be inserted here -->
           </div>
-          <div id="selectedPlantInfo" style="margin-top: 12px; padding: 12px; background: var(--surface); border-radius: 6px; border-left: 4px solid var(--primary);">
+          <div id="selectedPlantInfo" style="margin-top: 12px; padding: 12px; background: var(--surface); border-radius: 8px; border-left: 4px solid var(--primary); box-shadow: var(--elevation-1);">
             <div style="font-size: 13px; font-weight: 500; color: var(--on-surface); margin-bottom: 4px;">
               Selected: <span id="selectedPlantName" style="color: var(--primary);">🌿 All Plants</span>
             </div>
@@ -725,25 +465,39 @@
         </div>
         
         <div class="actions">
-          <button id="visualBtn" class="btn pri" onclick="visualOnly()" disabled>Analyze</button>
-          <button id="toggleBtn" class="btn sec" onclick="toggleStream()" disabled>Start stream</button>
+          <button id="visualBtn" class="btn pri" onclick="visualOnly()" disabled><span>🔍</span> Analyze Stream</button>
+          <button id="toggleBtn" class="btn sec" onclick="toggleStream()" disabled><span>📹</span> Start Stream</button>
         </div>
       </article>
 
       <article class="card">
         <div class="head">
-          <h2>Analysis</h2>
+          <h2>Analyze Local Image</h2>
+          <span class="pill">Local</span>
+        </div>
+        <div id="localImagePreview" class="frame" style="display: none;min-height: 240px;"></div>
+        <p id="localImagePlaceholder" style="color: var(--on-surface-variant); font-size: 14px; text-align: center;">Select an image to analyze</p>
+        <div class="actions">
+          <input type="file" id="imageInput" accept="image/*" capture="environment" style="display: none;">
+          <button class="btn sec" onclick="document.getElementById('imageInput').click()">Choose Image</button>
+          <button id="localAnalyzeBtn" class="btn pri" onclick="analyzeLocalImage()" disabled>Analyze Image</button>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="head">
+          <h2>Diagnostic Results</h2>
           <span class="pill">AI</span>
         </div>
         <div id="res" class="results">
           <div class="rc">
-            <div class="t">Ready - 7 AI Models Loaded</div>
-            <p style="color: var(--on-surface-variant); font-size: 14px; margin-bottom: 16px;">Configure ESP32 IP, then analyze</p>
+            <div class="t">Awaiting Analysis</div>
+            <p style="color: var(--on-surface-variant); font-size: 14px; margin-bottom: 16px;">Connect to a device and then run diagnostics.</p>
             
             <!-- Disease Detection Models Display -->
             <div style="background: rgba(26, 115, 232, 0.05); border-radius: 8px; padding: 16px; margin-top: 12px;">
               <h4 style="margin: 0 0 12px 0; color: var(--primary); font-size: 14px; font-weight: 600;">
-                🤖 Active Disease Detection Models
+                Active Detection Models
               </h4>
               <div id="modelsList" style="display: flex; flex-direction: column; gap: 8px;">
                 <!-- Models will be displayed here -->
@@ -762,7 +516,7 @@
         <div id="aiRecommendations" style="display: none; margin-top: 16px; padding: 16px; background: rgba(26, 115, 232, 0.05); border-radius: 8px; border-left: 4px solid var(--primary);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <h4 style="margin: 0; color: var(--primary); display: flex; align-items: center; gap: 8px;">
-              🤖 AI Disease Verification & Final Decision
+              Consolidated AI Verdict
               <span id="aiModel" style="font-size: 11px; background: rgba(26, 115, 232, 0.1); padding: 2px 8px; border-radius: 4px; font-weight: 500;">Gemini</span>
             </h4>
             <button class="btn sec" onclick="copyAIAnalysis()" style="padding: 4px 12px; font-size: 12px;">📋 Copy</button>
@@ -778,7 +532,7 @@
 
     <article class="card">
       <div class="head">
-        <h2>Arduino Sensors</h2>
+        <h2>Environment Monitor</h2>
         <div class="chip"><span class="dot" id="arduinoDot"></span><span id="arduinoStatus">Not Connected</span></div>
       </div>
       <div class="sg">
@@ -799,7 +553,7 @@
         </div>
       </div>
       <div class="actions">
-        <button id="pumpBtn" class="btn pri" onclick="togglePump()">Turn Pump ON</button>
+        <button id="pumpBtn" class="btn pri" onclick="togglePump()">Toggle Pump</button>
       </div>
     </article>
 
@@ -807,14 +561,13 @@
 
     <article class="card">
       <div class="head">
-        <h2>Analytics Dashboard</h2>
+        <h2>Platform Analytics</h2>
         <div style="display: flex; gap: 8px; align-items: center;">
           <button class="btn sec" id="aiToggleBtn" onclick="toggleAIAnalysis()" title="Enable/Disable AI-powered analysis">
             <span id="aiToggleIcon">🤖</span>
             <span id="aiToggleText">AI: ON</span>
           </button>
-          <button class="btn sec" onclick="exportAnalyticsData()">📥 Export</button>
-          <button class="btn sec" onclick="clearAnalyticsData()">🗑️ Clear</button>
+          <button class="btn err" onclick="clearAllData()">🗑️ Clear All Data</button>
         </div>
       </div>
       
@@ -824,16 +577,16 @@
           <div class="value" id="totalScans">0</div>
         </div>
         <div class="stat-box">
-          <div class="label">Diseases Found</div>
+          <div class="label">Diseases Detected</div>
           <div class="value" id="diseasesFound">0</div>
           <div class="change up" id="diseaseChange">--</div>
         </div>
         <div class="stat-box">
-          <div class="label">Avg Confidence</div>
+          <div class="label">Avg. Confidence</div>
           <div class="value" id="avgConfidence">0%</div>
         </div>
         <div class="stat-box">
-          <div class="label">Risk Level</div>
+          <div class="label">Threat Level</div>
           <div class="value" id="riskLevel">Low</div>
         </div>
       </div>
@@ -861,13 +614,13 @@
       <div style="margin-top: 16px;">
         <div class="card" style="padding: 20px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <h3 style="font-size: 16px; margin: 0; color: var(--primary); font-weight: 600;">🎯 Model Precision & Accuracy (User Feedback)</h3>
+            <h3 style="font-size: 16px; margin: 0; color: var(--primary); font-weight: 600;">🎯 Model Performance Feedback</h3>
             <button onclick="resetModelFeedback()" style="background: var(--error); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px;">
               <span>🗑️</span>
-              <span>Reset Feedback</span>
+              <span>Reset Feedback Data</span>
             </button>
           </div>
-          <div style="height: 500px; width: 100%;">
+          <div id="modelPrecisionChartContainer" style="height: 500px; width: 100%;">
             <canvas id="modelPrecisionChart"></canvas>
           </div>
           <p style="margin-top: 12px; font-size: 12px; color: var(--on-surface-variant); text-align: center;">Rate model predictions to see real-world accuracy. Higher bars = better performance.</p>
@@ -877,7 +630,7 @@
 
     <article class="card">
       <div class="head">
-        <h2>Timeline & History</h2>
+        <h2>Diagnostic History</h2>
         <div style="display: flex; gap: 8px; align-items: center;">
           <span class="firebase-status" id="firebaseStatus">
             <span id="firebaseIcon">⚪</span>
@@ -888,7 +641,7 @@
       </div>
 
       <div class="card" style="padding: 12px; margin-bottom: 16px;">
-        <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--on-surface-variant);">Analysis Timeline</h3>
+        <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--on-surface-variant);">Detection Timeline</h3>
         <div class="timeline-container">
           <canvas id="timelineChart"></canvas>
         </div>
@@ -896,20 +649,229 @@
 
       <div class="card" style="padding: 12px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-          <h3 style="font-size: 14px; margin: 0; color: var(--on-surface-variant);">Analysis History</h3>
+          <h3 style="font-size: 14px; margin: 0; color: var(--on-surface-variant);">Analysis Log</h3>
           <div style="display: flex; gap: 8px;">
             <button class="btn sec" onclick="loadFromFirebase()" style="padding: 8px 16px; font-size: 13px;">📥 Load</button>
             <button class="btn sec" onclick="filterHistory('all')" style="padding: 8px 16px; font-size: 13px;">All</button>
             <button class="btn sec" onclick="filterHistory('diseases')" style="padding: 8px 16px; font-size: 13px;">Diseases</button>
             <button class="btn sec" onclick="filterHistory('healthy')" style="padding: 8px 16px; font-size: 13px;">Healthy</button>
+            <button class="btn pri" onclick="clearAnalyticsData()" style="padding: 8px 16px; font-size: 13px;">🗑️ Clear Diagnostic Log</button>
           </div>
         </div>
         <div class="history-panel" id="historyPanel">
-          <p style="text-align: center; color: var(--on-surface-variant); padding: 32px;">No analysis history yet. Run your first scan to get started.</p>
+          <p style="text-align: center; color: var(--on-surface-variant); padding: 32px;">No diagnostic logs yet. Run your first analysis to get started.</p>
         </div>
       </div>
     </article>
   </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const cards = document.querySelectorAll('.card');
+      cards.forEach((card, index) => {
+        card.classList.add('card-enter');
+        card.style.animationDelay = `${index * 100}ms`;
+      });
+
+      // Handle local image selection
+      document.getElementById('imageInput').addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const preview = document.getElementById('localImagePreview');
+          const placeholder = document.getElementById('localImagePlaceholder');
+          preview.innerHTML = `<img src="${e.target.result}" style="max-width:100%; max-height:400px; border-radius:8px;" alt="Selected image">`;
+          preview.style.display = 'block';
+          placeholder.style.display = 'none';
+          document.getElementById('localAnalyzeBtn').disabled = false;
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    
+async function infer(base64Image, model) {
+  try {
+    console.log('Calling model:', model.name);
+    const rf = await fetch('https://serverless.roboflow.com/' + model.id + '?api_key=' + K, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: base64Image
+    });
+
+    if (!rf.ok) {
+      throw Error('HTTP ' + rf.status);
+    }
+
+    const data = await rf.json();
+    console.log(model.name + ' response:', data);
+
+    // Apply class name mapping if model returns numeric IDs
+    if (CLASS_NAME_MAPPING[model.id] && data.predictions) {
+      data.predictions = data.predictions.map(pred => {
+        if (CLASS_NAME_MAPPING[model.id][pred.class]) {
+          console.log('Mapping class ID "' + pred.class + '" to "' + CLASS_NAME_MAPPING[model.id][pred.class] + '" for ' + model.name);
+          return { ...pred, class: CLASS_NAME_MAPPING[model.id][pred.class] };
+        }
+        return pred;
+      });
+    }
+
+    return { name: model.name, type: model.type, data: data, error: null, modelId: model.id };
+  } catch (e) {
+    console.error(model.name + ' error:', e);
+    return { name: model.name, type: model.type, data: null, error: e.message, modelId: model.id };
+  }
+}
+
+function calculateConsensus(results) {
+    const diseaseDetections = [];
+    const healthyDetections = [];
+
+    results.forEach(r => {
+        if (r.error) return;
+
+        let disease = '';
+        let conf = 0;
+
+        if (r.type === 'detection' && r.data.predictions && r.data.predictions.length > 0) {
+            const top = r.data.predictions.reduce((a, b) => a.confidence > b.confidence ? a : b);
+            disease = top.class;
+            conf = top.confidence * 100;
+
+            if (!disease || disease === '' || /^\d+$/.test(disease)) {
+                console.warn('⚠️ Model "' + r.name + '" returned invalid class name:', disease);
+                return;
+            }
+        } else if (r.type === 'classification' && (r.data.top || r.data.predicted_classes)) {
+            disease = r.data.top || r.data.predicted_classes[0];
+            conf = (r.data.confidence || 0) * 100;
+        }
+
+        const diseaseNormalized = (disease || '').toLowerCase().trim();
+
+        if (conf > 0 && disease) {
+            if (diseaseNormalized === 'healthy' || diseaseNormalized === 'no detection') {
+                healthyDetections.push({ model: r.name, disease, confidence: conf });
+            } else {
+                diseaseDetections.push({ model: r.name, disease, confidence: conf });
+            }
+        }
+    });
+
+    let primaryDisease = 'Healthy';
+    let primaryConfidence = 0;
+    let consensusNote = '';
+
+    if (diseaseDetections.length > 0) {
+        const diseaseVotes = {};
+        diseaseDetections.forEach(d => {
+            const key = d.disease.toLowerCase();
+            if (!diseaseVotes[key]) {
+                diseaseVotes[key] = { disease: d.disease, votes: 0, totalConf: 0, models: [] };
+            }
+            diseaseVotes[key].votes++;
+            diseaseVotes[key].totalConf += d.confidence;
+            diseaseVotes[key].models.push(d.model);
+        });
+
+        let bestDisease = null;
+        let bestScore = 0;
+
+        for (const key in diseaseVotes) {
+            const vote = diseaseVotes[key];
+            const avgConf = vote.totalConf / vote.votes;
+            const score = (vote.votes * 50) + avgConf;
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestDisease = vote;
+            }
+        }
+
+        if (bestDisease) {
+            primaryDisease = bestDisease.disease;
+            primaryConfidence = bestDisease.totalConf / bestDisease.votes;
+
+            if (healthyDetections.length > 0) {
+                consensusNote = '⚠️ Consensus Override: ' + diseaseDetections.length + ' model(s) detected disease, ' +
+                    healthyDetections.length + ' said healthy. Prioritizing disease detection.';
+            }
+
+            if (bestDisease.votes > 1) {
+                consensusNote += ' ✓ ' + bestDisease.votes + ' models agree on "' + primaryDisease + '"';
+            }
+        }
+    } else if (healthyDetections.length === results.length - results.filter(r => r.error).length) {
+        primaryDisease = 'Healthy';
+        primaryConfidence = healthyDetections.reduce((sum, h) => sum + h.confidence, 0) / healthyDetections.length;
+        consensusNote = '✓ All models agree: Leaf appears healthy';
+    }
+
+    return {
+        disease: primaryDisease,
+        confidence: primaryConfidence,
+        note: consensusNote,
+        diseaseCount: diseaseDetections.length,
+        healthyCount: healthyDetections.length
+    };
+}
+
+    async function analyzeLocalImage() {
+      const imageInput = document.getElementById('imageInput');
+      const analyzeBtn = document.getElementById('localAnalyzeBtn');
+      if (!imageInput.files || imageInput.files.length === 0) {
+        alert('Please select an image first.');
+        return;
+      }
+
+      // Disable button and show spinner
+      analyzeBtn.disabled = true;
+      analyzeBtn.innerHTML = '<div style="width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite;"></div><span>Analyzing...</span>';
+
+      const file = imageInput.files[0];
+      const reader = new FileReader();
+      reader.onloadend = async function() {
+        const base64Image = reader.result.split(',')[1];
+        
+        // Get active models based on plant selection
+        const plantName = PLANT_TYPES.find(p => p.id === selectedPlantType)?.name || 'All Plants';
+        const activeModels = getActiveModels();
+
+        console.log('Selected plant type:', selectedPlantType);
+        console.log('Active models count:', activeModels.length);
+        console.log('Active models:', activeModels.map(m => m.name));
+
+        // Show analysis in progress in the results panel
+        document.getElementById('res').innerHTML = `<div class="rc"><div class="t">Analyzing local image of ${plantName} with ${activeModels.length} AI models...</div><p style="color: var(--on-surface-variant); font-size: 14px;">Processing image...</p></div>`;
+
+        // Run analysis
+        try {
+          const results = await Promise.all(activeModels.map(model => infer(base64Image, model)));
+          const consensusData = calculateConsensus(results);
+          showMultiModelResults(results, null, base64Image, consensusData);
+        } catch (e) {
+          document.getElementById('res').innerHTML = `<div class="rc"><div class="t">Failed<span class="badge err">Error</span></div><p style="color: var(--on-surface-variant); font-size: 14px;">${e.message}</p></div>`;
+        } finally {
+          // Re-enable button and restore text
+          analyzeBtn.disabled = false;
+          analyzeBtn.innerHTML = 'Analyze Image';
+        }
+      }
+      reader.readAsDataURL(file);
+    }
+
+function clearAllData() {
+  if (confirm('⚠️ DANGER: Are you absolutely sure you want to delete ALL data? This will permanently erase everything, including:\n\n- All Diagnostic Logs\n- All Model Performance Feedback\n\nThis action is irreversible and data cannot be recovered.')) {
+    clearAnalyticsData();
+    resetModelFeedback();
+    alert('All application data has been permanently deleted.');
+  }
+}
+
+  </script>
 
   <script>
     // ==================== PRODUCTION CONFIGURATION ====================
@@ -1477,20 +1439,27 @@
           
           // Load model feedback from Firebase
           console.log('📥 Loading model feedback from Firebase...');
-          const feedbackDoc = await db.collection('modelFeedback').doc('current').get();
-          console.log('📄 Feedback document exists:', feedbackDoc.exists);
-          
-          if (feedbackDoc.exists) {
-            const docData = feedbackDoc.data();
-            console.log('📦 Document data:', docData);
-            analyticsData.modelFeedback = docData.feedback || {};
-            console.log('✅ Loaded model feedback from Firebase');
-            console.log('📊 Model feedback data:', analyticsData.modelFeedback);
-            console.log('📊 Number of models with feedback:', Object.keys(analyticsData.modelFeedback).length);
-          } else {
-            console.warn('⚠️ Model feedback document does not exist in Firebase');
-            analyticsData.modelFeedback = {};
+          try {
+            const feedbackDoc = await db.collection('modelFeedback').doc('current').get();
+            console.log('📄 Feedback document exists:', feedbackDoc.exists);
+            
+            if (feedbackDoc.exists) {
+              const docData = feedbackDoc.data();
+              console.log('📦 Document data:', docData);
+              analyticsData.modelFeedback = docData.feedback || {};
+              console.log('✅ Loaded model feedback from Firebase');
+              console.log('📊 Model feedback data:', analyticsData.modelFeedback);
+              console.log('📊 Number of models with feedback:', Object.keys(analyticsData.modelFeedback).length);
+            } else {
+              console.warn('⚠️ Model feedback document does not exist in Firebase');
+              analyticsData.modelFeedback = {};
+            }
+          } catch (fbError) {
+            console.error('❌ Failed to load model feedback (continuing with logs):', fbError);
           }
+          
+          // Initialize feedback structure to ensure all models exist
+          initializeModelFeedback();
           
           // Update dashboard and charts after loading
           updateAnalyticsDashboard();
@@ -1505,8 +1474,6 @@
         console.warn('⚠️ Firebase not enabled, loading from localStorage cache');
         loadFromLocalStorageCache();
       }
-      
-      initializeModelFeedback();
     }
     
     // Fallback: Load from localStorage cache
@@ -1525,9 +1492,13 @@
           }
           console.log('📦 Loaded', analyticsData.logs.length, 'records from localStorage cache');
           
+          // Initialize feedback structure
+          initializeModelFeedback();
+          
           // Update dashboard and charts after loading from cache
           updateAnalyticsDashboard();
           updateHistoryPanel();
+          updateModelPrecisionChart();
         } catch (e) {
           console.error('Failed to load from localStorage:', e);
           analyticsData.logs = [];
@@ -1607,11 +1578,10 @@
       }
       
       try {
-        // Store complete entry with image in Firestore
-        // Note: For large datasets, consider compressing images or using thumbnails
-        const firestoreEntry = { ...logEntry };
+        // Store complete entry without image in Firestore
+        const { imageBase64, ...firestoreEntry } = logEntry;
         
-        // Add to Firestore with full image data
+        // Add to Firestore without image data
         const docRef = await db.collection('diseaseAnalytics').add({
           ...firestoreEntry,
           uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -1619,7 +1589,7 @@
         });
         
         console.log('✅ Saved to Firebase with ID:', docRef.id);
-        console.log('ℹ️ Image stored as base64 in Firestore (Storage requires paid plan)');
+        console.log('ℹ️ Image not stored in Firestore. Logs only.');
         
         return docRef.id;
       } catch (e) {
@@ -1870,9 +1840,9 @@
     
     // Model Precision Chart based on user feedback
     function updateModelPrecisionChart() {
-      const ctx = document.getElementById('modelPrecisionChart');
-      if (!ctx) {
-        console.warn('⚠️ Chart canvas not found');
+      const container = document.getElementById('modelPrecisionChartContainer');
+      if (!container) {
+        console.warn('⚠️ Chart container not found');
         return;
       }
       
@@ -1901,7 +1871,6 @@
           analyticsData.charts.modelPrecision.destroy();
           analyticsData.charts.modelPrecision = null;
         }
-        const container = ctx.parentElement;
         container.innerHTML = '<p style="text-align: center; padding: 60px 20px; color: var(--on-surface-variant); font-size: 14px;">📊 No feedback data yet.<br><br>Rate model predictions using ✓ Correct or ✗ Wrong buttons to see precision statistics.</p><canvas id="modelPrecisionChart" style="width: 100%; height: 100%;"></canvas>';
         console.log('ℹ️ No feedback data available for chart');
         return;
@@ -1909,28 +1878,11 @@
       
       console.log('📊 Chart data - Models:', modelNames.length, '| Precision:', precisionData);
       
-      // Get the correct canvas element (it might have been replaced with message)
+      // Ensure canvas exists (it might have been replaced with message)
       let canvas = document.getElementById('modelPrecisionChart');
-      const container = canvas?.parentElement;
       
-      // If canvas doesn't exist or is hidden, recreate the container
-      if (!canvas || !canvas.getContext) {
+      if (!canvas) {
         console.log('🔄 Recreating chart canvas...');
-        if (container) {
-          // Clear any message and recreate canvas
-          container.innerHTML = '<canvas id="modelPrecisionChart" style="width: 100%; height: 100%;"></canvas>';
-          canvas = document.getElementById('modelPrecisionChart');
-        }
-        if (!canvas) {
-          console.error('❌ Failed to recreate canvas');
-          return;
-        }
-      }
-      
-      // If there's a message paragraph, hide it and show canvas
-      const messagePara = container?.querySelector('p');
-      if (messagePara) {
-        console.log('🔄 Replacing message with chart...');
         container.innerHTML = '<canvas id="modelPrecisionChart" style="width: 100%; height: 100%;"></canvas>';
         canvas = document.getElementById('modelPrecisionChart');
       }
@@ -2557,13 +2509,14 @@
     }
     
     // Clear analytics data
-    function clearAnalyticsData() {
-      if (confirm('Are you sure you want to clear all analytics data? This cannot be undone.')) {
-        analyticsData.logs = [];
-        saveAnalytics();
-        updateAnalyticsDashboard();
-        alert('Analytics data cleared');
+function clearAnalyticsData() {
+      if (!confirm('Are you sure you want to clear the Diagnostic Log? This will permanently delete all analysis history and reset the charts. This action cannot be undone.')) {
+        return;
       }
+      analyticsData.logs = [];
+      saveAnalytics();
+      updateAnalyticsDashboard();
+      updateHistoryPanel();
     }
     
     // Disease name aliases and variations for improved matching accuracy
@@ -3079,7 +3032,7 @@
           document.getElementById('visualBtn').disabled = false;
           document.getElementById('toggleBtn').disabled = false;
           document.getElementById('streamPlaceholder').textContent = 'Ready. Click "Start stream" to preview.';
-          document.getElementById('cs').textContent = 'Camera ready';
+          document.getElementById('cs').textContent = 'Camera: Ready';
           document.getElementById('camDot').classList.remove('offline');
         } else {
           console.error('Connection failed: ESP32 not reachable at', cleanIP);
@@ -3087,7 +3040,7 @@
           document.getElementById('connStatus').style.color = 'var(--error)';
           document.getElementById('streamPlaceholder').textContent =
             'Connection failed. Check:\n1. ESP32 is powered on\n2. WiFi connected\n3. IP is correct: ' + cleanIP;
-          document.getElementById('cs').textContent = 'Camera offline';
+          document.getElementById('cs').textContent = 'Camera: Offline';
           document.getElementById('camDot').classList.add('offline');
         }
       })();
@@ -3096,7 +3049,7 @@
     function startStream() {
       const streamBtn = document.getElementById('toggleBtn');
       streamBtn.disabled = true; // Disable button during connection attempt
-      streamBtn.textContent = 'Starting stream...';
+      streamBtn.textContent = 'Starting...';
       
       document.getElementById('connStatus').textContent = 'Connecting to stream...';
       document.getElementById('connStatus').style.color = 'var(--on-surface-variant)';
@@ -3125,11 +3078,11 @@
         console.log('✅ Stream started successfully');
         document.getElementById('connStatus').textContent = '✅ Stream connected';
         document.getElementById('connStatus').style.color = 'var(--success)';
-        streamBtn.textContent = 'Stop stream';
+        streamBtn.textContent = 'Stop Live View';
         streamBtn.disabled = false;
         streamActive = true;
 
-        document.getElementById('cs').textContent = 'Camera active';
+        document.getElementById('cs').textContent = 'Camera: Active';
         document.getElementById('camDot').classList.remove('offline');
         renderCtx(['Visual-only analysis. Sensors removed.']);
       };
@@ -3181,7 +3134,7 @@
       streamBtn.textContent = 'Stop stream';
       streamBtn.disabled = false;
       streamActive = true;
-      document.getElementById('cs').textContent = 'Camera active (polling)';
+      document.getElementById('cs').textContent = 'Camera: Active (polling)';
       document.getElementById('camDot').classList.remove('offline');
 
       pollIntervalId = setInterval(() => {
@@ -3210,14 +3163,14 @@
         streamImg.style.display = 'none';
         placeholder.style.display = 'block';
         placeholder.textContent = 'Stream paused';
-        streamBtn.textContent = 'Start stream';
+        streamBtn.textContent = 'Start Live View';
         streamActive = false;
 
         // stop polling fallback if active
         if (pollIntervalId) { clearInterval(pollIntervalId); pollIntervalId = null; }
         
         // Update status
-        document.getElementById('cs').textContent = 'Camera paused';
+        document.getElementById('cs').textContent = 'Camera: Paused';
         document.getElementById('camDot').classList.add('offline');
       } else {
         // Start stream
@@ -3312,9 +3265,9 @@
       PLANT_TYPES.forEach(plant => {
         const isSelected = selectedPlantType === plant.id;
         html += '<button onclick="selectPlant(\'' + plant.id + '\')" style="';
-        html += 'padding: 12px; border: 2px solid ' + (isSelected ? 'var(--primary)' : 'var(--outline)') + '; ';
-        html += 'background: ' + (isSelected ? 'rgba(26, 115, 232, 0.1)' : 'var(--surface)') + '; ';
-        html += 'border-radius: 8px; cursor: pointer; transition: all 0.2s; text-align: center;';
+        html += 'padding: 16px; border: 1px solid ' + (isSelected ? 'var(--primary)' : 'var(--outline-variant)') + ' !important; ';
+        html += 'background: ' + (isSelected ? 'var(--primary-container)' : 'var(--surface)') + ' !important; ';
+        html += 'border-radius: 16px !important; cursor: pointer; transition: all 0.2s; text-align: center;';
         html += '" id="plant_' + plant.id + '">';
         html += '<div style="font-size: 24px; margin-bottom: 4px;">' + plant.icon + '</div>';
         html += '<div style="font-size: 12px; font-weight: 600; color: var(--on-surface);">' + plant.name + '</div>';
@@ -3334,8 +3287,8 @@
         const btn = document.getElementById('plant_' + plant.id);
         if (btn) {
           const isSelected = plant.id === plantId;
-          btn.style.border = '2px solid ' + (isSelected ? 'var(--primary)' : 'var(--outline)');
-          btn.style.background = isSelected ? 'rgba(26, 115, 232, 0.1)' : 'var(--surface)';
+          btn.style.border = '1px solid ' + (isSelected ? 'var(--primary)' : 'var(--outline-variant)') + ' !important';
+          btn.style.background = (isSelected ? 'var(--primary-container)' : 'var(--surface)') + ' !important';
         }
       });
       
@@ -3711,154 +3664,13 @@
           console.log('Active models:', activeModels.map(m => m.name));
           
           // Run active models simultaneously
-          const modelPromises = activeModels.map(async (model) => {
-            try {
-              console.log('Calling model:', model.name);
-              const rf = await fetch('https://serverless.roboflow.com/' + model.id + '?api_key=' + K, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: b64
-              });
-              
-              if (!rf.ok) {
-                throw Error('HTTP ' + rf.status);
-              }
-              
-              const data = await rf.json();
-              console.log(model.name + ' response:', data);
-              
-              // Apply class name mapping if model returns numeric IDs
-              if (CLASS_NAME_MAPPING[model.id] && data.predictions) {
-                data.predictions = data.predictions.map(pred => {
-                  if (CLASS_NAME_MAPPING[model.id][pred.class]) {
-                    console.log('Mapping class ID "' + pred.class + '" to "' + CLASS_NAME_MAPPING[model.id][pred.class] + '" for ' + model.name);
-                    return { ...pred, class: CLASS_NAME_MAPPING[model.id][pred.class] };
-                  }
-                  return pred;
-                });
-              }
-              
-              return { name: model.name, type: model.type, data: data, error: null, modelId: model.id };
-            } catch (e) {
-              console.error(model.name + ' error:', e);
-              return { name: model.name, type: model.type, data: null, error: e.message, modelId: model.id };
-            }
-          });
+          const modelPromises = activeModels.map(model => infer(b64, model));
           
           try {
             const results = await Promise.all(modelPromises);
             console.log('All models completed:', results);
             
-            // SMART CONSENSUS ALGORITHM - Prioritize disease over healthy
-            const diseaseDetections = [];
-            const healthyDetections = [];
-            
-            results.forEach(r => {
-              if (r.error) return;
-              
-              let disease = '';
-              let conf = 0;
-              
-              if (r.type === 'detection' && r.data.predictions && r.data.predictions.length > 0) {
-                const top = r.data.predictions.reduce((a, b) => a.confidence > b.confidence ? a : b);
-                disease = top.class;
-                conf = top.confidence * 100;
-                
-                // Log warning for invalid class names
-                if (!disease || disease === '' || /^\d+$/.test(disease)) {
-                  console.warn('⚠️ Model "' + r.name + '" returned invalid class name:', disease);
-                  console.warn('Full prediction object:', top);
-                  console.warn('All predictions:', r.data.predictions);
-                  // Skip invalid detections from consensus
-                  return;
-                }
-              } else if (r.type === 'classification' && (r.data.top || r.data.predicted_classes)) {
-                disease = r.data.top || r.data.predicted_classes[0];
-                conf = (r.data.confidence || 0) * 100;
-              }
-              
-              const diseaseNormalized = (disease || '').toLowerCase().trim();
-              
-              if (conf > 0 && disease) {
-                if (diseaseNormalized === 'healthy' || diseaseNormalized === 'no detection') {
-                  healthyDetections.push({ model: r.name, disease, confidence: conf });
-                } else {
-                  diseaseDetections.push({ model: r.name, disease, confidence: conf });
-                }
-              }
-            });
-            
-            console.log('Disease detections:', diseaseDetections);
-            console.log('Healthy detections:', healthyDetections);
-            
-            // Consensus rules:
-            // 1. If ANY model detects disease with >40% confidence, override "healthy" classifications
-            // 2. If 2+ models detect the SAME disease, that takes priority
-            // 3. Only mark as healthy if ALL models agree or no diseases detected
-            let primaryDisease = 'Healthy';
-            let primaryConfidence = 0;
-            let consensusNote = '';
-            
-            if (diseaseDetections.length > 0) {
-              // Count disease occurrences
-              const diseaseVotes = {};
-              diseaseDetections.forEach(d => {
-                const key = d.disease.toLowerCase();
-                if (!diseaseVotes[key]) {
-                  diseaseVotes[key] = { disease: d.disease, votes: 0, totalConf: 0, models: [] };
-                }
-                diseaseVotes[key].votes++;
-                diseaseVotes[key].totalConf += d.confidence;
-                diseaseVotes[key].models.push(d.model);
-              });
-              
-              // Find disease with highest votes OR highest confidence
-              let bestDisease = null;
-              let bestScore = 0;
-              
-              for (const key in diseaseVotes) {
-                const vote = diseaseVotes[key];
-                const avgConf = vote.totalConf / vote.votes;
-                // Score = votes * 50 + avgConfidence (prioritize agreement)
-                const score = (vote.votes * 50) + avgConf;
-                
-                if (score > bestScore) {
-                  bestScore = score;
-                  bestDisease = vote;
-                }
-              }
-              
-              if (bestDisease) {
-                primaryDisease = bestDisease.disease;
-                primaryConfidence = bestDisease.totalConf / bestDisease.votes;
-                
-                if (healthyDetections.length > 0) {
-                  consensusNote = '⚠️ Consensus Override: ' + diseaseDetections.length + ' model(s) detected disease, ' + 
-                                  healthyDetections.length + ' said healthy. Prioritizing disease detection.';
-                  console.warn(consensusNote);
-                }
-                
-                if (bestDisease.votes > 1) {
-                  consensusNote += ' ✓ ' + bestDisease.votes + ' models agree on "' + primaryDisease + '"';
-                }
-              }
-            } else if (healthyDetections.length === results.length - results.filter(r => r.error).length) {
-              // All working models agree on healthy
-              primaryDisease = 'Healthy';
-              primaryConfidence = healthyDetections.reduce((sum, h) => sum + h.confidence, 0) / healthyDetections.length;
-              consensusNote = '✓ All models agree: Leaf appears healthy';
-            }
-            
-            console.log('Consensus:', primaryDisease, primaryConfidence + '%', consensusNote);
-            
-            // Prepare consensus data for display
-            const consensusData = {
-              disease: primaryDisease,
-              confidence: primaryConfidence,
-              note: consensusNote,
-              diseaseCount: diseaseDetections.length,
-              healthyCount: healthyDetections.length
-            };
+            const consensusData = calculateConsensus(results);
             
             // Skip legacy Gemini API call
             geminiRecommendation = null;
@@ -4076,7 +3888,7 @@
       client.send(message);
 
       pumpOn = !pumpOn;
-      document.getElementById('pumpBtn').innerText = pumpOn ? 'Turn Pump OFF' : 'Turn Pump ON';
+      document.getElementById('pumpBtn').innerText = pumpOn ? 'Deactivate Pump' : 'Activate Pump';
     }
   </script>
 </body>

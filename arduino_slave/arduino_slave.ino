@@ -1,4 +1,6 @@
 // Communication with ESP32 will be over the main hardware serial port (TX/RX pins 0, 1)
+#include <Arduino.h>
+#include <string.h>
 // const int rxPin = 8;
 // const int txPin = 9;
 // SoftwareSerial espSerial(rxPin, txPin); // RX, TX
