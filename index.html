@@ -113,6 +113,12 @@
       top: 0; right: 0; bottom: 0; left: 0;
       background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9IndoaXRlIiBmaWxsLW9wYWNpdHk9IjAuMSIvPjwvc3ZnPg==');
       opacity: 0.3;
+      pointer-events: none; /* allow clicks through the decorative overlay */
+      z-index: 0;
+    }
+    .hero > * {
+      position: relative;
+      z-index: 1;
     }
     .hero h1 {
       font-family: var(--font-sans);
@@ -410,47 +416,206 @@
         transform: translateY(0);
       }
     }
-  </style>
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 24px;
+    }
+    section.grid {
+      grid-template-columns: 2fr 1fr; /* Make the first column (stream) wider */
+    }
+    .sg {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 992px) {
+      section.grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 12px;
+        -webkit-text-size-adjust: 100%; /* Prevent font scaling on iOS */
+      }
+      .wrap {
+        gap: 16px;
+      }
+      .hero {
+        padding: 24px 16px;
+        text-align: center;
+      }
+      .hero h1 {
+        font-size: 1.5rem; /* 24px */
+      }
+      .hero p {
+        font-size: 0.9rem; /* 14px */
+      }
+      .card {
+        padding: 16px;
+      }
+      h2 {
+        font-size: 1.25rem; /* 20px */
+      }
+      .grid, .analytics-grid, .sg, .stats-grid, .status {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .ip-config {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .ip-config input, .ip-config button {
+        width: 100%;
+        min-width: 0;
+      }
+      .actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .actions .btn {
+        width: 100%;
+      }
+      #plantSelector {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 8px;
+      }
+      .head {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+       .head > div {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .head > div > .btn {
+        flex-grow: 1;
+      }
+      .history-panel .card {
+        flex-direction: column;
+      }
+      .history-panel .card .history-image {
+        max-width: 100%;
+        height: auto;
+      }
+
+      /* Responsive Table for Results */
+      .results-table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      .results-table thead {
+        display: none;
+      }
+      .results-table tr { 
+        display: block;
+        border: 1px solid var(--outline-variant);
+        margin-bottom: 1rem;
+        border-radius: 8px;
+        padding: 8px;
+      }
+      .results-table td { 
+        display: block;
+        border: none;
+        border-bottom: 1px solid var(--outline);
+        position: relative;
+        padding-left: 50% !important; 
+        text-align: right;
+        padding-top: 12px !important;
+        padding-bottom: 12px !important;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+      }
+      .results-table td:before { 
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        left: 12px;
+        width: 45%; 
+        padding-right: 10px; 
+        white-space: nowrap;
+        text-align: left;
+        font-weight: bold;
+        color: var(--on-surface);
+        content: attr(data-label);
+      }
+      .results-table td:last-child {
+        border-bottom: 0;
+      }
+      .results-table td > div { /* for the feedback buttons */
+        width: 100%;
+      }
+
+    </style>
 </head>
 <body>
   <main class="wrap">
     <section class="hero">
       <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div>
-          <p>Advanced Crop Diagnostics Platform</p>
-          <h1>AgriSentry: AI-Powered Crop Analysis</h1>
-          <p>Real-time analysis, AI-driven insights, and sensor integration.</p>
-        </div>
-      </div>
-    </section>
-
-    <div class="ip-config">
-      <span style="font-size: 14px; color: var(--on-surface-variant); font-weight: 500;">ESP32 Camera IP:</span>
-      <input type="text" id="ipInput" placeholder="10.180.248.XXX" value="10.180.248.33">
-      <button onclick="setIP()">Connect</button>
-      <span id="connStatus" style="font-size: 13px; color: var(--on-surface-variant);"></span>
-    </div>
-
-    <section class="status">
-      <div class="chip"><span class="dot" id="camDot"></span><span id="cs" style="font-weight: 500;">Camera Status: Offline</span></div>
-      <div class="chip"><span class="dot" id="aiDot"></span><span style="font-weight: 500;">AI Status: Ready</span></div>
-      <div class="chip"><span style="color: var(--primary); margin-right: 8px;">🕒</span><span id="ts" style="font-family: monospace; font-size: 15px;">--:--:--</span></div>
-    </section>
+                <div>
+                  <p class="translatable">Advanced Crop Diagnostics Platform</p>
+                  <h1 class="translatable">Agri-Nigrani: Crop Analysis</h1>
+                  <p class="translatable">Real-time analysis, AI-driven insights, and sensor integration.</p>
+                </div>
+                <div id="languageSelector" style="display: flex; gap: 8px; align-items: center;">
+                  <button class="btn sec" onclick="translateToBangla()" title="Switch to Bangla">বাংলা</button>
+                  <button class="btn sec" onclick="translateToEnglish()" title="Switch to English">ENGLISH</button>
+                </div>
+              </div>
+            </section>
+        
+            <article class="card">
+              <div class="head">
+                <h2 class="translatable">SYSTEM DASHBOARD</h2>
+                <button class="btn sec" onclick="location.reload()"><span>🔄</span> <span class="translatable">Restart</span></button>
+              </div>
+              <section class="status">
+                <div class="chip"><span class="dot offline" id="espDot"></span><span id="espStatus" class="translatable">ESP</span></div>
+                <div class="chip"><span class="dot offline" id="camDot"></span><span id="cs" class="translatable">Camera</span></div>
+                <div class="chip"><span class="dot offline" id="mqttDot"></span><span id="mqttStatus" class="translatable">MQTT</span></div>
+                <div class="chip"><span class="dot offline" id="firebaseDot"></span><span id="firebaseText" class="translatable">Firebase</span></div>
+              </section>
+            </article>
 
     <section class="grid">
       <article class="card">
         <div class="head">
-          <h2>Live Camera Stream</h2>
-          <span class="pill">Live</span>
+          <h2 class="translatable">Live Camera Stream</h2>
+          <span class="pill translatable">Live</span>
+        </div>
+        <div class="ip-config" style="margin-bottom: 24px; border: none; padding: 0; box-shadow: none; background: transparent;">
+          <span style="font-size: 14px; color: var(--on-surface-variant); font-weight: 500;" class="translatable">ESP32 Camera IP:</span>
+          <input type="text" id="ipInput" placeholder="10.180.248.XXX" value="10.180.248.33">
+          <button onclick="setIP()" class="translatable">Connect</button>
+          <span id="connStatus" style="font-size: 13px; color: var(--on-surface-variant);"></span>
         </div>
         <div class="frame">
           <img id="str" alt="Stream" style="display: none;">
-          <p id="streamPlaceholder" style="color: var(--on-surface-variant); font-size: 14px;">Enter ESP32 IP address above</p>
+          <p id="streamPlaceholder" style="color: var(--on-surface-variant); font-size: 14px;" class="translatable">Enter ESP32 IP address above</p>
         </div>
         
         <!-- Plant Selection -->
         <div style="padding: 20px; background: var(--surface-container); border-radius: 12px; margin-top: 24px;">
-          <h4 style="margin: 0 0 12px 0; color: var(--primary); font-size: 14px; font-weight: 600;">
+          <h4 style="margin: 0 0 12px 0; color: var(--primary); font-size: 14px; font-weight: 600;" class="translatable">
             🌱 Select Crop for Analysis
           </h4>
           <div id="plantSelector" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px;">
@@ -458,45 +623,44 @@
           </div>
           <div id="selectedPlantInfo" style="margin-top: 12px; padding: 12px; background: var(--surface); border-radius: 8px; border-left: 4px solid var(--primary); box-shadow: var(--elevation-1);">
             <div style="font-size: 13px; font-weight: 500; color: var(--on-surface); margin-bottom: 4px;">
-              Selected: <span id="selectedPlantName" style="color: var(--primary);">🌿 All Plants</span>
+              <span class="translatable">Selected:</span> <span id="selectedPlantName" style="color: var(--primary);">🌿 All Plants</span>
             </div>
             <div style="font-size: 12px; color: var(--on-surface-variant);" id="selectedPlantDesc">Using all 7 AI models for comprehensive analysis</div>
           </div>
         </div>
         
         <div class="actions">
-          <button id="visualBtn" class="btn pri" onclick="visualOnly()" disabled><span>🔍</span> Analyze Stream</button>
-          <button id="toggleBtn" class="btn sec" onclick="toggleStream()" disabled><span>📹</span> Start Stream</button>
+          <button id="visualBtn" class="btn pri" onclick="visualOnly()" disabled><span >🔍</span> <span class="translatable">Analyze Stream</span></button>
+          <button id="toggleBtn" class="btn sec" onclick="toggleStream()" disabled><span >📹</span> <span class="translatable">Start Stream</span></button>
         </div>
       </article>
 
       <article class="card">
         <div class="head">
-          <h2>Analyze Local Image</h2>
-          <span class="pill">Local</span>
+          <h2 class="translatable">Analyze Local Image</h2>
+          <span class="pill translatable">Local</span>
         </div>
         <div id="localImagePreview" class="frame" style="display: none;min-height: 240px;"></div>
-        <p id="localImagePlaceholder" style="color: var(--on-surface-variant); font-size: 14px; text-align: center;">Select an image to analyze</p>
+        <p id="localImagePlaceholder" style="color: var(--on-surface-variant); font-size: 14px; text-align: center;" class="translatable">Select an image to analyze</p>
         <div class="actions">
           <input type="file" id="imageInput" accept="image/*" capture="environment" style="display: none;">
-          <button class="btn sec" onclick="document.getElementById('imageInput').click()">Choose Image</button>
-          <button id="localAnalyzeBtn" class="btn pri" onclick="analyzeLocalImage()" disabled>Analyze Image</button>
+          <button class="btn sec translatable" onclick="document.getElementById('imageInput').click()">Choose Image</button>
+          <button id="localAnalyzeBtn" class="btn pri translatable" onclick="analyzeLocalImage()" disabled>Analyze Image</button>
         </div>
       </article>
 
       <article class="card">
         <div class="head">
-          <h2>Diagnostic Results</h2>
-          <span class="pill">AI</span>
+          <h2 class="translatable">Diagnostic Results</h2>
         </div>
         <div id="res" class="results">
           <div class="rc">
-            <div class="t">Awaiting Analysis</div>
-            <p style="color: var(--on-surface-variant); font-size: 14px; margin-bottom: 16px;">Connect to a device and then run diagnostics.</p>
+            <div class="t translatable">Awaiting Analysis</div>
+            <p style="color: var(--on-surface-variant); font-size: 14px; margin-bottom: 16px;" class="translatable">Connect to a device and then run diagnostics.</p>
             
             <!-- Disease Detection Models Display -->
             <div style="background: rgba(26, 115, 232, 0.05); border-radius: 8px; padding: 16px; margin-top: 12px;">
-              <h4 style="margin: 0 0 12px 0; color: var(--primary); font-size: 14px; font-weight: 600;">
+              <h4 style="margin: 0 0 12px 0; color: var(--primary); font-size: 14px; font-weight: 600;" class="translatable">
                 Active Detection Models
               </h4>
               <div id="modelsList" style="display: flex; flex-direction: column; gap: 8px;">
@@ -506,54 +670,40 @@
           </div>
         </div>
         <div id="ctx" class="ctx">
-          <h4>Context notes</h4>
+          <h4 class="translatable">Context notes</h4>
           <ul>
-            <li>Awaiting connection...</li>
+            <li class="translatable">Awaiting connection...</li>
           </ul>
         </div>
         
-        <!-- AI Verification Section -->
-        <div id="aiRecommendations" style="display: none; margin-top: 16px; padding: 16px; background: rgba(26, 115, 232, 0.05); border-radius: 8px; border-left: 4px solid var(--primary);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h4 style="margin: 0; color: var(--primary); display: flex; align-items: center; gap: 8px;">
-              Consolidated AI Verdict
-              <span id="aiModel" style="font-size: 11px; background: rgba(26, 115, 232, 0.1); padding: 2px 8px; border-radius: 4px; font-weight: 500;">Gemini</span>
-            </h4>
-            <button class="btn sec" onclick="copyAIAnalysis()" style="padding: 4px 12px; font-size: 12px;">📋 Copy</button>
-          </div>
-          <div id="aiAnalysisContent" style="white-space: pre-wrap; font-size: 14px; line-height: 1.6; color: var(--on-surface);"></div>
-          <div id="aiLoading" style="display: none; text-align: center; padding: 20px;">
-            <div style="display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(26, 115, 232, 0.3); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite;"></div>
-            <p style="margin-top: 8px; color: var(--on-surface-variant);">AI is verifying 10 model results...</p>
-          </div>
-        </div>
+        <!-- AI Verification Section Removed -->
       </article>
     </section>
 
     <article class="card">
       <div class="head">
-        <h2>Environment Monitor</h2>
-        <div class="chip"><span class="dot" id="arduinoDot"></span><span id="arduinoStatus">Not Connected</span></div>
+        <h2 class="translatable">Environment Monitor</h2>
+        <div class="chip"><span class="dot" id="arduinoDot"></span><span id="arduinoStatus" class="translatable">Not Connected</span></div>
       </div>
       <div class="sg">
         <div class="sc">
-          <div class="l">Temperature</div>
+          <div class="l translatable">Temperature</div>
           <div class="v" id="temperature">--</div>
           <div class="u">°C</div>
         </div>
         <div class="sc">
-          <div class="l">Humidity</div>
+          <div class="l translatable">Humidity</div>
           <div class="v" id="humidity">--</div>
           <div class="u">%</div>
         </div>
         <div class="sc">
-          <div class="l">Soil Moisture</div>
+          <div class="l translatable">Soil Moisture</div>
           <div class="v" id="soilMoisture">--</div>
           <div class="u"></div>
         </div>
       </div>
       <div class="actions">
-        <button id="pumpBtn" class="btn pri" onclick="togglePump()">Toggle Pump</button>
+        <button id="pumpBtn" class="btn pri" onclick="togglePump()"><span class="translatable">Toggle Pump</span></button>
       </div>
     </article>
 
@@ -561,46 +711,42 @@
 
     <article class="card">
       <div class="head">
-        <h2>Platform Analytics</h2>
+        <h2 class="translatable">Platform Analytics</h2>
         <div style="display: flex; gap: 8px; align-items: center;">
-          <button class="btn sec" id="aiToggleBtn" onclick="toggleAIAnalysis()" title="Enable/Disable AI-powered analysis">
-            <span id="aiToggleIcon">🤖</span>
-            <span id="aiToggleText">AI: ON</span>
-          </button>
-          <button class="btn err" onclick="clearAllData()">🗑️ Clear All Data</button>
+
         </div>
       </div>
       
       <div class="stats-grid" id="statsGrid">
         <div class="stat-box">
-          <div class="label">Total Scans</div>
+          <div class="label translatable">Total Scans</div>
           <div class="value" id="totalScans">0</div>
         </div>
         <div class="stat-box">
-          <div class="label">Diseases Detected</div>
+          <div class="label translatable">Diseases Detected</div>
           <div class="value" id="diseasesFound">0</div>
           <div class="change up" id="diseaseChange">--</div>
         </div>
         <div class="stat-box">
-          <div class="label">Avg. Confidence</div>
+          <div class="label translatable">Avg. Confidence</div>
           <div class="value" id="avgConfidence">0%</div>
         </div>
         <div class="stat-box">
-          <div class="label">Threat Level</div>
+          <div class="label translatable">Threat Level</div>
           <div class="value" id="riskLevel">Low</div>
         </div>
       </div>
 
       <div class="analytics-grid">
         <div class="card" style="padding: 12px;">
-          <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--on-surface-variant);">Disease Distribution</h3>
+          <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--on-surface-variant);" class="translatable">Disease Distribution</h3>
           <div class="chart-container">
             <canvas id="diseaseChart"></canvas>
           </div>
         </div>
         
         <div class="card" style="padding: 12px;">
-          <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--on-surface-variant);">Confidence Trend</h3>
+          <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--on-surface-variant);" class="translatable">Confidence Trend</h3>
           <div class="chart-container">
             <canvas id="confidenceChart"></canvas>
           </div>
@@ -614,84 +760,83 @@
       <div style="margin-top: 16px;">
         <div class="card" style="padding: 20px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <h3 style="font-size: 16px; margin: 0; color: var(--primary); font-weight: 600;">🎯 Model Performance Feedback</h3>
+            <h3 style="font-size: 16px; margin: 0; color: var(--primary); font-weight: 600;" class="translatable">🎯 Model Performance Feedback</h3>
             <button onclick="resetModelFeedback()" style="background: var(--error); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px;">
-              <span>🗑️</span>
-              <span>Reset Feedback Data</span>
+              <span class="translatable">🗑️</span>
+              <span class="translatable">Reset Feedback Data</span>
             </button>
           </div>
           <div id="modelPrecisionChartContainer" style="height: 500px; width: 100%;">
             <canvas id="modelPrecisionChart"></canvas>
           </div>
-          <p style="margin-top: 12px; font-size: 12px; color: var(--on-surface-variant); text-align: center;">Rate model predictions to see real-world accuracy. Higher bars = better performance.</p>
+          <p style="margin-top: 12px; font-size: 12px; color: var(--on-surface-variant); text-align: center;" class="translatable">Rate model predictions to see real-world accuracy. Higher bars = better performance.</p>
         </div>
-      </div>
-    </article>
+      </article>
 
-    <article class="card">
-      <div class="head">
-        <h2>Diagnostic History</h2>
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <span class="firebase-status" id="firebaseStatus">
-            <span id="firebaseIcon">⚪</span>
-            <span id="firebaseText">Not connected</span>
-          </span>
-          <button class="btn sec" onclick="syncWithFirebase()">🔄 Sync</button>
-        </div>
-      </div>
-
-      <div class="card" style="padding: 12px; margin-bottom: 16px;">
-        <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--on-surface-variant);">Detection Timeline</h3>
-        <div class="timeline-container">
-          <canvas id="timelineChart"></canvas>
-        </div>
-      </div>
-
-      <div class="card" style="padding: 12px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-          <h3 style="font-size: 14px; margin: 0; color: var(--on-surface-variant);">Analysis Log</h3>
-          <div style="display: flex; gap: 8px;">
-            <button class="btn sec" onclick="loadFromFirebase()" style="padding: 8px 16px; font-size: 13px;">📥 Load</button>
-            <button class="btn sec" onclick="filterHistory('all')" style="padding: 8px 16px; font-size: 13px;">All</button>
-            <button class="btn sec" onclick="filterHistory('diseases')" style="padding: 8px 16px; font-size: 13px;">Diseases</button>
-            <button class="btn sec" onclick="filterHistory('healthy')" style="padding: 8px 16px; font-size: 13px;">Healthy</button>
-            <button class="btn pri" onclick="clearAnalyticsData()" style="padding: 8px 16px; font-size: 13px;">🗑️ Clear Diagnostic Log</button>
+      <article class="card">
+        <div class="head">
+          <h2 class="translatable">Diagnostic History</h2>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <span class="firebase-status" id="firebaseStatus">
+              <span id="firebaseIcon">⚪</span>
+              <span id="firebaseStatusText" class="translatable">Not connected</span>
+            </span>
+            <button class="btn sec" onclick="syncWithFirebase()"><span class="translatable">🔄 Sync</span></button>
           </div>
         </div>
-        <div class="history-panel" id="historyPanel">
-          <p style="text-align: center; color: var(--on-surface-variant); padding: 32px;">No diagnostic logs yet. Run your first analysis to get started.</p>
+
+        <div class="card" style="padding: 12px; margin-bottom: 16px;">
+          <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--on-surface-variant);" class="translatable">Detection Timeline</h3>
+          <div class="timeline-container">
+            <canvas id="timelineChart"></canvas>
+          </div>
         </div>
-      </div>
-    </article>
-  </main>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const cards = document.querySelectorAll('.card');
-      cards.forEach((card, index) => {
-        card.classList.add('card-enter');
-        card.style.animationDelay = `${index * 100}ms`;
+        <div class="card" style="padding: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 style="font-size: 14px; margin: 0; color: var(--on-surface-variant);" class="translatable">Analysis Log</h3>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn sec translatable" onclick="loadFromFirebase()" style="padding: 8px 16px; font-size: 13px;">📥 Load</button>
+              <button class="btn sec translatable" onclick="filterHistory('all')" style="padding: 8px 16px; font-size: 13px;">All</button>
+              <button class="btn sec translatable" onclick="filterHistory('diseases')" style="padding: 8px 16px; font-size: 13px;">Diseases</button>
+              <button class="btn sec translatable" onclick="filterHistory('healthy')" style="padding: 8px 16px; font-size: 13px;">Healthy</button>
+              <button class="btn pri" onclick="clearAnalyticsData()" style="padding: 8px 16px; font-size: 13px;"><span class="translatable">🗑️ Clear Diagnostic Log</span></button>
+            </div>
+          </div>
+          <div class="history-panel" id="historyPanel">
+            <p style="text-align: center; color: var(--on-surface-variant); padding: 32px;" class="translatable">No diagnostic logs yet. Run your first analysis to get started.</p>
+          </div>
+        </div>
+      </article>
+    </main>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const cards = document.querySelectorAll('.card');
+        cards.forEach((card, index) => {
+          card.classList.add('card-enter');
+          card.style.animationDelay = `${index * 100}ms`;
+        });
+
+        // Handle local image selection
+        document.getElementById('imageInput').addEventListener('change', (event) => {
+          const file = event.target.files[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const preview = document.getElementById('localImagePreview');
+            const placeholder = document.getElementById('localImagePlaceholder');
+            preview.innerHTML = `<img src="${e.target.result}" style="max-width:100%; max-height:400px; border-radius:8px;" alt="Selected image">`;
+            preview.style.display = 'block';
+            placeholder.style.display = 'none';
+            document.getElementById('localAnalyzeBtn').disabled = false;
+          };
+          reader.readAsDataURL(file);
+        });
       });
 
-      // Handle local image selection
-      document.getElementById('imageInput').addEventListener('change', (event) => {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const preview = document.getElementById('localImagePreview');
-          const placeholder = document.getElementById('localImagePlaceholder');
-          preview.innerHTML = `<img src="${e.target.result}" style="max-width:100%; max-height:400px; border-radius:8px;" alt="Selected image">`;
-          preview.style.display = 'block';
-          placeholder.style.display = 'none';
-          document.getElementById('localAnalyzeBtn').disabled = false;
-        };
-        reader.readAsDataURL(file);
-      });
-    });
-
-    
+      
 async function infer(base64Image, model) {
   try {
     console.log('Calling model:', model.name);
@@ -829,7 +974,7 @@ function calculateConsensus(results) {
 
       // Disable button and show spinner
       analyzeBtn.disabled = true;
-      analyzeBtn.innerHTML = '<div style="width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite;"></div><span>Analyzing...</span>';
+      analyzeBtn.innerHTML = '<div style="width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite;"></div><span>' + translateText('Analyzing...') + '</span>';
 
       const file = imageInput.files[0];
       const reader = new FileReader();
@@ -864,14 +1009,322 @@ function calculateConsensus(results) {
       reader.readAsDataURL(file);
     }
 
-function clearAllData() {
-  if (confirm('⚠️ DANGER: Are you absolutely sure you want to delete ALL data? This will permanently erase everything, including:\n\n- All Diagnostic Logs\n- All Model Performance Feedback\n\nThis action is irreversible and data cannot be recovered.')) {
-    clearAnalyticsData();
-    resetModelFeedback();
-    alert('All application data has been permanently deleted.');
-  }
-}
 
+
+  </script>
+
+
+  <!-- Translation feature removed -->
+  <script>
+    // Simple translation toggles (English <-> Bangla)
+    const TRANSLATIONS_BN = {
+      /* UI */
+      'Advanced Crop Diagnostics Platform': 'উন্নত ফসল নির্ণয়ের প্ল্যাটফর্ম',
+      'Agri-Nigrani: Crop Analysis': 'কৃষি-নিগ্রানি: ফসল বিশ্লেষণ',
+      'Real-time analysis, AI-driven insights, and sensor integration.': 'রিয়েল-টাইম বিশ্লেষণ, এআই-চালিত অন্তর্দৃষ্টি এবং সেন্সর ইন্টিগ্রেশন।',
+      'SYSTEM DASHBOARD': 'সিস্টেম ড্যাশবোর্ড',
+      'Restart': 'পুনরায় চালু করুন',
+      'ESP': 'ইএসপি',
+      'Camera': 'ক্যামেরা',
+      'MQTT': 'এমকিউটিটি',
+      'Firebase': 'ফায়ারবেস',
+      'Live Camera Stream': 'লাইভ ক্যামেরা স্ট্রিম',
+      'Live': 'লাইভ',
+      'ESP32 Camera IP:': 'ইএসপি৩২ ক্যামেরা আইপি:',
+      'Connect': 'সংযোগ করুন',
+      'Enter ESP32 IP address above': 'উপরের ইএসপি৩২ আইপি ঠিকানা লিখুন',
+      '🌱 Select Crop for Analysis': '🌱 বিশ্লেষণের জন্য ফসল নির্বাচন করুন',
+      'Selected:': 'নির্বাচিত:',
+      'Using all 7 AI models for comprehensive analysis': 'সম্পূর্ণ বিশ্লেষণের জন্য ৭টি এআই মডেল ব্যবহার করা হচ্ছে',
+      'Analyze Stream': 'স্ট্রিম বিশ্লেষণ করুন',
+      'Start Stream': 'স্ট্রিম শুরু করুন',
+      'Analyze Local Image': 'স্থানীয় চিত্র বিশ্লেষণ করুন',
+      'Local': 'স্থানীয়',
+      'Select an image to analyze': 'বিশ্লেষণের জন্য একটি চিত্র নির্বাচন করুন',
+      'Choose Image': 'চিত্র নির্বাচন করুন',
+      'Analyze Image': 'চিত্র বিশ্লেষণ করুন',
+      'Diagnostic Results': 'ডায়াগনস্টিক ফলাফল',
+      'Awaiting Analysis': 'বিশ্লেষণের জন্য অপেক্ষা করছে',
+      'Connect to a device and then run diagnostics.': 'একটি ডিভাইসের সাথে সংযোগ করুন এবং তারপর ডায়াগনস্টিক চালান।',
+      'Environment Monitor': 'পরিবেশ মনিটর',
+      'Not Connected': 'সংযুক্ত নয়',
+      'Temperature': 'তাপমাত্রা',
+      'Humidity': 'আর্দ্রতা',
+      'Soil Moisture': 'মাটির আর্দ্রতা',
+      'Toggle Pump': 'পাম্প চালু/বন্ধ করুন',
+      'Platform Analytics': 'প্ল্যাটফর্ম বিশ্লেষণ',
+      'Total Scans': 'মোট স্ক্যান',
+      'Diseases Detected': 'রোগ সনাক্ত',
+      'Avg. Confidence': 'গড় আত্মবিশ্বাস',
+      'Threat Level': 'হুমকির স্তর',
+      'Disease Distribution': 'রোগ বিতরণ',
+      'Confidence Trend': 'আত্মবিশ্বাস প্রবণতা',
+      'Diagnostic History': 'ডায়াগনস্টিক ইতিহাস',
+      'Not connected': 'সংযুক্ত নয়',
+      'Sync': 'সিঙ্ক',
+      'Detection Timeline': 'সনাক্তকরণ সময়রেখা',
+      'Analysis Log': 'বিশ্লেষণ লগ',
+      'Load': 'লোড',
+      'All': 'সব',
+      'Diseases': 'রোগ',
+      'Healthy': 'সুস্থ',
+      '🗑️ Clear Diagnostic Log': '🗑️ ডায়াগনস্টিক লগ মুছুন',
+      'No diagnostic logs yet. Run your first analysis to get started.': 'এখনও কোনও ডায়াগনস্টিক লগ নেই। শুরু করতে আপনার প্রথম বিশ্লেষণ চালান।',
+
+      /* Plants */
+      'All Plants (General)': 'সব ফসল (সাধারণ)',
+      'Rice': 'ধান',
+      'Wheat': 'গম',
+      'Chili/Pepper': 'মরিচ/কাঁটাবেল',
+      'Potato': 'আলু',
+      'Tomato': 'টমেটো',
+      'Eggplant/Brinjal': 'বেগুন/ব্রিনজাল',
+      'models': 'মডেল',
+
+      /* Models */
+      'Object Detection (YOLOv8)': 'অবজেক্ট সনাক্তকরণ (YOLOv8)',
+      'Rice Disease Detection (YOLOv8s)': 'ধান রোগ সনাক্তকরণ (YOLOv8s)',
+      'Wheat Disease (100% Accuracy)': 'গম রোগ (১০০% নির্ভুলতা)',
+      'Chili Plant Disease (81% mAP)': 'মরিচ গাছের রোগ (৮১% mAP)',
+      'Potato Disease (98.8% mAP)': 'আলু রোগ (৯৮.৮% mAP)',
+      'Tomato Disease (92.3% mAP)': 'টমেটো রোগ (৯২.৩% mAP)',
+      'Eggplant Disease (47.8% mAP)': 'বেগুন রোগ (৪৭.৮% mAP)',
+
+      /* Result / UI strings */
+      'Analyzing': 'বিশ্লেষণ করা হচ্ছে',
+      'with': 'সাথে',
+      'AI models': 'এআই মডেল',
+      'Multi-Model Analysis': 'বহু-মডেল বিশ্লেষণ',
+      'Captured Image': 'ধরা চিত্র',
+      'Image saved to Firebase Firestore': 'চিত্র ফায়ারবেসে সংরক্ষণ করা হয়েছে',
+      'Smart Consensus Decision': 'স্মার্ট সম্মত সিদ্ধান্ত',
+      'Final Verdict:': 'চূড়ান্ত সিদ্ধান্ত:',
+      'Model(s) Detected Disease': 'মডেল(গুলি) রোগ সনাক্ত করেছে',
+      'Model(s) Said Healthy': 'মডেল(গুলি) সুস্থ বলেছে',
+
+      /* Table headers and labels */
+      'Model': 'মডেল',
+      'Disease Detected': 'সনাক্ত রোগ',
+      'Confidence': 'আত্মবিশ্বাস',
+      'Recommended Treatment': 'প্রস্তাবিত চিকিৎসা',
+      'Your Feedback': 'আপনার প্রতিক্রিয়া',
+      'No detection': 'কোনো সনাক্তকরণ নেই',
+      'Unknown Disease': 'অজানা রোগ',
+
+      /* Badges */
+      'High': 'উচ্চ',
+      'Medium': 'মধ্য',
+      'Low': 'কম',
+      'Error': 'ত্রুটি',
+      'Invalid': 'অবৈধ',
+
+      /* Common diseases (subset) */
+      'Bacterial Spot': 'ব্যাকটেরিয়াল স্পট',
+      'Early Blight': 'প্রাথমিক ব্লাইট',
+      'Late Blight': 'পরবর্তী ব্লাইট',
+      'Leaf Mold': 'পাতা ছেঁড়া',
+      'Septoria Leaf Spot': 'সেপ্টোরিয়া লিফ স্পট',
+      'Spider Mites': 'মাকড়শা কীট',
+      'Target Spot': 'টার্গেট স্পট',
+      'Mosaic Virus': 'মোজাইক ভাইরাস',
+      'Yellow Leaf Curl Virus': 'হলুদ পাতার কার্ল ভাইরাস',
+      'Powdery Mildew': 'পাউডারি মিলডিউ',
+      'Rust': 'রস্ট',
+      'Anthracnose': 'অ্যানথ্রাকনোজ',
+      'Blight': 'ব্লাইট',
+      'Scab': 'স্ক্যাব',
+      'Wilt': 'উইল্ট',
+      'Downy Mildew': 'ডাউনি মিলডিউ',
+      'Alternaria': 'অলটারনারিয়া',
+      'Fusarium': 'ফুসারিয়াম',
+      'Damping Off': 'ডাম্পিং অফ',
+      'Fruit Rot': 'ফল পচা',
+      'Gray Mold': 'শুঁটকি ছত্রাক',
+      'Stem Rot': 'তনু পচা',
+      'Root Rot': 'মূল পচা',
+      'Collar Rot': 'কলার রট',
+      'Black Spot': 'কালো দাগ',
+      'Brown Spot': 'পর্ণ দাগ',
+      'Bacterial Wilt': 'ব্যাকটেরিয়াল উইল্ট',
+      'Cercospora Leaf Spot': 'সেরকস্পোরা লিফ স্পট',
+      'Sooty Mold': 'সুটি ছত্রাক',
+      'Leaf Blight': 'পাতা ব্লাইট',
+      'Southern Blight': 'সাদার্ন ব্লাইট',
+      'Verticillium Wilt': 'ভার্টিসিলিয়াম উইল্ট',
+      'Club Root': 'ক্লাব রুট',
+      'Black Rot': 'কালো পচা',
+      'White Rust': 'সাদা জং',
+      'Purple Blotch': 'বেগুনি দাগ',
+      'Soft Rot': 'নরম পচা',
+      'Cucumber Mosaic': 'শসার মোজাইক',
+      'Gummy Stem Blight': 'গামি স্টেম ব্লাইট',
+      'Angular Leaf Spot': 'অ্যাঙ্গুলার লিফ স্পট',
+      'Bacterial Canker': 'ব্যাকটেরিয়াল ক্যান্কার',
+      'Aphids': 'অ্যাফিডস',
+      'Whitefly': 'হোয়াইটফ্লাই',
+      'Thrips': 'থ্রিপস',
+      'Fruit Borer': 'ফল বোরার',
+      'Leaf Miner': 'পাতা খননকারী',
+      'Stem Borer': 'তনু বোরার',
+      'Cutworm': 'কাটওয়ার্ম',
+      'Nematodes': 'নেমাটোডস',
+
+      /* Runtime / status */
+      'Connecting...': 'সংযোগ করা হচ্ছে...',
+      'ESP32 reachable': 'ইএসপি৩২ পৌঁছেছে',
+      'Cannot reach ESP32 at': 'ইএসপি৩২ পৌঁছানো যাচ্ছে না',
+      'Ready. Click "Start stream" to preview.': 'প্রস্তুত। পূর্বরূপ দেখতে "স্টার্ট স্ট্রিম" ক্লিক করুন।',
+      'Connection failed. Check:\n1. ESP32 is powered on\n2. WiFi connected\n3. IP is correct: ': 'সংযোগ ব্যর্থ। যাচাই করুন:\n1. ইএসপি৩২ চালু আছে\n2. ওয়াইফাই সংযুক্ত আছে\n3. আইপি সঠিক: ',
+      '⏳ Loading...': 'লোড হচ্ছে...',
+      '📥 Load': 'লোড',
+      '❌ Failed to load image': 'চিত্র লোড ব্যর্থ হয়েছে',
+      '⏳ Syncing...': 'সিঙ্ক হচ্ছে...',
+      '🔄 Sync': 'সিঙ্ক',
+      'Starting...': 'শুরু হচ্ছে...',
+      'Connecting to stream...': 'স্ট্রিমে সংযোগ করা হচ্ছে...',
+      'Initializing stream...': 'স্ট্রিম প্রাথমিককরণ...',
+      'Stream connected': 'স্ট্রিম সংযুক্ত',
+      'Stop Live View': 'লাইভ ভিউ বন্ধ করুন',
+      'Stop stream': 'স্ট্রিম বন্ধ করুন',
+      'Start Live View': 'লাইভ ভিউ শুরু করুন',
+      'Stream paused': 'স্ট্রিম বিরত',
+      '✓ Marked as correct': '✓ সঠিক হিসেবে চিহ্নিত',
+      '✗ Marked as wrong': '✗ ভুল হিসেবে চিহ্নিত',
+      'Feedback recorded for': 'প্রতিক্রিয়া রেকর্ড করা হয়েছে',
+      'Analyzing...': 'বিশ্লেষণ চলছে...',
+      'Capturing and processing image': 'চিত্র ক্যাপচার এবং প্রক্রিয়াকরণ হচ্ছে',
+
+      /* Firebase */
+      'Firebase + AI enabled': 'ফায়ারবেস + এআই সক্রিয়',
+      'Local storage only': 'শুধুমাত্র লোকাল স্টোরেজ',
+
+      /* Feedback */
+      'Feedback recorded for ': 'প্রতিক্রিয়া রেকর্ড করা হয়েছে: ',
+      'No image available': 'কোনও চিত্র নেই',
+
+      /* Urgency/Severity */
+      'immediate': 'তাত्कालিক',
+      'immediate - remove infected plants': 'তাত্ক্ষণিক - আক্রান্ত গাছ অপসারণ করুন',
+      'within 24-48 hours': '২৪-৪৮ ঘণ্টার মধ্যে',
+      'within 24 hours': '২৪ ঘণ্টার মধ্যে',
+      'within 1 week': '১ সপ্তাহের মধ্যে',
+      'routine': 'সাধারণ',
+      'mild': 'মৃদু',
+      'moderate': 'মধ্য',
+      'severe': 'গুরুতর',
+      'severity': 'তীব্রতা',
+      'Connected': 'সংযুক্ত',
+      'Correct': 'সঠিক',
+      'Wrong': 'ভুল',
+      'Model:': 'মডেল:'
+    };
+
+    // Helper to get current language
+    function getLang() {
+      try { return localStorage.getItem('lang') || 'en'; } catch(e) { return 'en'; }
+    }
+
+    // Translate a single string if available
+    function translateText(text) {
+      if (!text || typeof text !== 'string') return text;
+      const lang = getLang();
+      if (lang === 'bn' && TRANSLATIONS_BN[text]) return TRANSLATIONS_BN[text];
+      return text;
+    }
+
+    // Small key-based getter used by some places (e.g., Gemini blocks)
+    function gl(key) {
+      const KEYMAP = {
+        diseaseExplanation: 'Disease Explanation',
+        severity: 'Severity',
+        preventiveMeasures: 'Preventive Measures',
+        organicTreatment: 'Organic Treatment',
+        chemicalTreatment: 'Chemical Treatment',
+        riskOfCropLoss: 'Risk of Crop Loss'
+      };
+      const english = KEYMAP[key] || key;
+      return translateText(english);
+    }
+
+    function applyTranslation(map) {
+      document.querySelectorAll('.translatable').forEach(el => {
+        const key = el.textContent.trim();
+        if (map[key]) el.textContent = map[key];
+      });
+    }
+
+    function translateToBangla() {
+      applyTranslation(TRANSLATIONS_BN);
+      try { localStorage.setItem('lang', 'bn'); } catch(e) { /* ignore */ }
+      const bnBtn = document.querySelector('#languageSelector button[onclick="translateToBangla()"]');
+      const enBtn = document.querySelector('#languageSelector button[onclick="translateToEnglish()"]');
+      if (bnBtn) bnBtn.classList.add('active');
+      if (enBtn) enBtn.classList.remove('active');
+
+      // Also re-render dynamic pieces if any are visible
+      try { initPlantSelector(); displayActiveModels(); updateFirebaseStatus(firebaseReady); refreshRuntimeTranslations(); } catch(e){ /* ignore */ }
+    }
+
+    // Re-apply translations to runtime/hardware status texts where possible
+    function refreshRuntimeTranslations() {
+      try {
+        // ESP / Stream status
+        const conn = document.getElementById('connStatus');
+        if (conn) {
+          const t = conn.textContent || '';
+          if (t.includes('ESP32 reachable') || t.includes('পৌছেছে')) {
+            conn.textContent = '✅ ' + translateText('ESP32 reachable');
+          } else if (t.includes('Cannot reach ESP32') || t.includes('পৌছানো')) {
+            // Try to keep any IP in the message
+            const ipMatch = t.match(/(\d+\.\d+\.\d+\.\d+)/);
+            const ip = ipMatch ? ipMatch[0] : '';
+            conn.textContent = (ip ? '❌ ' + translateText('Cannot reach ESP32 at') + ' ' + ip : translateText('Cannot reach ESP32 at'));
+          } else if (t.includes('Connecting')) {
+            conn.textContent = translateText('Connecting...');
+          } else if (t.includes('Stream connected') || t.includes('স্ট্রিম')) {
+            conn.textContent = '✅ ' + translateText('Stream connected');
+          } else if (t.includes('Using capture polling')) {
+            conn.textContent = '⚠️ ' + translateText('Using capture polling');
+          }
+        }
+
+        const placeholder = document.getElementById('streamPlaceholder');
+        if (placeholder) {
+          const pt = placeholder.textContent || '';
+          if (pt.includes('Ready. Click')) placeholder.textContent = translateText('Ready. Click "Start stream" to preview.');
+          if (pt.includes('Connection failed') || pt.includes('সংযোগ ব্যর্থ')) placeholder.textContent = translateText('Connection failed. Check:\n1. ESP32 is powered on\n2. WiFi connected\n3. IP is correct: ');
+        }
+
+        // Arduino / MQTT / Firebase statuses
+        const arduinoStatus = document.getElementById('arduinoStatus');
+        if (arduinoStatus) {
+          const v = arduinoStatus.textContent || '';
+          if (v.includes('Connected') || v.includes('সংযুক্ত')) arduinoStatus.textContent = translateText('Connected');
+          if (v.includes('Not Connected') || v.includes('সংযুক্ত নয়')) arduinoStatus.textContent = translateText('Not Connected');
+        }
+
+      } catch(e) { /* ignore */ }
+    }
+
+    function translateToEnglish() {
+      try { localStorage.setItem('lang', 'en'); } catch(e) { /* ignore */ }
+      location.reload();
+    }
+
+    // Apply persisted language preference on load
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        const lang = localStorage.getItem('lang');
+        if (lang === 'bn') {
+          translateToBangla();
+        } else if (lang === 'en') {
+          const enBtn = document.querySelector('#languageSelector button[onclick="translateToEnglish()"]');
+          const bnBtn = document.querySelector('#languageSelector button[onclick="translateToBangla()"]');
+          if (enBtn) enBtn.classList.add('active');
+          if (bnBtn) bnBtn.classList.remove('active');
+        }
+      } catch(e) { /* ignore storage errors */ }
+    });
   </script>
 
   <script>
@@ -911,6 +1364,7 @@ function clearAllData() {
     let functions = null;
     let firebaseEnabled = false;
     let aiEnabled = false;
+    let aiAnalysisEnabled = false;
     let firebaseReady = false;
     let firebaseReadyPromise = null;
     let geminiRecommendation = null;
@@ -955,16 +1409,19 @@ function clearAllData() {
     function updateFirebaseStatus(connected) {
       const statusEl = document.getElementById('firebaseStatus');
       const iconEl = document.getElementById('firebaseIcon');
-      const textEl = document.getElementById('firebaseText');
+      const textEl = document.getElementById('firebaseStatusText');
+      const firebaseDot = document.getElementById('firebaseDot');
       
       if (connected) {
-        statusEl.className = 'firebase-status connected';
-        iconEl.textContent = '✅';
-        textEl.textContent = 'Firebase + AI enabled';
+        if(statusEl) statusEl.className = 'firebase-status connected';
+        if(iconEl) iconEl.textContent = '✅';
+        if(textEl) textEl.textContent = translateText('Firebase + AI enabled');
+        if(firebaseDot) firebaseDot.classList.remove('offline');
       } else {
-        statusEl.className = 'firebase-status disconnected';
-        iconEl.textContent = '❌';
-        textEl.textContent = 'Local storage only';
+        if(statusEl) statusEl.className = 'firebase-status disconnected';
+        if(iconEl) iconEl.textContent = '❌';
+        if(textEl) textEl.textContent = translateText('Local storage only');
+        if (firebaseDot) firebaseDot.classList.add('offline');
       }
     }
 
@@ -1563,6 +2020,7 @@ function clearAllData() {
         const dataToSave = {
           logs: recentLogs,
           modelFeedback: analyticsData.modelFeedback,
+          cache,
           cacheOnly: true
         };
         localStorage.setItem('diseaseAnalytics', JSON.stringify(dataToSave));
@@ -1660,7 +2118,7 @@ function clearAllData() {
         const btn = event?.target;
         if (btn) {
           btn.disabled = true;
-          btn.textContent = '⏳ Loading...';
+          btn.textContent = translateText('⏳ Loading...');
         }
         
         const snapshot = await db.collection('diseaseAnalytics')
@@ -1696,14 +2154,14 @@ function clearAllData() {
         
         if (btn) {
           btn.disabled = false;
-          btn.textContent = '📥 Load';
+          btn.textContent = translateText('📥 Load');
         }
       } catch (e) {
         console.error('❌ Failed to load from Firebase:', e);
         if (showAlert) alert('Failed to load from Firebase: ' + e.message);
         if (event?.target) {
           event.target.disabled = false;
-          event.target.textContent = '📥 Load';
+          event.target.textContent = translateText('📥 Load');
         }
       }
     }
@@ -1737,7 +2195,7 @@ function clearAllData() {
             // No image available
             const imgElement = document.getElementById('img_' + logId);
             if (imgElement) {
-              imgElement.textContent = '📷 No image available';
+              imgElement.textContent = '📷 ' + translateText('No image available');
             }
           }
         }
@@ -1745,7 +2203,7 @@ function clearAllData() {
         console.error('Failed to load image from Firebase:', e);
         const imgElement = document.getElementById('img_' + logId);
         if (imgElement) {
-          imgElement.textContent = '❌ Failed to load image';
+          imgElement.textContent = translateText('❌ Failed to load image');
         }
       }
     }
@@ -1760,7 +2218,7 @@ function clearAllData() {
       try {
         const btn = event.target;
         btn.disabled = true;
-        btn.textContent = '⏳ Syncing...';
+        btn.textContent = translateText('⏳ Syncing...');
         
         let uploaded = 0;
         for (const log of analyticsData.logs) {
@@ -1773,12 +2231,12 @@ function clearAllData() {
         alert('Synced ' + uploaded + ' new records to Firebase');
         
         btn.disabled = false;
-        btn.textContent = '🔄 Sync';
+        btn.textContent = translateText('🔄 Sync');
       } catch (e) {
         console.error('❌ Sync failed:', e);
         alert('Sync failed: ' + e.message);
         event.target.disabled = false;
-        event.target.textContent = '🔄 Sync';
+        event.target.textContent = translateText('🔄 Sync');
       }
     }
     
@@ -2511,14 +2969,51 @@ function clearAllData() {
     }
     
     // Clear analytics data
-function clearAnalyticsData() {
-      if (!confirm('Are you sure you want to clear the Diagnostic Log? This will permanently delete all analysis history and reset the charts. This action cannot be undone.')) {
+async function clearAnalyticsData() {
+      if (!confirm('Are you sure you want to clear the Diagnostic Log? This will permanently delete all analysis history from this device and from Firebase. This action cannot be undone.')) {
         return;
       }
+      
+      // Clear local data
       analyticsData.logs = [];
-      saveAnalytics();
+      saveAnalytics(); // This will clear localStorage
       updateAnalyticsDashboard();
       updateHistoryPanel();
+
+      // Clear from Firebase
+      if (firebaseReady && firebaseEnabled && db) {
+        console.log('🗑️ Deleting all logs from Firebase...');
+        try {
+          const snapshot = await db.collection('diseaseAnalytics').limit(500).get(); // Limit to 500 per batch
+          if (snapshot.empty) {
+            console.log('✅ No logs to delete in Firebase.');
+            alert('Diagnostic Log cleared.');
+            return;
+          }
+
+          const batch = db.batch();
+          snapshot.docs.forEach(doc => {
+            batch.delete(doc.ref);
+          });
+          
+          await batch.commit();
+          
+          console.log('✅ Batch of', snapshot.size, 'logs deleted from Firebase.');
+
+          // If there might be more logs, recursively call until empty
+          if (snapshot.size === 500) {
+            console.log('There might be more logs to delete, running again...');
+            await clearAnalyticsData();
+          } else {
+            alert('Diagnostic Log cleared from this device and from Firebase.');
+          }
+        } catch (e) {
+          console.error('❌ Failed to delete logs from Firebase:', e);
+          alert('Error clearing logs from Firebase: ' + e.message);
+        }
+      } else {
+        alert('Diagnostic Log cleared from this device.');
+      }
     }
     
     // Disease name aliases and variations for improved matching accuracy
@@ -2589,7 +3084,7 @@ function clearAnalyticsData() {
       // First, check for exact matches (highest priority)
       for (const [key, remedy] of Object.entries(REMEDIES)) {
         if (cleanName === key || name === key) {
-          return remedy;
+          return getTranslatedRemedy(remedy);
         }
       }
       
@@ -2601,7 +3096,7 @@ function clearAnalyticsData() {
           for (const alias of aliasList) {
             for (const [key, remedy] of Object.entries(REMEDIES)) {
               if (key === alias || alias.includes(key) || key.includes(alias)) {
-                return remedy;
+                return getTranslatedRemedy(remedy);
               }
             }
           }
@@ -2662,9 +3157,8 @@ function clearAnalyticsData() {
         }
       }
       
-      if (bestMatch) return bestMatch;
-      
-      // Fifth, check for common disease keywords
+      if (bestMatch) return getTranslatedRemedy(bestMatch);
+
       const keywords = {
         'blight': 'blight',
         'spot': 'bacterial spot',
@@ -2680,291 +3174,61 @@ function clearAnalyticsData() {
         'whitefly': 'whitefly',
         'thrips': 'thrips'
       };
-      
+
       for (const [keyword, remedyKey] of Object.entries(keywords)) {
         if (cleanName.includes(keyword) && REMEDIES[remedyKey]) {
-          return REMEDIES[remedyKey];
+          return getTranslatedRemedy(REMEDIES[remedyKey]);
         }
       }
-      
-      return REMEDIES.default;
+
+      return getTranslatedRemedy(REMEDIES.default);
     }
     
     let BASE_URL = 'http://10.180.248.33';  // Default ESP32 IP
     const api = (path) => BASE_URL + path;
     let streamActive = false;
-    let aiAnalysisEnabled = true; // Toggle for AI consensus analysis
+
     
-    function toggleAIAnalysis() {
-      aiAnalysisEnabled = !aiAnalysisEnabled;
-      const btn = document.getElementById('aiToggleBtn');
-      const icon = document.getElementById('aiToggleIcon');
-      const text = document.getElementById('aiToggleText');
-      
-      if (aiAnalysisEnabled) {
-        btn.classList.remove('disabled');
-        icon.textContent = '🤖';
-        text.textContent = 'AI: ON';
-        console.log('✅ AI analysis enabled');
-      } else {
-        btn.classList.add('disabled');
-        icon.textContent = '⚪';
-        text.textContent = 'AI: OFF';
-        document.getElementById('aiRecommendations').style.display = 'none';
-        console.log('⚪ AI analysis disabled');
-      }
-    }
+
     
-    function copyAIAnalysis() {
-      const content = document.getElementById('aiAnalysisContent').textContent;
-      navigator.clipboard.writeText(content).then(() => {
-        alert('✅ AI analysis copied to clipboard!');
-      }).catch(err => {
-        console.error('Copy failed:', err);
+
+    
+    // Translate remedy text to Bengali (simple token replacements)
+    function translateRemedyText(remedy) {
+      const lang = getLang();
+      if (lang !== 'bn' || !remedy) return remedy;
+      let text = remedy;
+
+      const tokenMap = {
+        'Organic:': 'অর্গানিক:',
+        '🔹 Organic:': '🔹 অর্গানিক:',
+        'Chemical:': 'রাসায়নিক:',
+        '🔹 Chemical:': '🔹 রাসায়নিক:',
+        'Spray': 'ছিটান',
+        'Apply': 'প্রয়োগ করুন',
+        'Soil': 'মাটি',
+        'Soil drench': 'মাটি ড্রেঞ্চ',
+        'Seed treatment': 'বীজ চিকিৎসা',
+        'Foliar': 'পাতায় স্প্রে',
+        'Remove infected plants immediately': 'অবিলম্বে আক্রান্ত গাছ অপসারন করুন',
+        'No cure available': 'কোনও চিকিৎসা নেই',
+        'No disease detected': 'কোনো রোগ সনাক্ত হয়নি',
+        'Unable to detect disease. Ensure proper image quality. If disease visible, consult agricultural expert with leaf sample for proper diagnosis.': 'রোগ সনাক্ত করা যায়নি। সঠিক নির্ণয়ের জন্য ছবি মান নিশ্চিত করুন; গুরুতর হলে লিফ নমুনা নিয়ে কৃষি বিশেষজ্ঞের সাথে যোগাযোগ করুন.'
+      };
+
+      Object.entries(tokenMap).forEach(([k, v]) => {
+        const re = new RegExp(k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+        text = text.replace(re, v);
       });
+
+      return text;
     }
-    
-    async function triggerAIAnalysis(modelResults, imageBase64, sensorData) {
-      const aiSection = document.getElementById('aiRecommendations');
-      const aiContent = document.getElementById('aiAnalysisContent');
-      const aiLoading = document.getElementById('aiLoading');
-      const aiModel = document.getElementById('aiModel');
-      
-      // Show AI section
-      aiSection.style.display = 'block';
-      aiContent.style.display = 'none';
-      aiLoading.style.display = 'block';
-      aiLoading.querySelector('p').textContent = '🧠 Advanced multi-model analysis in progress...';
-      
-      // Advanced AI consensus analysis with weighted scoring
-      setTimeout(() => {
-        // Model reliability weights (based on historical accuracy)
-        const modelWeights = {
-          'Object Detection (YOLOv8)': 1.2,      // 20% boost - best for detection
-          'Classification v2 (98.6%)': 1.15,     // 15% boost - highest accuracy
-          'ViT Classification (89%)': 1.0        // baseline
-        };
-        
-        // Extract and normalize diseases with weighted confidence
-        const diseases = modelResults.map(r => {
-          if (r.error) return null;
-          
-          let disease = null;
-          let rawConfidence = 0;
-          
-          if (r.type === 'detection' && r.data?.predictions?.length > 0) {
-            const top = r.data.predictions[0];
-            disease = top.class;
-            rawConfidence = top.confidence * 100;
-          } else if (r.type === 'classification' && r.data?.top) {
-            disease = r.data.top;
-            rawConfidence = r.data.confidence * 100;
-          }
-          
-          if (!disease) return null;
-          
-          // Apply model weight and confidence threshold
-          const weight = modelWeights[r.name] || 1.0;
-          const weightedConfidence = rawConfidence * weight;
-          
-          // Normalize disease name
-          const normalized = disease.toLowerCase()
-            .replace(/_/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim();
-          
-          return {
-            original: disease,
-            normalized: normalized,
-            confidence: parseFloat(rawConfidence.toFixed(1)),
-            weightedScore: parseFloat(weightedConfidence.toFixed(1)),
-            model: r.name,
-            weight: weight
-          };
-        }).filter(Boolean);
-        
-        aiLoading.style.display = 'none';
-        aiContent.style.display = 'block';
-        aiModel.textContent = '🧠 Advanced AI Consensus';
-        
-        // Case 1: No detections
-        if (diseases.length === 0) {
-          const envAnalysis = analyzeEnvironmentalContext(sensorData);
-          const envWarning = envAnalysis.severityScore >= 4 ? 
-            `\n\n⚠️ **ENVIRONMENTAL ALERT:**\n${envAnalysis.riskFactors.slice(0, 2).join('\n')}\n\n**RECOMMENDED ACTIONS:**\n${envAnalysis.recommendations.slice(0, 2).join('\n')}` : '';
-          
-          aiContent.textContent = `**✅ FINAL VERDICT:**\nNo disease detected. Plant appears HEALTHY.\n\n**CONFIDENCE LEVEL:**\nVery High - All 3 advanced AI models confirm\n\n**ANALYSIS:**\n• Object Detection: No disease patterns found\n• Classification models: No pathogen signatures detected\n• Image quality: Sufficient for accurate diagnosis\n\n**RECOMMENDATION:**\nContinue normal care routine. Maintain optimal conditions.${envWarning}`;
-          return;
-        }
-        
-        // Case 2: Disease(s) detected - Advanced consensus algorithm
-        
-        // Group by normalized disease name
-        const diseaseGroups = {};
-        diseases.forEach(d => {
-          if (!diseaseGroups[d.normalized]) {
-            diseaseGroups[d.normalized] = [];
-          }
-          diseaseGroups[d.normalized].push(d);
-        });
-        
-        // Calculate weighted scores for each disease
-        const diseaseScores = Object.entries(diseaseGroups).map(([name, detections]) => {
-          const totalWeight = detections.reduce((sum, d) => sum + d.weightedScore, 0);
-          const avgConfidence = detections.reduce((sum, d) => sum + d.confidence, 0) / detections.length;
-          const modelCount = detections.length;
-          
-          // Consensus bonus: if multiple models agree, boost score
-          const consensusBonus = modelCount > 1 ? modelCount * 15 : 0;
-          const finalScore = totalWeight + consensusBonus;
-          
-          return {
-            name: name,
-            displayName: detections[0].original,
-            detections: detections,
-            modelCount: modelCount,
-            avgConfidence: avgConfidence,
-            finalScore: finalScore,
-            agreement: modelCount === 3 ? 'unanimous' : modelCount === 2 ? 'strong' : 'weak'
-          };
-        }).sort((a, b) => b.finalScore - a.finalScore);
-        
-        const topDisease = diseaseScores[0];
-        const hasCompeting = diseaseScores.length > 1 && diseaseScores[1].modelCount >= 1;
-        
-        // Environmental validation
-        const envContext = analyzeEnvironmentalContext(sensorData);
-        const envFactors = [];
-        
-        if (sensorData) {
-          // Check if environment supports detected disease
-          const diseaseName = topDisease.name;
-          
-          if ((diseaseName.includes('blight') || diseaseName.includes('fungal')) && 
-              envContext.metrics.humidityRisk === 'high') {
-            envFactors.push('✓ High humidity confirms fungal disease risk');
-          }
-          
-          if (diseaseName.includes('bacterial') && envContext.metrics.moistureRisk === 'high') {
-            envFactors.push('✓ Excess moisture supports bacterial infection');
-          }
-          
-          if (diseaseName.includes('wilt') && envContext.metrics.moistureRisk === 'high' && 
-              sensorData.soilMoisture < 30) {
-            envFactors.push('✓ Low soil moisture consistent with wilting');
-          }
-          
-          if (diseaseName.includes('rust') && envContext.metrics.humidityRisk === 'high') {
-            envFactors.push('✓ Humid conditions favor rust development');
-          }
-          
-          if (diseaseName.includes('mildew') && sensorData.airHumidity > 80) {
-            envFactors.push('✓ Very high humidity ideal for mildew spread');
-          }
-        }
-        
-        // Confidence assessment
-        let confidenceLevel;
-        let confidenceColor;
-        
-        if (topDisease.agreement === 'unanimous' && topDisease.avgConfidence > 80) {
-          confidenceLevel = 'VERY HIGH';
-          confidenceColor = '🟢';
-        } else if (topDisease.agreement === 'unanimous' || (topDisease.agreement === 'strong' && topDisease.avgConfidence > 75)) {
-          confidenceLevel = 'HIGH';
-          confidenceColor = '🟢';
-        } else if (topDisease.agreement === 'strong' && topDisease.avgConfidence > 60) {
-          confidenceLevel = 'MEDIUM-HIGH';
-          confidenceColor = '🟡';
-        } else if (topDisease.modelCount >= 2) {
-          confidenceLevel = 'MEDIUM';
-          confidenceColor = '🟡';
-        } else {
-          confidenceLevel = 'LOW';
-          confidenceColor = '🔴';
-        }
-        
-        // Build intelligent report
-        let report = `**🔬 FINAL DIAGNOSIS:**\n${topDisease.displayName.replace(/_/g, ' ').toUpperCase()}\n\n`;
-        report += `**${confidenceColor} CONFIDENCE LEVEL:**\n${confidenceLevel} - ${topDisease.modelCount} of 3 models detected (${topDisease.avgConfidence.toFixed(1)}% avg)\n\n`;
-        
-        report += `**🤖 AI MODEL CONSENSUS:**\n`;
-        topDisease.detections.forEach(d => {
-          report += `• ${d.model}\n  ${d.confidence}% confidence (weight: ${d.weight}x)\n`;
-        });
-        
-        if (hasCompeting) {
-          report += `\n⚠️ Alternative detection: ${diseaseScores[1].displayName} (${diseaseScores[1].modelCount} model${diseaseScores[1].modelCount > 1 ? 's' : ''})`;
-        }
-        
-        report += `\n\n**🧠 ADVANCED REASONING:**\n`;
-        if (topDisease.agreement === 'unanimous') {
-          report += `• All 3 AI models independently confirmed diagnosis\n`;
-          report += `• Multiple detection algorithms converge on same result\n`;
-          report += `• Cross-validation passed - extremely reliable\n`;
-        } else if (topDisease.agreement === 'strong') {
-          report += `• Strong majority consensus (2/3 models)\n`;
-          report += `• ${topDisease.avgConfidence > 75 ? 'High' : 'Moderate'} confidence scores support diagnosis\n`;
-          report += hasCompeting ? `• Competing diagnosis possible - monitor closely\n` : `• Single dissenting model - likely noise\n`;
-        } else {
-          report += `• Single model detection - requires verification\n`;
-          report += `• Recommend retaking image in better lighting\n`;
-          report += `• Environmental factors may mimic disease symptoms\n`;
-        }
-        
-        if (envFactors.length > 0) {
-          report += `\n**🌡️ ENVIRONMENTAL VALIDATION:**\n${envFactors.join('\n')}\n`;
-        }
-        
-        if (sensorData) {
-          report += `\n**📊 ENVIRONMENTAL DATA:**\n`;
-          report += `• Soil Moisture: ${sensorData.soilMoisture}% ${sensorData.soilMoisture > 70 ? '(high - fungal risk)' : sensorData.soilMoisture < 30 ? '(low - stress)' : '(optimal)'}\n`;
-          report += `• Air Temperature: ${sensorData.airTemp}°C ${sensorData.airTemp > 32 ? '(high - stress)' : sensorData.airTemp < 15 ? '(low - slow growth)' : '(good)'}\n`;
-          report += `• Humidity: ${sensorData.airHumidity}% ${sensorData.airHumidity > 75 ? '(high - disease spread)' : sensorData.airHumidity < 40 ? '(low - transpiration stress)' : '(normal)'}\n`;
-          
-          if (envContext.severityScore >= 4) {
-            report += `\n⚠️ **ENVIRONMENTAL STRESS DETECTED:**\n${envContext.riskFactors.slice(0, 2).map(r => `• ${r}`).join('\n')}\n`;
-          }
-        }
-        
-        // Treatment urgency based on disease severity
-        const severity = assessDiseaseSeverity(topDisease.name, envContext);
-        report += `\n\n**⚡ TREATMENT URGENCY:**\n`;
-        
-        if (severity.treatmentUrgency.includes('immediate')) {
-          report += `🔴 IMMEDIATE ACTION REQUIRED\n`;
-          report += `• Disease spreads rapidly - act within 24 hours\n`;
-          report += `• Isolate affected plants NOW\n`;
-        } else if (severity.spreadRisk === 'very high' || severity.spreadRisk === 'high') {
-          report += `🟡 HIGH PRIORITY (24-48 hours)\n`;
-          report += `• Begin treatment within 48 hours\n`;
-          report += `• Monitor neighboring plants closely\n`;
-        } else {
-          report += `🟢 MODERATE PRIORITY (3-7 days)\n`;
-          report += `• Plan treatment within this week\n`;
-          report += `• Disease progresses slowly\n`;
-        }
-        
-        report += `\n**📋 IMMEDIATE ACTIONS:**\n`;
-        report += `1. Isolate affected plants if possible\n`;
-        report += `2. Remove and destroy severely infected leaves\n`;
-        report += `3. Improve air circulation around plants\n`;
-        report += `4. Refer to TREATMENT RECOMMENDATIONS below\n`;
-        report += `5. Monitor daily for spread to other plants\n`;
-        
-        // Accuracy note
-        report += `\n\n**ℹ️ DIAGNOSTIC ACCURACY:**\n`;
-        report += `This diagnosis combines 3 state-of-the-art AI models with environmental analysis. `;
-        report += `${confidenceLevel === 'VERY HIGH' || confidenceLevel === 'HIGH' ? 
-          'Accuracy exceeds 95% for this confidence level.' : 
-          confidenceLevel === 'MEDIUM-HIGH' || confidenceLevel === 'MEDIUM' ?
-          'Accuracy ~85-90%. Consider consulting agricultural expert if symptoms worsen.' :
-          'Low confidence - image quality or lighting may be inadequate. Retake in natural daylight.'}`;
-        
-        aiContent.textContent = report;
-      }, 1200); // Slightly longer to show processing
+
+    function getTranslatedRemedy(remedy) {
+      if (getLang() === 'bn') return translateRemedyText(remedy);
+      return remedy;
     }
-    
+
     // Fetch with timeout helper
     function fetchWithTimeout(url, options = {}, timeout = 5000) {
       return Promise.race([
@@ -2980,15 +3244,19 @@ function clearAnalyticsData() {
         return;
       }
       
-      // Clean IP (remove http/https if present)
       const cleanIP = ip.replace('http://', '').replace('https://', '');
       BASE_URL = `http://${cleanIP}`;
       localStorage.setItem('esp32_ip', BASE_URL);
       
       console.log('Connecting to:', BASE_URL);
-      document.getElementById('connStatus').textContent = 'Connecting...';
+      document.getElementById('connStatus').textContent = translateText('Connecting...');
       document.getElementById('connStatus').style.color = 'var(--on-surface-variant)';
-      // Test connection using image loading to avoid CORS issues.
+
+      const espDot = document.getElementById('espDot');
+      const espStatus = document.getElementById('espStatus');
+      espDot.classList.remove('offline');
+      // espStatus.textContent = 'Connecting...';
+
       const testPaths = ['/capture', '/capture.jpg', '/stream', '/'];
 
       function testWithImage(path, timeout = 5000) {
@@ -2998,23 +3266,12 @@ function clearAnalyticsData() {
             img.src = '';
             reject(new Error('Timeout'));
           }, timeout);
-
-          img.onload = () => {
-            clearTimeout(timer);
-            resolve(path);
-          };
-
-          img.onerror = () => {
-            clearTimeout(timer);
-            reject(new Error('Image load error'));
-          };
-
-          // Append cache-busting query to avoid cached errors
+          img.onload = () => { clearTimeout(timer); resolve(path); };
+          img.onerror = () => { clearTimeout(timer); reject(new Error('Image load error')); };
           img.src = `${BASE_URL}${path}?_t=${Date.now()}`;
         });
       }
 
-      // Try endpoints in sequence until one works
       (async () => {
         let ok = false;
         for (const p of testPaths) {
@@ -3029,21 +3286,24 @@ function clearAnalyticsData() {
         }
 
         if (ok) {
-          document.getElementById('connStatus').textContent = '✅ ESP32 reachable';
+          document.getElementById('connStatus').textContent = '✅ ' + translateText('ESP32 reachable');
           document.getElementById('connStatus').style.color = 'var(--success)';
           document.getElementById('visualBtn').disabled = false;
           document.getElementById('toggleBtn').disabled = false;
-          document.getElementById('streamPlaceholder').textContent = 'Ready. Click "Start stream" to preview.';
-          document.getElementById('cs').textContent = 'Camera: Ready';
+          document.getElementById('streamPlaceholder').textContent = translateText('Ready. Click "Start stream" to preview.');
+          // document.getElementById('cs').textContent = 'Ready';
           document.getElementById('camDot').classList.remove('offline');
+          espDot.classList.remove('offline');
+          // espStatus.textContent = 'Online';
         } else {
           console.error('Connection failed: ESP32 not reachable at', cleanIP);
-          document.getElementById('connStatus').textContent = '❌ Cannot reach ESP32 at ' + cleanIP;
+          document.getElementById('connStatus').textContent = '❌ ' + translateText('Cannot reach ESP32 at') + ' ' + cleanIP;
           document.getElementById('connStatus').style.color = 'var(--error)';
-          document.getElementById('streamPlaceholder').textContent =
-            'Connection failed. Check:\n1. ESP32 is powered on\n2. WiFi connected\n3. IP is correct: ' + cleanIP;
-          document.getElementById('cs').textContent = 'Camera: Offline';
+          document.getElementById('streamPlaceholder').textContent = translateText('Connection failed. Check:\n1. ESP32 is powered on\n2. WiFi connected\n3. IP is correct: ') + cleanIP;
+          // document.getElementById('cs').textContent = 'Offline';
           document.getElementById('camDot').classList.add('offline');
+          espDot.classList.add('offline');
+          // espStatus.textContent = 'Offline';
         }
       })();
     }
@@ -3051,14 +3311,14 @@ function clearAnalyticsData() {
     function startStream() {
       const streamBtn = document.getElementById('toggleBtn');
       streamBtn.disabled = true; // Disable button during connection attempt
-      streamBtn.textContent = 'Starting...';
+      streamBtn.textContent = translateText('Starting...');
       
-      document.getElementById('connStatus').textContent = 'Connecting to stream...';
+      document.getElementById('connStatus').textContent = translateText('Connecting to stream...');
       document.getElementById('connStatus').style.color = 'var(--on-surface-variant)';
       // Show loading state
       const placeholder = document.getElementById('streamPlaceholder');
       placeholder.style.display = 'block';
-      placeholder.textContent = 'Initializing stream...';
+      placeholder.textContent = translateText('Initializing stream...');
       document.getElementById('str').style.display = 'none';
       
       const streamImg = document.getElementById('str');
@@ -3078,13 +3338,13 @@ function clearAnalyticsData() {
         streamImg.style.display = 'block';
 
         console.log('✅ Stream started successfully');
-        document.getElementById('connStatus').textContent = '✅ Stream connected';
+        document.getElementById('connStatus').textContent = '✅ ' + translateText('Stream connected');
         document.getElementById('connStatus').style.color = 'var(--success)';
-        streamBtn.textContent = 'Stop Live View';
+        streamBtn.textContent = translateText('Stop Live View');
         streamBtn.disabled = false;
         streamActive = true;
 
-        document.getElementById('cs').textContent = 'Camera: Active';
+        // document.getElementById('cs').textContent = 'Camera: Active';
         document.getElementById('camDot').classList.remove('offline');
         renderCtx(['Visual-only analysis. Sensors removed.']);
       };
@@ -3128,15 +3388,15 @@ function clearAnalyticsData() {
 
       if (pollIntervalId) clearInterval(pollIntervalId);
 
-      document.getElementById('connStatus').textContent = '⚠️ Using capture polling';
+      document.getElementById('connStatus').textContent = '⚠️ ' + translateText('Using capture polling');
       document.getElementById('connStatus').style.color = 'var(--warn)';
-      placeholder.textContent = 'Using fallback polling (capture.jpg)';
+      placeholder.textContent = translateText('Using fallback polling (capture.jpg)');
       placeholder.style.display = 'none';
       streamImg.style.display = 'block';
-      streamBtn.textContent = 'Stop stream';
+      streamBtn.textContent = translateText('Stop stream');
       streamBtn.disabled = false;
       streamActive = true;
-      document.getElementById('cs').textContent = 'Camera: Active (polling)';
+      // document.getElementById('cs').textContent = 'Camera: Active (polling)';
       document.getElementById('camDot').classList.remove('offline');
 
       pollIntervalId = setInterval(() => {
@@ -3145,11 +3405,7 @@ function clearAnalyticsData() {
       }, interval);
     }
 
-    function tick() {
-      document.getElementById('ts').textContent = new Date().toLocaleTimeString();
-    }
-    setInterval(tick, 1000);
-    tick();
+
 
     function toggleStream() {
       const streamImg = document.getElementById('str');
@@ -3164,15 +3420,15 @@ function clearAnalyticsData() {
         streamImg.src = 'about:blank';
         streamImg.style.display = 'none';
         placeholder.style.display = 'block';
-        placeholder.textContent = 'Stream paused';
-        streamBtn.textContent = 'Start Live View';
+        placeholder.textContent = translateText('Stream paused');
+        streamBtn.textContent = translateText('Start Live View');
         streamActive = false;
 
         // stop polling fallback if active
         if (pollIntervalId) { clearInterval(pollIntervalId); pollIntervalId = null; }
         
         // Update status
-        document.getElementById('cs').textContent = 'Camera: Paused';
+        // document.getElementById('cs').textContent = 'Camera: Paused';
         document.getElementById('camDot').classList.add('offline');
       } else {
         // Start stream
@@ -3201,7 +3457,7 @@ function clearAnalyticsData() {
           correctBtn.disabled = true;
           wrongBtn.disabled = true;
           wrongBtn.style.opacity = '0.5';
-          statusDiv.textContent = '✓ Marked as correct';
+          statusDiv.textContent = translateText('✓ Marked as correct');
           statusDiv.style.color = '#34A853';
         } else {
           wrongBtn.style.background = '#EA4335';
@@ -3209,7 +3465,7 @@ function clearAnalyticsData() {
           wrongBtn.disabled = true;
           correctBtn.disabled = true;
           correctBtn.style.opacity = '0.5';
-          statusDiv.textContent = '✗ Marked as wrong';
+          statusDiv.textContent = translateText('✗ Marked as wrong');
           statusDiv.style.color = '#EA4335';
         }
       }
@@ -3218,7 +3474,7 @@ function clearAnalyticsData() {
       const toast = document.createElement('div');
       toast.style.cssText = 'position: fixed; top: 80px; right: 20px; background: ' + (isCorrect ? '#34A853' : '#EA4335') + 
                             '; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 10000; font-size: 14px; font-weight: 500;';
-      toast.textContent = 'Feedback recorded for ' + modelName;
+      toast.textContent = translateText('Feedback recorded for') + ' ' + modelName;
       document.body.appendChild(toast);
       setTimeout(() => toast.remove(), 3000);
     }
@@ -3241,14 +3497,14 @@ function clearAnalyticsData() {
       let html = '';
       MODELS.forEach((model, index) => {
         const typeIcon = model.type === 'detection' ? '🎯' : '📊';
-        const typeBadge = model.type === 'detection' ? 'Detection' : 'Classification';
+        const typeBadge = model.type === 'detection' ? translateText('Detection') : translateText('Classification');
         
         html += '<div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: var(--surface); border-radius: 6px; border: 1px solid rgba(26, 115, 232, 0.2);">';
         html += '<div style="display: flex; align-items: center; gap: 10px;">';
         html += '<span style="font-size: 20px;">' + typeIcon + '</span>';
         html += '<div>';
-        html += '<div style="font-weight: 500; font-size: 13px; color: var(--on-surface);">' + model.name + '</div>';
-        html += '<div style="font-size: 11px; color: var(--on-surface-variant); margin-top: 2px;">Model: ' + model.id + '</div>';
+        html += '<div style="font-weight: 500; font-size: 13px; color: var(--on-surface);">' + translateText(model.name) + '</div>';
+        html += '<div style="font-size: 11px; color: var(--on-surface-variant); margin-top: 2px;">' + translateText('Model:') + ' ' + model.id + '</div>';
         html += '</div>';
         html += '</div>';
         html += '<span style="padding: 4px 8px; background: rgba(26, 115, 232, 0.1); color: var(--primary); border-radius: 4px; font-size: 11px; font-weight: 600;">' + typeBadge + '</span>';
@@ -3272,8 +3528,8 @@ function clearAnalyticsData() {
         html += 'border-radius: 16px !important; cursor: pointer; transition: all 0.2s; text-align: center;';
         html += '" id="plant_' + plant.id + '">';
         html += '<div style="font-size: 24px; margin-bottom: 4px;">' + plant.icon + '</div>';
-        html += '<div style="font-size: 12px; font-weight: 600; color: var(--on-surface);">' + plant.name + '</div>';
-        html += '<div style="font-size: 10px; color: var(--on-surface-variant); margin-top: 2px;">' + plant.models + ' models</div>';
+        html += '<div style="font-size: 12px; font-weight: 600; color: var(--on-surface);">' + translateText(plant.name) + '</div>';
+        html += '<div style="font-size: 10px; color: var(--on-surface-variant); margin-top: 2px;">' + plant.models + ' ' + translateText('models') + '</div>';
         html += '</button>';
       });
       
@@ -3297,8 +3553,8 @@ function clearAnalyticsData() {
       // Update info display
       const selectedPlant = PLANT_TYPES.find(p => p.id === plantId);
       if (selectedPlant) {
-        document.getElementById('selectedPlantName').textContent = selectedPlant.icon + ' ' + selectedPlant.name;
-        document.getElementById('selectedPlantDesc').textContent = selectedPlant.description;
+        document.getElementById('selectedPlantName').textContent = selectedPlant.icon + ' ' + translateText(selectedPlant.name);
+        document.getElementById('selectedPlantDesc').textContent = translateText(selectedPlant.description);
       }
       
       console.log('\ud83c\udf31 Plant type selected:', plantId);
@@ -3323,8 +3579,8 @@ function clearAnalyticsData() {
     function showAnal() {
       const activeModels = getActiveModels();
       const plantInfo = PLANT_TYPES.find(p => p.id === selectedPlantType);
-      const plantName = plantInfo ? plantInfo.icon + ' ' + plantInfo.name : 'Plant';
-      document.getElementById('res').innerHTML = '<div class="rc"><div class="t">Analyzing ' + plantName + ' with ' + activeModels.length + ' AI models...</div><p style="color: var(--on-surface-variant); font-size: 14px;">Capturing and processing image</p></div>';
+      const plantName = plantInfo ? plantInfo.icon + ' ' + translateText(plantInfo.name) : translateText('Plant');
+      document.getElementById('res').innerHTML = '<div class="rc"><div class="t">' + translateText('Analyzing') + ' ' + plantName + ' ' + translateText('with') + ' ' + activeModels.length + ' ' + translateText('AI models') + '...</div><p style="color: var(--on-surface-variant); font-size: 14px;">' + translateText('Capturing and processing image') + '</p></div>';
     }
 
     function showMultiModelResults(results, s, imageBase64, consensusData) {
@@ -3339,14 +3595,14 @@ function clearAnalyticsData() {
       
       // Build comparison table
       let html = '<div class="rc">';
-      html += '<div class="t">Multi-Model Analysis</div>';
+      html += '<div class="t">' + translateText('Multi-Model Analysis') + '</div>';
       
       // CAPTURED IMAGE DISPLAY
       if (imageBase64) {
         html += '<div style="background:var(--surface); border:2px solid var(--outline); padding:16px; margin:12px 0; border-radius:8px; text-align:center;">';
-        html += '<div style="font-weight:600; margin-bottom:12px; color:var(--primary); font-size:16px;">📸 Captured Image</div>';
+        html += '<div style="font-weight:600; margin-bottom:12px; color:var(--primary); font-size:16px;">📸 ' + translateText('Captured Image') + '</div>';
         html += '<img src="data:image/jpeg;base64,' + imageBase64 + '" style="max-width:100%; max-height:400px; border-radius:8px; box-shadow:var(--elevation-2);" alt="Captured plant image">';
-        html += '<div style="font-size:12px; color:var(--on-surface-variant); margin-top:8px;">Image saved to Firebase Firestore</div>';
+        html += '<div style="font-size:12px; color:var(--on-surface-variant); margin-top:8px;">' + translateText('Image saved to Firebase Firestore') + '</div>';
         html += '</div>';
       }
       
@@ -3358,9 +3614,9 @@ function clearAnalyticsData() {
         
         html += '<div style="background:' + boxColor + '15; border:2px solid ' + boxColor + '; padding:16px; margin:12px 0; border-radius:8px;">';
         html += '<div style="font-weight:600; margin-bottom:8px; color:' + boxColor + '; font-size:16px;">';
-        html += icon + ' Smart Consensus Decision</div>';
+        html += icon + ' ' + translateText('Smart Consensus Decision') + '</div>';
         html += '<div style="font-size:14px; color:var(--on-surface); margin-bottom:8px;">';
-        html += '<strong>Final Verdict:</strong> ' + consensusData.disease + ' (' + consensusData.confidence.toFixed(1) + '% confidence)';
+        html += '<strong>' + translateText('Final Verdict:') + '</strong> ' + translateText(consensusData.disease) + ' (' + consensusData.confidence.toFixed(1) + '% ' + translateText('Confidence') + ')';
         html += '</div>';
         html += '<div style="font-size:13px; color:var(--on-surface-variant); line-height:1.5;">' + consensusData.note + '</div>';
         html += '</div>';
@@ -3452,14 +3708,14 @@ function clearAnalyticsData() {
         if (consensusData.diseaseCount > 0) {
           html += '<div style="flex: 1; min-width: 150px; background: rgba(234, 67, 53, 0.1); border-left: 3px solid #EA4335; padding: 12px; border-radius: 6px;">';
           html += '<div style="font-size: 24px; font-weight: 700; color: #EA4335;">' + consensusData.diseaseCount + '</div>';
-          html += '<div style="font-size: 12px; color: var(--on-surface-variant);">Model(s) Detected Disease</div>';
+          html += '<div style="font-size: 12px; color: var(--on-surface-variant);">' + translateText('Model(s) Detected Disease') + '</div>';
           html += '</div>';
         }
         
         if (consensusData.healthyCount > 0) {
           html += '<div style="flex: 1; min-width: 150px; background: rgba(52, 168, 83, 0.1); border-left: 3px solid #34A853; padding: 12px; border-radius: 6px;">';
           html += '<div style="font-size: 24px; font-weight: 700; color: #34A853;">' + consensusData.healthyCount + '</div>';
-          html += '<div style="font-size: 12px; color: var(--on-surface-variant);">Model(s) Said Healthy</div>';
+          html += '<div style="font-size: 12px; color: var(--on-surface-variant);">' + translateText('Model(s) Said Healthy') + '</div>';
           html += '</div>';
         }
         
@@ -3467,13 +3723,13 @@ function clearAnalyticsData() {
       }
       
       html += '<div style="overflow-x:auto; margin-top:16px;">';
-      html += '<table style="width:100%; border-collapse:collapse; font-size:14px;">';
+      html += '<table class="results-table" style="width:100%; border-collapse:collapse; font-size:14px;">';
       html += '<thead><tr style="border-bottom:2px solid var(--on-surface-variant);">';
-      html += '<th style="text-align:left; padding:12px; color:var(--on-surface-variant); min-width:180px;">Model</th>';
-      html += '<th style="text-align:left; padding:12px; color:var(--on-surface-variant); min-width:200px;">Disease Detected</th>';
-      html += '<th style="text-align:right; padding:12px; color:var(--on-surface-variant); min-width:120px;">Confidence</th>';
-      html += '<th style="text-align:left; padding:12px; color:var(--on-surface-variant); min-width:350px;">Recommended Treatment</th>';
-      html += '<th style="text-align:center; padding:12px; color:var(--on-surface-variant); min-width:140px;">Your Feedback</th>';
+      html += '<th style="text-align:left; padding:12px; color:var(--on-surface-variant); min-width:180px;">' + translateText('Model') + '</th>';
+      html += '<th style="text-align:left; padding:12px; color:var(--on-surface-variant); min-width:200px;">' + translateText('Disease Detected') + '</th>';
+      html += '<th style="text-align:right; padding:12px; color:var(--on-surface-variant); min-width:120px;">' + translateText('Confidence') + '</th>';
+      html += '<th style="text-align:left; padding:12px; color:var(--on-surface-variant); min-width:350px;">' + translateText('Recommended Treatment') + '</th>';
+      html += '<th style="text-align:center; padding:12px; color:var(--on-surface-variant); min-width:140px;">' + translateText('Your Feedback') + '</th>';
       html += '</tr></thead><tbody>';
       
       results.forEach((r, index) => {
@@ -3481,59 +3737,66 @@ function clearAnalyticsData() {
         let badge = '';
         let conf = 0;
         let disease = 'No detection';
+        let rawDisease = null;
         let isHealthy = false;
         let isDisease = false;
         
         if (r.error) {
-          badge = '<span class="badge err">Error</span>';
+          badge = '<span class="badge err">' + translateText('Error') + '</span>';
           disease = r.error;
         } else if (r.type === 'detection') {
           if (r.data.predictions && r.data.predictions.length > 0) {
             const top = r.data.predictions.reduce((a, b) => a.confidence > b.confidence ? a : b);
             disease = top.class;
+            rawDisease = disease;
             conf = (top.confidence * 100).toFixed(1);
             
             // Handle numeric class IDs or invalid names
             if (!disease || disease === '' || /^\d+$/.test(disease)) {
               console.warn(r.name + ' returned invalid class:', disease, 'Full prediction:', top);
-              disease = 'Unknown Disease (ID: ' + disease + ')';
-              badge = '<span class="badge warn">⚠️ Invalid</span>';
+              disease = translateText('Unknown Disease') + ' (ID: ' + disease + ')';
+              badge = '<span class="badge warn">⚠️ ' + translateText('Invalid') + '</span>';
               isDisease = true;
             }
             // Check if this is a healthy classification
             else if (disease.toLowerCase().trim() === 'healthy') {
               isHealthy = true;
-              badge = '<span class="badge ok">Healthy</span>';
+              badge = '<span class="badge ok">' + translateText('Healthy') + '</span>';
+              disease = translateText('Healthy');
             } else {
               isDisease = true;
-              badge = conf >= 80 ? '<span class="badge err">High</span>' : conf >= 50 ? '<span class="badge warn">Medium</span>' : '<span class="badge ok">Low</span>';
+              badge = conf >= 80 ? '<span class="badge err">' + translateText('High') + '</span>' : conf >= 50 ? '<span class="badge warn">' + translateText('Medium') + '</span>' : '<span class="badge ok">' + translateText('Low') + '</span>';
+              disease = translateText(disease);
             }
           } else {
-            disease = 'Healthy';
+            disease = translateText('Healthy');
             isHealthy = true;
-            badge = '<span class="badge ok">Healthy</span>';
+            badge = '<span class="badge ok">' + translateText('Healthy') + '</span>';
           }
         } else if (r.type === 'classification') {
           if (r.data.top || r.data.predicted_classes) {
             disease = r.data.top || (r.data.predicted_classes && r.data.predicted_classes[0]) || 'Unknown';
+            rawDisease = disease;
             conf = ((r.data.confidence || 0) * 100).toFixed(1);
             
             // Check if this is a healthy classification
             if (disease.toLowerCase().trim() === 'healthy' || disease.toLowerCase().trim() === 'no detection') {
               isHealthy = true;
-              badge = '<span class="badge ok">Healthy</span>';
+              badge = '<span class="badge ok">' + translateText('Healthy') + '</span>';
+              disease = translateText('Healthy');
             } else {
               isDisease = true;
-              badge = conf >= 80 ? '<span class="badge err">High</span>' : conf >= 50 ? '<span class="badge warn">Medium</span>' : '<span class="badge ok">Low</span>';
+              badge = conf >= 80 ? '<span class="badge err">' + translateText('High') + '</span>' : conf >= 50 ? '<span class="badge warn">' + translateText('Medium') + '</span>' : '<span class="badge ok">' + translateText('Low') + '</span>';
+              disease = translateText(disease);
             }
           } else {
-            disease = 'Healthy';
+            disease = translateText('Healthy');
             isHealthy = true;
-            badge = '<span class="badge ok">Healthy</span>';
+            badge = '<span class="badge ok">' + translateText('Healthy') + '</span>';
           }
         }
         
-        const remedy = getRemedy(disease);
+        const remedy = getRemedy(rawDisease || disease);
         
         // Calculate context-aware severity
         const severityAssessment = assessDiseaseSeverity(disease, conf, envContext);
@@ -3571,8 +3834,8 @@ function clearAnalyticsData() {
         // Add severity and urgency indicators
         if (disease !== 'Healthy' && !r.error) {
           html += '<br><span style="font-size:11px; margin-top:4px; display:inline-block;">';
-          html += '<span style="background:' + urgencyColor + '20; color:' + urgencyColor + '; padding:2px 6px; border-radius:3px; margin-right:4px;">🚨 ' + severityAssessment.treatmentUrgency + '</span>';
-          html += '<span style="background:rgba(255,255,255,0.1); color:var(--on-surface-variant); padding:2px 6px; border-radius:3px;">📊 ' + severityAssessment.severity + ' severity</span>';
+          html += '<span style="background:' + urgencyColor + '20; color:' + urgencyColor + '; padding:2px 6px; border-radius:3px; margin-right:4px;">🚨 ' + translateText(severityAssessment.treatmentUrgency) + '</span>';
+          html += '<span style="background:rgba(255,255,255,0.1); color:var(--on-surface-variant); padding:2px 6px; border-radius:3px;">📊 ' + translateText(severityAssessment.severity) + ' ' + translateText('severity') + '</span>';
           html += '</span>';
         }
         
@@ -3589,13 +3852,13 @@ function clearAnalyticsData() {
         html += 'style="padding: 6px 12px; border: 2px solid #34A853; background: transparent; color: #34A853; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s;" ';
         html += 'onmouseover="this.style.background=\'#34A853\'; this.style.color=\'white\';" ';
         html += 'onmouseout="this.style.background=\'transparent\'; this.style.color=\'#34A853\';">';
-        html += '✓ Correct</button>';
+        html += '✓ ' + translateText('Correct') + '</button>';
         html += '<button onclick="handleModelFeedback(\'' + analysisId + '\', \'' + r.name + '\', false, \'' + feedbackId + '\')" ';
         html += 'id="wrong_' + feedbackId + '" ';
         html += 'style="padding: 6px 12px; border: 2px solid #EA4335; background: transparent; color: #EA4335; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s;" ';
         html += 'onmouseover="this.style.background=\'#EA4335\'; this.style.color=\'white\';" ';
         html += 'onmouseout="this.style.background=\'transparent\'; this.style.color=\'#EA4335\';">';
-        html += '✗ Wrong</button>';
+        html += '✗ ' + translateText('Wrong') + '</button>';
         html += '</div>';
         html += '<div id="feedback_status_' + feedbackId + '" style="font-size: 11px; margin-top: 4px; color: var(--on-surface-variant);"></div>';
         html += '</td>';
@@ -3608,6 +3871,18 @@ function clearAnalyticsData() {
       html += '</div>';
       
       res.innerHTML = html;
+
+      // Add data-labels to table cells for responsive view
+      const table = res.querySelector('.results-table');
+      if (table) {
+        const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent);
+        table.querySelectorAll('tbody tr').forEach(row => {
+          row.querySelectorAll('td').forEach((td, i) => {
+            td.setAttribute('data-label', headers[i]);
+          });
+        });
+      }
+      
       renderCtx(['Visual-only analysis. Sensors removed.']);
     }
 
@@ -3619,7 +3894,7 @@ function clearAnalyticsData() {
       }
       btn.disabled = true;
       const origText = btn.textContent;
-      btn.textContent = 'Analyzing...';
+      btn.textContent = translateText('Analyzing...');
       showAnal();
       
       // Pause stream to free ESP32 resources
@@ -3837,6 +4112,8 @@ function clearAnalyticsData() {
       client.subscribe(sensor_topic);
       // Also subscribe to status topic to receive acks from ESP
       client.subscribe('esp32/cam/status');
+      document.getElementById('mqttDot').classList.remove('offline');
+      // document.getElementById('mqttStatus').textContent = 'Online';
     }
 
     function onConnectionLost(responseObject) {
@@ -3860,10 +4137,10 @@ function clearAnalyticsData() {
           const arduinoStatus = document.getElementById('arduinoStatus');
           if (data.arduinoConnected) {
             arduinoDot.classList.remove('offline');
-            arduinoStatus.innerText = 'Connected';
+            arduinoStatus.innerText = translateText('Connected');
           } else {
             arduinoDot.classList.add('offline');
-            arduinoStatus.innerText = 'Not Connected';
+            arduinoStatus.innerText = translateText('Not Connected');
           }
         } catch (e) {
           console.error("Error parsing MQTT JSON message:", e, payload);
@@ -3894,4 +4171,5 @@ function clearAnalyticsData() {
     }
   </script>
 </body>
+
 </html>
