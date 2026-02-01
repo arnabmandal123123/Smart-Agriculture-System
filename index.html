@@ -694,6 +694,445 @@
       display: block;
     }
 
+    /* =========================================
+       NEW LOG / HISTORY TIMELINE DESIGN
+       ========================================= */
+    .timeline-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding-top: 8px;
+    }
+
+    .log-card {
+      background: var(--surface);
+      border: 1px solid var(--outline-variant);
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .log-card:hover {
+      border-color: var(--outline);
+      box-shadow: var(--elevation-1);
+    }
+
+    /* Header: Time, Severity, Delete */
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: var(--surface-container);
+      border-bottom: 1px solid rgba(0,0,0,0.03);
+    }
+
+    .log-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--on-surface-variant);
+      font-weight: 500;
+    }
+
+    .log-badge {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .log-badge.low { background: rgba(52, 168, 83, 0.1); color: var(--success); }
+    .log-badge.moderate { background: rgba(251, 188, 4, 0.1); color: var(--warn); }
+    .log-badge.high, .log-badge.critical { background: rgba(234, 67, 53, 0.1); color: var(--error); }
+
+    .log-delete-btn {
+      background: transparent;
+      border: none;
+      color: var(--on-surface-variant);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, color 0.2s;
+    }
+    .log-delete-btn:hover {
+      background: rgba(234, 67, 53, 0.1);
+      color: var(--error);
+    }
+
+    /* Main Content */
+    .log-body {
+      padding: 16px;
+      cursor: pointer;
+    }
+
+    .log-main-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 6px;
+    }
+
+    .log-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--on-surface);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .log-confidence {
+      font-size: 20px;
+      font-weight: 300;
+      color: var(--primary);
+    }
+
+    .log-summary {
+      font-size: 13px;
+      color: var(--on-surface-variant);
+      line-height: 1.5;
+    }
+
+    /* Details Section (Collapsible) */
+    .log-details {
+      display: none;
+      padding: 0 16px 16px 16px;
+      border-top: 1px solid var(--outline-variant);
+      background: var(--bg-color);
+      animation: slideDown 0.2s ease-out;
+    }
+    .log-card.expanded .log-details { display: block; }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .log-section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--on-surface-variant);
+      font-weight: 700;
+      margin: 16px 0 8px 0;
+      letter-spacing: 0.5px;
+    }
+
+    /* Model Results Table-ish */
+    .log-model-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 13px;
+    }
+    .log-model-row:last-child { border-bottom: none; }
+    .log-model-name { color: var(--on-surface); }
+    .log-model-result { font-weight: 500; }
+
+    /* Sensor Grid in Logs */
+    .log-sensor-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .log-sensor-item {
+      background: var(--surface-container);
+      padding: 8px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 12px;
+      color: var(--on-surface);
+    }
+    .log-sensor-item .material-symbols-rounded {
+      font-size: 18px;
+      margin-bottom: 4px;
+      color: var(--primary);
+    }
+
+    /* Filter Chips */
+    .filter-group {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin-right: auto; /* Push clear button to right */
+    }
+    .filter-chip {
+      background: var(--surface-container);
+      border: 1px solid var(--outline-variant);
+      color: var(--on-surface-variant);
+      padding: 6px 16px;
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .filter-chip:hover { background: var(--outline-variant); }
+    .filter-chip.active {
+      background: var(--primary-container);
+      color: var(--primary);
+      border-color: var(--primary-container);
+    }
+
+    /* =========================================
+       NEW DIAGNOSTIC RESULTS CARD DESIGN
+       ========================================= */
+    .res-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .res-card {
+      background: var(--surface);
+      border: 1px solid var(--outline-variant);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+    }
+    
+    .res-card:hover {
+      border-color: var(--primary);
+      box-shadow: var(--elevation-1);
+    }
+    
+    .res-header {
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      background: var(--surface-container);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .res-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .res-disease-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--on-surface);
+      margin: 0;
+      letter-spacing: -0.5px;
+    }
+    
+    .res-model-name {
+      font-size: 11px;
+      font-family: 'Roboto Mono', monospace;
+      color: var(--on-surface-variant);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .res-badge {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 6px 10px;
+      border-radius: 50px;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      margin-left: 12px;
+    }
+    
+    .res-badge.high { background: rgba(234, 67, 53, 0.1); color: #EA4335; }
+    .res-badge.med { background: rgba(251, 188, 4, 0.1); color: #FBBC04; }
+    .res-badge.low { background: rgba(52, 168, 83, 0.1); color: #34A853; }
+    .res-badge.healthy { background: rgba(52, 168, 83, 0.1); color: #34A853; }
+    
+    .res-body {
+      padding: 20px;
+    }
+    
+    .res-metrics {
+      display: flex;
+      gap: 32px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--outline-variant);
+    }
+    
+    .res-metric {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .res-metric-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--on-surface-variant);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    
+    .res-metric-value {
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--on-surface);
+    }
+    
+    .res-remedy {
+      background: var(--bg-color);
+      border: 1px solid var(--outline-variant);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    
+    .res-remedy-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .res-remedy-content {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--on-surface);
+    }
+    
+    .remedy-block {
+      margin-bottom: 8px;
+    }
+    .remedy-block:last-child { margin-bottom: 0; }
+    .remedy-type { font-weight: 600; color: var(--on-surface); margin-right: 4px; }
+    
+    .res-feedback {
+      padding: 12px 20px;
+      background: var(--surface);
+      border-top: 1px solid var(--outline-variant);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .res-feedback-text {
+      font-size: 12px;
+      color: var(--on-surface-variant);
+    }
+    
+    .res-feedback-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .res-btn-feedback {
+      background: transparent;
+      border: 1px solid var(--outline-variant);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--on-surface-variant);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    
+    .res-btn-feedback:hover {
+      background: var(--surface-container);
+      color: var(--on-surface);
+      border-color: var(--on-surface-variant);
+    }
+    
+    .res-btn-feedback.correct:hover {
+      border-color: var(--success);
+      color: var(--success);
+      background: rgba(52, 168, 83, 0.05);
+    }
+    
+    .res-btn-feedback.wrong:hover {
+      border-color: var(--error);
+      color: var(--error);
+      background: rgba(234, 67, 53, 0.05);
+    }
+
+    /* Consensus Box Redesign */
+    .consensus-card {
+      background: var(--surface);
+      border: 1px solid var(--outline-variant);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .consensus-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      background: var(--outline);
+    }
+    
+    .consensus-card.healthy::before { background: var(--success); }
+    .consensus-card.disease::before { background: var(--error); }
+    
+    .consensus-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .consensus-icon {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    
+    .consensus-card.healthy .consensus-icon { background: rgba(52, 168, 83, 0.1); color: var(--success); }
+    .consensus-card.disease .consensus-icon { background: rgba(234, 67, 53, 0.1); color: var(--error); }
+    
+    .consensus-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--on-surface);
+    }
+    
+    .consensus-verdict {
+      font-size: 14px;
+      color: var(--on-surface-variant);
+      margin-left: 44px;
+    }
+    
+    .consensus-note {
+      font-size: 13px;
+      color: var(--on-surface-variant);
+      background: var(--surface-container);
+      padding: 12px;
+      border-radius: 8px;
+      margin-left: 44px;
+      line-height: 1.5;
+    }
+
     /* Mobile Adjustments */
     @media (max-width: 600px) {
       body { padding: 16px; padding-bottom: 90px; }
@@ -1001,11 +1440,13 @@
           <div class="card" style="padding: 12px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
               <h3 style="font-size: 14px; margin: 0; color: var(--on-surface-variant);" class="translatable">Analysis Log</h3>
-              <div class="analysis-controls">
-                <button class="btn sec translatable" onclick="loadFromFirebase()" style="padding: 8px 16px; font-size: 13px;">📥 Load</button>
-                <button class="btn sec translatable" onclick="filterHistory('all')" style="padding: 8px 16px; font-size: 13px;">All</button>
-                <button class="btn sec translatable" onclick="filterHistory('diseases')" style="padding: 8px 16px; font-size: 13px;">Diseases</button>
-                <button class="btn sec translatable" onclick="filterHistory('healthy')" style="padding: 8px 16px; font-size: 13px;">Healthy</button>
+              <div class="analysis-controls" style="display: flex; gap: 8px; align-items: center; width: 100%;">
+                <div class="filter-group">
+                  <button class="filter-chip active" onclick="filterHistory('all')" data-filter="all">All</button>
+                  <button class="filter-chip" onclick="filterHistory('diseases')" data-filter="diseases">Diseases</button>
+                  <button class="filter-chip" onclick="filterHistory('healthy')" data-filter="healthy">Healthy</button>
+                </div>
+                <button class="btn sec translatable" onclick="loadFromFirebase()" style="padding: 6px 12px; font-size: 12px;">📥 Load</button>
                 <button class="btn pri" onclick="clearAnalyticsData()" style="padding: 8px 16px; font-size: 13px;"><span class="material-symbols-rounded" style="font-size: 16px;">delete</span> <span class="translatable">Clear Diagnostic Log</span></button>
               </div>
             </div>
@@ -3118,8 +3559,14 @@ console.log('📊 Chart data - Models:', modelNames.length, '| Correct:', correc
       const panel = document.getElementById('historyPanel');
       if (!panel) return;
       
+      // Update active filter chip visual state
+      document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.classList.remove('active');
+        if (chip.getAttribute('data-filter') === filter) chip.classList.add('active');
+      });
+
       if (analyticsData.logs.length === 0) {
-        panel.innerHTML = '<p style="text-align: center; color: var(--on-surface-variant); padding: 32px;">No analysis history yet. Run your first scan to get started.</p>';
+        panel.innerHTML = '<div style="text-align: center; padding: 48px 20px;"><span class="material-symbols-rounded" style="font-size: 48px; color: var(--outline); margin-bottom: 16px;">history</span><p style="color: var(--on-surface-variant);">No diagnostic history available.<br>Run an analysis to see logs here.</p></div>';
         return;
       }
       
@@ -3134,106 +3581,126 @@ console.log('📊 Chart data - Models:', modelNames.length, '| Correct:', correc
       // Sort by timestamp (newest first)
       filteredLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
       
-      let html = '';
+      let html = '<div class="timeline-feed">';
+      
       filteredLogs.forEach((log, index) => {
-        const severityClass = log.environmentalContext ? log.environmentalContext.severity : 'low';
         const date = new Date(log.timestamp);
-        const timeAgo = getTimeAgo(date);
+        const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const dateStr = date.toLocaleDateString();
         
-        html += `<div class="history-item ${severityClass}">`;
-        html += '<div class="history-header">';
-        html += '<div class="history-date" onclick="toggleHistoryDetails(' + index + ', \'' + log.id + '\')"; style="cursor: pointer;">' + date.toLocaleString() + ' (' + timeAgo + ')</div>';
-        html += '<button class="delete-btn" onclick="event.stopPropagation(); deleteAnalysis(\'' + log.id + '\')" title="Delete this record"><span class="material-symbols-rounded" style="font-size:16px; vertical-align:middle;">delete</span> Delete</button>';
+        // Determine severity and styling
+        let severity = 'low';
+        if (log.environmentalContext) severity = log.environmentalContext.severity;
+        // Fallback severity based on disease
+        if (log.primaryDisease !== 'Healthy' && !log.environmentalContext) severity = 'moderate';
+        if (log.primaryDisease === 'Healthy') severity = 'low';
         
-        if (log.overallSeverity && log.overallSeverity !== 'unknown') {
-          const severityColors = { low: '#34A853', moderate: '#FBBC04', high: '#FF9800', critical: '#EA4335' };
-          html += '<span style="background:' + (severityColors[log.overallSeverity] || '#5f6368') + '20; color:' + (severityColors[log.overallSeverity] || '#5f6368') + '; padding:4px 8px; border-radius:4px; font-size:11px; font-weight:600; text-transform:uppercase;">' + log.overallSeverity + '</span>';
-        }
+        const isHealthy = log.primaryDisease === 'Healthy';
+        const icon = isHealthy ? 'check_circle' : 'coronavirus';
         
-        html += '</div>';
-        
-        html += '<div class="history-disease" onclick="toggleHistoryDetails(' + index + ', \'' + log.id + '\')"; style="cursor: pointer;">';
-        if (log.primaryDisease === 'Healthy') {
-          html += 'Healthy Plant';
+        // Generate Summary Text
+        let summaryText = '';
+        if (isHealthy) {
+          summaryText = 'Plant appears healthy based on visual analysis.';
         } else {
-          html += '<span class="material-symbols-rounded" style="font-size:16px; color:#EA4335; vertical-align:text-bottom;">warning</span> ' + log.primaryDisease;
+          // Collect unique diseases detected
+          const uniqueDiseases = [...new Set(log.diseases ? log.diseases.map(d => d.name) : [])];
+          if (uniqueDiseases.length > 0) {
+            summaryText = 'Detected: ' + uniqueDiseases.join(', ');
+          } else {
+            summaryText = 'Potential issues detected.';
+          }
         }
-        html += '</div>';
-        
-        if (log.avgConfidence > 0) {
-          html += '<div class="history-confidence" onclick="toggleHistoryDetails(' + index + ', \'' + log.id + '\')"; style="cursor: pointer;">Confidence: ' + log.avgConfidence.toFixed(1) + '%</div>';
-        }
-        
-        // Details section (hidden by default)
-        html += '<div class="history-details" id="details_' + log.id + '">';
-        
 
-        
-        // Diseases detected
-        if (log.diseases && log.diseases.length > 0) {
-          html += '<div style="margin-top: 12px;"><strong>Diseases Detected:</strong><ul style="margin: 4px 0; padding-left: 20px;">';
-          log.diseases.forEach(d => {
-            html += '<li>' + d.name + ' (' + d.confidence.toFixed(1) + '%) - ' + d.severity + ' severity, ' + d.urgency + '</li>';
-          });
-          html += '</ul></div>';
-        }
-        
-        // Environmental context
-        if (log.environmentalContext && log.environmentalContext.riskFactors.length > 0) {
-          html += '<div style="margin-top: 12px;"><strong>Environmental Risks:</strong><ul style="margin: 4px 0; padding-left: 20px; font-size: 13px; color: var(--on-surface-variant);">';
-          log.environmentalContext.riskFactors.forEach(r => {
-            html += '<li>' + r + '</li>';
-          });
-          html += '</ul></div>';
-        }
-        
-        // Sensor data
-        if (log.sensorData) {
-          html += '<div style="margin-top: 12px;"><strong>Sensor Data:</strong>';
-          html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px;">';
-          html += '<div><small>Soil Moisture:</small><br><strong>' + log.sensorData.soilMoisture.toFixed(1) + '%</strong></div>';
-          html += '<div><small>Air Temp:</small><br><strong>' + log.sensorData.airTemp.toFixed(1) + '°C</strong></div>';
-          html += '<div><small>Humidity:</small><br><strong>' + log.sensorData.airHumidity.toFixed(1) + '%</strong></div>';
-          html += '<div><small>TDS:</small><br><strong>' + log.sensorData.tdsValue.toFixed(0) + ' ppm</strong></div>';
-          html += '<div><small>Light:</small><br><strong>' + log.sensorData.lightLevel.toFixed(0) + ' lux</strong></div>';
-          html += '<div><small>Soil Temp:</small><br><strong>' + log.sensorData.soilTemp.toFixed(1) + '°C</strong></div>';
-          html += '</div></div>';
-        }
-        
-        // Model results
-        if (log.allModelResults && log.allModelResults.length > 0) {
-          html += '<div style="margin-top: 12px;"><strong>Model Results:</strong><ul style="margin: 4px 0; padding-left: 20px; font-size: 12px;">';
-          log.allModelResults.forEach(m => {
-            if (m.error) {
-              html += '<li>' + m.modelName + ': <span style="color: var(--error);">Error - ' + m.error + '</span></li>';
-            } else if (m.detectedClass) {
-              html += '<li>' + m.modelName + ': ' + m.detectedClass + ' (' + m.confidence.toFixed(1) + '%)</li>';
-            } else {
-              html += '<li>' + m.modelName + ': No detection</li>';
-            }
-          });
-          html += '</ul></div>';
-        }
-        
-        html += '</div>'; // close details
-        html += '</div>'; // close history-item
+        html += `
+          <div class="log-card ${severity}" id="log_${log.id}">
+            <!-- Header -->
+            <div class="log-header">
+              <div class="log-meta">
+                <span class="log-date">${dateStr} • ${timeStr}</span>
+                ${!isHealthy ? `<span class="log-badge ${severity}">${severity}</span>` : ''}
+              </div>
+              <button class="log-delete-btn" onclick="event.stopPropagation(); deleteAnalysis('${log.id}')" title="Delete Entry">
+                <span class="material-symbols-rounded" style="font-size: 18px;">delete</span>
+              </button>
+            </div>
+
+            <!-- Body (Click to expand) -->
+            <div class="log-body" onclick="toggleHistoryDetails('${log.id}')">
+              <div class="log-main-row">
+                <div class="log-title">
+                  <span class="material-symbols-rounded" style="color: ${isHealthy ? 'var(--success)' : 'var(--error)'};">${icon}</span>
+                  ${log.primaryDisease}
+                </div>
+                <div class="log-confidence">${log.avgConfidence.toFixed(0)}<span style="font-size:12px; margin-left:2px;">%</span></div>
+              </div>
+              <div class="log-summary">${summaryText}</div>
+            </div>
+
+            <!-- Details (Collapsible) -->
+            <div class="log-details" id="details_${log.id}">
+              
+              <!-- Sensor Data Section -->
+              ${log.sensorData ? `
+                <div class="log-section-title">Environment Sensors</div>
+                <div class="log-sensor-grid">
+                  <div class="log-sensor-item">
+                    <span class="material-symbols-rounded">thermostat</span>
+                    <span>${log.sensorData.airTemp.toFixed(1)}°C</span>
+                  </div>
+                  <div class="log-sensor-item">
+                    <span class="material-symbols-rounded">water_drop</span>
+                    <span>${log.sensorData.airHumidity.toFixed(1)}%</span>
+                  </div>
+                  <div class="log-sensor-item">
+                    <span class="material-symbols-rounded">potted_plant</span>
+                    <span>${log.sensorData.soilMoisture.toFixed(1)}%</span>
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- Model Results Section -->
+              <div class="log-section-title">AI Model Consensus</div>
+              <div class="log-model-list">
+                ${(log.allModelResults || []).map(m => {
+                  const mName = m.modelName.replace(/\(.*\)/, '').trim(); // Clean name
+                  const mRes = m.error ? 'Error' : (m.detectedClass || 'No detection');
+                  const mConf = m.confidence ? `(${m.confidence.toFixed(0)}%)` : '';
+                  const mColor = m.detectedClass && m.detectedClass !== 'Healthy' ? 'var(--error)' : 'var(--on-surface-variant)';
+                  return `
+                    <div class="log-model-row">
+                      <span class="log-model-name">${mName}</span>
+                      <span class="log-model-result" style="color: ${mColor}">${mRes} ${mConf}</span>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+              
+              <!-- Footer Actions -->
+              <div style="margin-top: 16px; text-align: right;">
+                 <span style="font-size: 10px; color: var(--on-surface-variant); text-transform: uppercase;">ID: ${log.id.substring(4, 14)}...</span>
+              </div>
+            </div>
+          </div>
+        `;
       });
       
+      html += '</div>';
       panel.innerHTML = html;
     }
     
-    function toggleHistoryDetails(index, logId) {
-      const item = event.currentTarget;
-      const details = document.getElementById('details_' + logId);
+    function toggleHistoryDetails(logId) {
+      const card = document.getElementById('log_' + logId);
+      if (!card) return;
       
-      if (item.classList.contains('expanded')) {
-        item.classList.remove('expanded');
+      if (card.classList.contains('expanded')) {
+        card.classList.remove('expanded');
       } else {
         // Close all other expanded items
-        document.querySelectorAll('.history-item.expanded').forEach(el => {
+        document.querySelectorAll('.log-card.expanded').forEach(el => {
           el.classList.remove('expanded');
         });
-        item.classList.add('expanded');
+        card.classList.add('expanded');
       }
     }
     
@@ -4040,48 +4507,21 @@ async function clearAnalyticsData() {
         html += '</div>';
       }
       
-      // Add model vote summary before the table
-      if (consensusData && (consensusData.diseaseCount > 0 || consensusData.healthyCount > 0)) {
-        html += '<div style="display: flex; gap: 12px; margin: 16px 0; flex-wrap: wrap;">';
-        
-        if (consensusData.diseaseCount > 0) {
-          html += '<div style="flex: 1; min-width: 150px; background: rgba(234, 67, 53, 0.1); border-left: 3px solid #EA4335; padding: 12px; border-radius: 6px;">';
-          html += '<div style="font-size: 24px; font-weight: 700; color: #EA4335;">' + consensusData.diseaseCount + '</div>';
-          html += '<div style="font-size: 12px; color: var(--on-surface-variant);">' + translateText('Model(s) Detected Disease') + '</div>';
-          html += '</div>';
-        }
-        
-        if (consensusData.healthyCount > 0) {
-          html += '<div style="flex: 1; min-width: 150px; background: rgba(52, 168, 83, 0.1); border-left: 3px solid #34A853; padding: 12px; border-radius: 6px;">';
-          html += '<div style="font-size: 24px; font-weight: 700; color: #34A853;">' + consensusData.healthyCount + '</div>';
-          html += '<div style="font-size: 12px; color: var(--on-surface-variant);">' + translateText('Model(s) Said Healthy') + '</div>';
-          html += '</div>';
-        }
-        
-        html += '</div>';
-      }
-      
-      html += '<div style="overflow-x:auto; margin-top:16px;">';
-      html += '<table class="results-table" style="width:100%; border-collapse:collapse; font-size:14px;">';
-      html += '<thead><tr style="border-bottom:2px solid var(--on-surface-variant);">';
-      html += '<th style="text-align:left; padding:12px; color:var(--on-surface-variant); min-width:180px;">' + translateText('Model') + '</th>';
-      html += '<th style="text-align:left; padding:12px; color:var(--on-surface-variant); min-width:200px;">' + translateText('Disease Detected') + '</th>';
-      html += '<th style="text-align:right; padding:12px; color:var(--on-surface-variant); min-width:120px;">' + translateText('Confidence') + '</th>';
-      html += '<th style="text-align:left; padding:12px; color:var(--on-surface-variant); min-width:350px;">' + translateText('Recommended Treatment') + '</th>';
-      html += '<th style="text-align:center; padding:12px; color:var(--on-surface-variant); min-width:140px;">' + translateText('Your Feedback') + '</th>';
-      html += '</tr></thead><tbody>';
+      // Start Result List
+      html += '<div class="res-list">';
       
       results.forEach((r, index) => {
-        let rowClass = '';
-        let badge = '';
         let conf = 0;
         let disease = 'No detection';
         let rawDisease = null;
         let isHealthy = false;
         let isDisease = false;
+        let badgeClass = 'low';
+        let badgeText = '';
         
         if (r.error) {
-          badge = '<span class="badge err">' + translateText('Error') + '</span>';
+          badgeClass = 'high';
+          badgeText = translateText('Error');
           disease = r.error;
         } else if (r.type === 'detection') {
           if (r.data.predictions && r.data.predictions.length > 0) {
@@ -4094,23 +4534,28 @@ async function clearAnalyticsData() {
             if (!disease || disease === '' || /^\d+$/.test(disease)) {
               console.warn(r.name + ' returned invalid class:', disease, 'Full prediction:', top);
               disease = translateText('Unknown Disease') + ' (ID: ' + disease + ')';
-              badge = '<span class="badge warn">⚠️ ' + translateText('Invalid') + '</span>';
+              badgeClass = 'med';
+              badgeText = translateText('Invalid');
               isDisease = true;
             }
             // Check if this is a healthy classification
             else if (disease.toLowerCase().trim() === 'healthy') {
               isHealthy = true;
-              badge = '<span class="badge ok">' + translateText('Healthy') + '</span>';
+              badgeClass = 'healthy';
+              badgeText = translateText('Healthy');
               disease = translateText('Healthy');
             } else {
               isDisease = true;
-              badge = conf >= 80 ? '<span class="badge err">' + translateText('High') + '</span>' : conf >= 50 ? '<span class="badge warn">' + translateText('Medium') + '</span>' : '<span class="badge ok">' + translateText('Low') + '</span>';
+              if (conf >= 80) { badgeClass = 'high'; badgeText = translateText('High'); }
+              else if (conf >= 50) { badgeClass = 'med'; badgeText = translateText('Medium'); }
+              else { badgeClass = 'low'; badgeText = translateText('Low'); }
               disease = translateText(disease);
             }
           } else {
             disease = translateText('Healthy');
             isHealthy = true;
-            badge = '<span class="badge ok">' + translateText('Healthy') + '</span>';
+            badgeClass = 'healthy';
+            badgeText = translateText('Healthy');
           }
         } else if (r.type === 'classification') {
           if (r.data.top || r.data.predicted_classes) {
@@ -4121,17 +4566,21 @@ async function clearAnalyticsData() {
             // Check if this is a healthy classification
             if (disease.toLowerCase().trim() === 'healthy' || disease.toLowerCase().trim() === 'no detection') {
               isHealthy = true;
-              badge = '<span class="badge ok">' + translateText('Healthy') + '</span>';
+              badgeClass = 'healthy';
+              badgeText = translateText('Healthy');
               disease = translateText('Healthy');
             } else {
               isDisease = true;
-              badge = conf >= 80 ? '<span class="badge err">' + translateText('High') + '</span>' : conf >= 50 ? '<span class="badge warn">' + translateText('Medium') + '</span>' : '<span class="badge ok">' + translateText('Low') + '</span>';
+              if (conf >= 80) { badgeClass = 'high'; badgeText = translateText('High'); }
+              else if (conf >= 50) { badgeClass = 'med'; badgeText = translateText('Medium'); }
+              else { badgeClass = 'low'; badgeText = translateText('Low'); }
               disease = translateText(disease);
             }
           } else {
             disease = translateText('Healthy');
             isHealthy = true;
-            badge = '<span class="badge ok">' + translateText('Healthy') + '</span>';
+            badgeClass = 'healthy';
+            badgeText = translateText('Healthy');
           }
         }
         
@@ -4149,79 +4598,62 @@ async function clearAnalyticsData() {
         };
         const urgencyColor = urgencyColors[severityAssessment.treatmentUrgency] || '#5f6368';
         
-        // Highlight row based on detection type
-        let rowStyle = 'border-bottom:1px solid rgba(255,255,255,0.05);';
-        if (isDisease) {
-          rowStyle += ' background: rgba(234, 67, 53, 0.08);'; // Highlight disease detections
-        } else if (isHealthy) {
-          rowStyle += ' background: rgba(52, 168, 83, 0.05); opacity: 0.7;'; // Dim healthy detections
-        }
-        
-        html += '<tr style="' + rowStyle + '">';
-        html += '<td style="padding:16px 12px; font-weight:500; vertical-align:top;">';
-        
-        // Add icon to indicate disease vs healthy
-        if (isDisease) {
-          html += '<span class="material-symbols-rounded" style="color:#EA4335; font-size:18px; margin-right:4px; vertical-align:middle;">error</span> ';
-        } else if (isHealthy) {
-          html += '<span class="material-symbols-rounded" style="color:#34A853; font-size:18px; margin-right:4px; vertical-align:middle;">check_circle</span> ';
-        }
-        
-        html += r.name + '</td>';
-        html += '<td style="padding:16px 12px; vertical-align:top;">' + disease + ' ' + badge;
-        
-        // Add severity and urgency indicators
-        if (disease !== 'Healthy' && !r.error) {
-          html += '<br><span style="font-size:11px; margin-top:4px; display:inline-block;">';
-          html += '<span style="background:' + urgencyColor + '20; color:' + urgencyColor + '; padding:2px 6px; border-radius:3px; margin-right:4px;">🚨 ' + translateText(severityAssessment.treatmentUrgency) + '</span>';
-          html += '<span style="background:rgba(255,255,255,0.1); color:var(--on-surface-variant); padding:2px 6px; border-radius:3px;">📊 ' + translateText(severityAssessment.severity) + ' ' + translateText('severity') + '</span>';
-          html += '</span>';
-        }
-        
-        html += '</td>';
-        html += '<td style="padding:16px 12px; text-align:right; font-weight:600; vertical-align:top;">' + (conf || '-') + (conf ? '%' : '') + '</td>';
-        html += '<td style="padding:16px 12px; font-size:13px; line-height:1.6; color:var(--on-surface-variant); vertical-align:top;">' + remedy + '</td>';
-        
-        // Add feedback buttons
         const feedbackId = analysisId + '_' + index;
-        html += '<td style="padding:16px 12px; text-align:center; vertical-align:top;">';
-        html += '<div style="display: flex; gap: 8px; justify-content: center; align-items: center;">';
-        html += '<button onclick="handleModelFeedback(\'' + analysisId + '\', \'' + r.name + '\', true, \'' + feedbackId + '\')" ';
-        html += 'id="correct_' + feedbackId + '" ';
-        html += 'style="padding: 6px 12px; border: 2px solid #34A853; background: transparent; color: #34A853; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s;" ';
-        html += 'onmouseover="this.style.background=\'#34A853\'; this.style.color=\'white\';" ';
-        html += 'onmouseout="this.style.background=\'transparent\'; this.style.color=\'#34A853\';">';
-        html += '<span class="material-symbols-rounded" style="font-size:16px; vertical-align:middle;">check</span> ' + translateText('Correct') + '</button>';
-        html += '<button onclick="handleModelFeedback(\'' + analysisId + '\', \'' + r.name + '\', false, \'' + feedbackId + '\')" ';
-        html += 'id="wrong_' + feedbackId + '" ';
-        html += 'style="padding: 6px 12px; border: 2px solid #EA4335; background: transparent; color: #EA4335; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s;" ';
-        html += 'onmouseover="this.style.background=\'#EA4335\'; this.style.color=\'white\';" ';
-        html += 'onmouseout="this.style.background=\'transparent\'; this.style.color=\'#EA4335\';">';
-        html += '<span class="material-symbols-rounded" style="font-size:16px; vertical-align:middle;">close</span> ' + translateText('Wrong') + '</button>';
-        html += '</div>';
-        html += '<div id="feedback_status_' + feedbackId + '" style="font-size: 11px; margin-top: 4px; color: var(--on-surface-variant);"></div>';
-        html += '</td>';
-        html += '</tr>';
+        
+        // CARD START
+        html += `<div class="res-card">`;
+        
+        // HEADER
+        html += `<div class="res-header">`;
+        html += `<div class="res-title-group">`;
+        html += `<h3 class="res-disease-name">${disease}</h3>`;
+        html += `<span class="res-model-name">${r.name}</span>`;
+        html += `</div>`;
+        html += `<span class="res-badge ${badgeClass}">${badgeText}</span>`;
+        html += `</div>`;
+        
+        // BODY
+        html += `<div class="res-body">`;
+        
+        // METRICS
+        html += `<div class="res-metrics">`;
+        html += `<div class="res-metric"><span class="res-metric-label">${translateText('Confidence')}</span><span class="res-metric-value">${conf ? conf + '%' : 'N/A'}</span></div>`;
+        if (isDisease) {
+            html += `<div class="res-metric"><span class="res-metric-label">${translateText('Urgency')}</span><span class="res-metric-value" style="color:${urgencyColor}">${translateText(severityAssessment.treatmentUrgency)}</span></div>`;
+        }
+        html += `</div>`;
+        
+        // REMEDY
+        if (remedy && remedy !== 'N/A') {
+            let formattedRemedy = remedy;
+            // Format Organic/Chemical sections if present
+            formattedRemedy = formattedRemedy.replace(/(?:🔹 )?(Organic:)/g, '<div class="remedy-block"><span class="remedy-type">🌿 Organic:</span>');
+            formattedRemedy = formattedRemedy.replace(/(?:🔹 )?(Chemical:)/g, '</div><div class="remedy-block"><span class="remedy-type">⚗️ Chemical:</span>');
+            
+            html += `<div class="res-remedy">`;
+            html += `<div class="res-remedy-header"><span class="material-symbols-rounded" style="font-size:16px;">medical_services</span> ${translateText('Recommended Treatment')}</div>`;
+            html += `<div class="res-remedy-content">${formattedRemedy}</div>`;
+            html += `</div>`;
+        }
+        html += `</div>`; // End Body
+        
+        // FEEDBACK
+        html += `<div class="res-feedback">`;
+        html += `<span class="res-feedback-text" id="feedback_status_${feedbackId}">${translateText('Was this correct?')}</span>`;
+        html += `<div class="res-feedback-actions">`;
+        html += `<button class="res-btn-feedback correct" id="correct_${feedbackId}" onclick="handleModelFeedback('${analysisId}', '${r.name}', true, '${feedbackId}')"><span class="material-symbols-rounded" style="font-size:14px;">check</span> ${translateText('Correct')}</button>`;
+        html += `<button class="res-btn-feedback wrong" id="wrong_${feedbackId}" onclick="handleModelFeedback('${analysisId}', '${r.name}', false, '${feedbackId}')"><span class="material-symbols-rounded" style="font-size:14px;">close</span> ${translateText('Wrong')}</button>`;
+        html += `</div>`;
+        html += `</div>`;
+        
+        html += `</div>`; // End Card
       });
       
-      html += '</tbody></table>';
-      html += '</div>';
-      html += '<p style="color: var(--on-surface-variant); font-size: 12px; margin-top: 12px;">⚠️ Remedies are general guidelines. Consult agricultural expert for specific cases.</p>';
-      html += '</div>';
+      html += '</div>'; // End List
+      html += '<p style="color: var(--on-surface-variant); font-size: 12px; margin-top: 16px; text-align: center;">⚠️ Remedies are general guidelines. Consult agricultural expert for specific cases.</p>';
       
       res.innerHTML = html;
 
-      // Add data-labels to table cells for responsive view
-      const table = res.querySelector('.results-table');
-      if (table) {
-        const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent);
-        table.querySelectorAll('tbody tr').forEach(row => {
-          row.querySelectorAll('td').forEach((td, i) => {
-            td.setAttribute('data-label', headers[i]);
-          });
-        });
-      }
-      
       renderCtx(['Visual-only analysis. Sensors removed.']);
     }
 
