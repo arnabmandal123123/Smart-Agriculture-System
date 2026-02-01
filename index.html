@@ -897,8 +897,8 @@
   
       <article class="card">
         <div class="head">
-          <h2 class="translatable">SYSTEM DASHBOARD</h2>
-          <button class="btn sec" onclick="location.reload()"><span>🔄</span> <span class="translatable">Restart</span></button>
+          <h2 class="translatable">System Dashboard</h2>
+          <button class="btn sec" onclick="location.reload()"><span>🔄</span> <span class="translatable">Refresh</span></button>
         </div>
         <section class="status">
           <div class="chip"><span class="dot offline" id="espDot"></span><span id="espStatus" class="translatable">ESP</span></div>
@@ -2898,12 +2898,13 @@ function calculateConsensus(results) {
           analyticsData.charts.modelPrecision.destroy();
           analyticsData.charts.modelPrecision = null;
         }
-        container.innerHTML = '<p style="text-align: center; padding: 60px 20px; color: var(--on-surface-variant); font-size: 14px;">📊 No feedback data yet.<br><br>Rate model predictions using ✓ Correct or ✗ Wrong buttons to see precision statistics.</p><canvas id="modelPrecisionChart" style="width: 100%; height: 100%;"></canvas>';
+        // Show message only (no canvas). When feedback arrives the canvas will be created and the message removed.
+        container.innerHTML = '<p style="text-align: center; padding: 60px 20px; color: var(--on-surface-variant); font-size: 14px;">📊 No feedback data yet.<br><br>Rate model predictions using ✓ Correct or ✗ Wrong buttons to provide feedback so counts appear.</p>';
         console.log('ℹ️ No feedback data available for chart');
         return;
       }
       
-      console.log('📊 Chart data - Models:', modelNames.length, '| Precision:', precisionData);
+console.log('📊 Chart data - Models:', modelNames.length, '| Correct:', correctData, '| Wrong:', wrongData);
       
       // Ensure canvas exists (it might have been replaced with message)
       let canvas = document.getElementById('modelPrecisionChart');
@@ -2929,23 +2930,13 @@ function calculateConsensus(results) {
           labels: modelNames,
           datasets: [
             {
-              label: 'Precision (%)',
-              data: precisionData,
-              backgroundColor: precisionData.map(p => p >= 80 ? '#34A85380' : p >= 60 ? '#FBBC0480' : '#EA433580'),
-              borderColor: precisionData.map(p => p >= 80 ? '#34A853' : p >= 60 ? '#FBBC04' : '#EA4335'),
-              borderWidth: 3,
-              borderRadius: 8,
-              yAxisID: 'y'
-            },
-            {
               label: 'Correct',
               data: correctData,
               backgroundColor: '#34A85340',
               borderColor: '#34A853',
               borderWidth: 2,
               borderRadius: 6,
-              yAxisID: 'y1',
-              hidden: true
+              yAxisID: 'y'
             },
             {
               label: 'Wrong',
@@ -2954,8 +2945,7 @@ function calculateConsensus(results) {
               borderColor: '#EA4335',
               borderWidth: 2,
               borderRadius: 6,
-              yAxisID: 'y1',
-              hidden: true
+              yAxisID: 'y'
             }
           ]
         },
@@ -2965,19 +2955,6 @@ function calculateConsensus(results) {
           scales: {
             y: {
               beginAtZero: true,
-              max: 100,
-              ticks: {
-                callback: function(value) { return value + '%'; },
-                color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface-variant'),
-                font: { size: 13 }
-              },
-              grid: {
-                color: 'rgba(255, 255, 255, 0.1)'
-              }
-            },
-            y1: {
-              beginAtZero: true,
-              position: 'right',
               title: {
                 display: true,
                 text: 'Count',
@@ -2989,7 +2966,7 @@ function calculateConsensus(results) {
                 font: { size: 13 }
               },
               grid: {
-                drawOnChartArea: false
+                drawOnChartArea: true
               }
             },
             x: {
@@ -3020,13 +2997,19 @@ function calculateConsensus(results) {
                 label: function(context) {
                   const label = context.dataset.label || '';
                   const value = context.parsed.y;
-                  if (context.datasetIndex === 0) {
-                    const modelName = context.label;
-                    const feedback = analyticsData.modelFeedback[modelName];
+                  const modelName = context.label;
+                  const feedback = analyticsData.modelFeedback[modelName];
+                  if (!feedback) return label + ': ' + value;
+                  if (label === 'Correct') {
                     return [
-                      label + ': ' + value.toFixed(1) + '%',
-                      'Correct: ' + feedback.correct,
+                      'Correct: ' + value,
                       'Wrong: ' + feedback.wrong,
+                      'Total: ' + feedback.total
+                    ];
+                  } else if (label === 'Wrong') {
+                    return [
+                      'Wrong: ' + value,
+                      'Correct: ' + feedback.correct,
                       'Total: ' + feedback.total
                     ];
                   }
