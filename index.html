@@ -539,7 +539,7 @@
     .tab-content.active {
       display: flex;
       flex-direction: column;
-      gap: 32px; /* Increased spacing for professional look */
+      gap: 24px;
     }
 
     @keyframes fadeInTab {
@@ -1265,7 +1265,7 @@
       <article class="card">
         <div class="head">
           <h2 class="translatable">System Dashboard</h2>
-          <button class="btn sec" onclick="refreshDashboard(this)"><span class="material-symbols-rounded">refresh</span> <span class="translatable">Refresh</span></button>
+          <button class="btn sec" onclick="location.reload()"><span class="material-symbols-rounded">refresh</span> <span class="translatable">Refresh</span></button>
         </div>
         <section class="status">
           <div class="chip"><span class="dot offline" id="espDot"></span><span id="espStatus" class="translatable">ESP</span></div>
@@ -1276,6 +1276,14 @@
       </article>
 
       <!-- Pump Control on Home Tab -->
+      <!-- 
+        DEVICE-SIDE IRRIGATION CONTROL ARCHITECTURE:
+        - Timer logic runs fully on ESP32-CAM (survives app kill/phone off)
+        - MQTT retained messages store schedule/timer state
+        - ESP32 uses NTP + local clock for execution
+        - Priority: Manual Override > Quick Timer > Schedule
+        - Mobile app is just a remote control - ESP32 is the master
+      -->
       <article class="card control-card" id="pumpCard">
         <div class="head">
           <h2 class="translatable">Irrigation Control</h2>
@@ -1283,6 +1291,20 @@
             <span class="dot" id="pumpStatusDot" style="background: var(--on-surface-variant); box-shadow: none;"></span>
             <span id="pumpStatusText" class="translatable" style="font-weight: 700;">OFF</span>
           </div>
+        </div>
+        
+        <!-- Device-Side Control Info Banner -->
+        <div style="padding: 12px; background: var(--primary-container); border-radius: 8px; margin-bottom: 16px; border-left: 4px solid var(--primary);">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <span class="material-symbols-rounded" style="font-size: 18px; color: var(--primary);">info</span>
+            <span style="font-weight: 600; color: var(--primary); font-size: 13px;">Device-Side Timer Control</span>
+          </div>
+          <div style="font-size: 12px; color: var(--on-surface-variant); line-height: 1.4;">
+            Timers run on ESP32-CAM. Works even if app is closed or phone is off! 🚀
+          </div>
+
+          <!-- Device status (NTP / Schedule / Quick Timer) -->
+          <div id="espScheduleStatus" style="font-size:13px; color:var(--on-surface-variant); padding:8px 12px; border-radius:8px; background: rgba(255,255,255,0.02); margin-top:8px;">NTP: — | Schedule: OFF</div>
         </div>
         
         <div style="display: flex; flex-direction: column; gap: 20px;">
@@ -1303,21 +1325,32 @@
 
           <!-- Schedule Section -->
           <div style="margin-top: 12px; padding-top: 16px; border-top: 1px solid var(--outline-variant);">
-            <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--on-surface); font-weight: 600;" class="translatable">⏳ Scheduled Watering</h3>
-            <div style="display: flex; gap: 12px; margin-bottom: 12px;">
-              <div style="flex: 1;">
-                <label style="font-size: 11px; color: var(--on-surface-variant); display: block; margin-bottom: 4px;" class="translatable">Start Time</label>
-                <input type="time" id="pumpStartTime" style="width: 100%; padding: 10px; background: var(--surface-container); border: 1px solid var(--outline-variant); border-radius: 8px; color: var(--on-surface); font-family: var(--font-sans);">
-              </div>
-              <div style="flex: 1;">
-                <label style="font-size: 11px; color: var(--on-surface-variant); display: block; margin-bottom: 4px;" class="translatable">Duration (min)</label>
-                <input type="number" id="pumpDuration" min="1" max="60" value="5" style="width: 100%; padding: 10px; background: var(--surface-container); border: 1px solid var(--outline-variant); border-radius: 8px; color: var(--on-surface); font-family: var(--font-sans);">
-              </div>
+            <!-- Quick Delay Timer -->
+            <h3 style="font-size: 14px; margin-bottom: 8px; color: var(--on-surface); font-weight: 600;" class="translatable">⏱️ Quick Timer</h3>
+            <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+              <input type="number" id="delayMinutes" min="1" max="120" value="10" placeholder="Min" style="width: 60px; padding: 8px; background: var(--surface-container); border: 1px solid var(--outline-variant); border-radius: 8px; color: var(--on-surface); font-family: var(--font-sans);">
+              <button class="btn sec" onclick="setDelayTimer('run')" style="flex: 1; font-size: 12px; padding: 8px; justify-content: center; background: var(--primary-container); color: var(--primary); border-color: var(--primary-container);">
+                <span class="translatable">Run</span>
+              </button>
+              <button class="btn sec" onclick="setDelayTimer('on')" style="flex: 1; font-size: 12px; padding: 8px; justify-content: center;">
+                <span class="translatable">On Delay</span>
+              </button>
+              <button class="btn sec" onclick="setDelayTimer('off')" style="flex: 1; font-size: 12px; padding: 8px; justify-content: center;">
+                <span class="translatable">Off Delay</span>
+              </button>
             </div>
-            <button id="scheduleBtn" class="btn sec" onclick="savePumpSchedule()" style="width: 100%; justify-content: center;">
+            <div id="timerCountdown" style="display: none; margin-bottom: 12px; padding: 10px; background: var(--primary-container); border-radius: 8px; color: var(--primary); font-size: 14px; text-align: center; font-weight: 600; border: 1px solid var(--primary);"></div>
+
+            <!-- Multi-Schedule -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <h3 style="font-size: 14px; margin: 0; color: var(--on-surface); font-weight: 600;" class="translatable">📅 Schedules</h3>
+              <button class="btn sec" onclick="addScheduleRow()" style="padding: 4px 8px; font-size: 12px; min-height: 24px;"><span class="material-symbols-rounded" style="font-size: 16px;">add</span> <span class="translatable">Add</span></button>
+            </div>
+            <div id="scheduleList" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;"></div>
+            
+            <button id="scheduleBtn" class="btn sec" onclick="savePumpSchedules()" style="width: 100%; justify-content: center;">
               <span class="material-symbols-rounded">event_available</span> <span class="translatable">Set Schedule</span>
             </button>
-            <div id="scheduleStatus" style="margin-top: 12px; font-size: 12px; color: var(--on-surface-variant); text-align: center; min-height: 18px;"></div>
           </div>
         </div>
       </article>
@@ -2197,7 +2230,7 @@ function calculateConsensus(results) {
       'ESP32 reachable': 'ইএসপি৩২ পৌঁছেছে',
       'Cannot reach ESP32 at': 'ইএসপি৩২ পৌঁছানো যাচ্ছে না',
       'Ready. Click "Start stream" to preview.': 'প্রস্তুত। পূর্বরূপ দেখতে "স্টার্ট স্ট্রিম" ক্লিক করুন।',
-      'ESP Down...': 'সংযোগ ব্যর্থ। যাচাই করুন:\n1. ইএসপি৩২ চালু আছে\n2. ওয়াইফাই সংযুক্ত আছে\n3. আইপি সঠিক: ',
+      'Connection failed. Check:\n1. ESP32 is powered on\n2. WiFi connected\n3. IP is correct: ': 'সংযোগ ব্যর্থ। যাচাই করুন:\n1. ইএসপি৩২ চালু আছে\n2. ওয়াইফাই সংযুক্ত আছে\n3. আইপি সঠিক: ',
       '⏳ Loading...': 'লোড হচ্ছে...',
       '📥 Load': 'লোড',
       '❌ Failed to load image': 'চিত্র লোড ব্যর্থ হয়েছে',
@@ -4242,15 +4275,6 @@ async function clearAnalyticsData() {
           document.getElementById('camDot').classList.remove('offline');
           espDot.classList.remove('offline');
           // espStatus.textContent = 'Online';
-
-          // Enable pump card
-          const pumpBtn = document.getElementById('pumpBtn');
-          const pumpCard = document.getElementById('pumpCard');
-          if (pumpBtn) pumpBtn.disabled = false;
-          if (pumpCard) {
-            pumpCard.style.opacity = '1';
-            pumpCard.style.pointerEvents = 'auto';
-          }
         } else {
           console.error('Connection failed: ESP32 not reachable at', cleanIP);
           if (cs) { cs.textContent = translateText('Cannot reach ESP32 at') + ' ' + cleanIP; cs.className = 'conn-status error'; }
@@ -4259,18 +4283,6 @@ async function clearAnalyticsData() {
           document.getElementById('camDot').classList.add('offline');
           espDot.classList.add('offline');
           // espStatus.textContent = 'Offline';
-
-          // Disable pump card
-          // Disable pump button only (allow scheduling)
-          const pumpBtn = document.getElementById('pumpBtn');
-          const pumpCard = document.getElementById('pumpCard');
-          if (pumpBtn) pumpBtn.disabled = true;
-          if (pumpCard) {
-            pumpCard.style.opacity = '0.6';
-            pumpCard.style.pointerEvents = 'none';
-            pumpCard.style.opacity = '1';
-            pumpCard.style.pointerEvents = 'auto';
-          }
         }
       })();
     }
@@ -4947,7 +4959,6 @@ async function clearAnalyticsData() {
     // Auto-load saved IP or use default, then auto-connect
     window.addEventListener('DOMContentLoaded', function() {
       // Initialize pump card as disabled (until ESP connects)
-      // Initialize pump button as disabled (until ESP connects), but allow scheduling
       const pumpBtn = document.getElementById('pumpBtn');
       const pumpCard = document.getElementById('pumpCard');
       if (pumpBtn) pumpBtn.disabled = true;
@@ -5015,11 +5026,55 @@ async function clearAnalyticsData() {
     const mqtt_client_id = 'WebAppClient_' + Math.random().toString(16).substr(2, 8);
     const sensor_topic = 'esp32/cam/sensors';
     const command_topic = 'esp32/cam/command';
+    
+    // Irrigation Control Topics (Device-Side Timer Architecture)
+    // Mobile app sends commands → MQTT (retained) → ESP32 executes locally
+    // ESP32 continues timer operation even if app is killed or phone is off
+    const TOPIC_SCHEDULE = 'irrigation_arnab/pump/schedule';
+    const TOPIC_MANUAL = 'irrigation_arnab/pump/manual';
+    const TOPIC_STATUS = 'irrigation_arnab/pump/status';
 
     let pumpOn = false;
+    let pendingSchedulePayload = null;
+    let pendingQuickTimerPayload = null;
 
     // Client variable will be created by the connect routine below
     let client = null;
+
+    function isMqttConnected() {
+      return client && client.isConnected();
+    }
+
+    function publishIrrigationMessage(topic, payload, { retained = true, qos = 1, queueKey = null } = {}) {
+      if (!isMqttConnected()) {
+        console.warn('MQTT not connected - queuing irrigation command:', payload);
+        if (queueKey === 'schedule') pendingSchedulePayload = payload;
+        if (queueKey === 'quick') pendingQuickTimerPayload = payload;
+        showToast('MQTT offline - command queued', 'warn');
+        return false;
+      }
+
+      const message = new Paho.MQTT.Message(payload);
+      message.destinationName = topic;
+      message.retained = retained;
+      message.qos = qos;
+      client.send(message);
+      return true;
+    }
+
+    function flushPendingIrrigationCommands() {
+      if (!isMqttConnected()) return;
+
+      if (pendingQuickTimerPayload) {
+        publishIrrigationMessage(TOPIC_SCHEDULE, pendingQuickTimerPayload, { retained: true, qos: 1, queueKey: null });
+        pendingQuickTimerPayload = null;
+      }
+
+      if (pendingSchedulePayload) {
+        publishIrrigationMessage(TOPIC_SCHEDULE, pendingSchedulePayload, { retained: true, qos: 1, queueKey: null });
+        pendingSchedulePayload = null;
+      }
+    }
 
     // Attempt to connect to an MQTT broker with optional fallback
     function tryConnect(brokerHost, port, path, useSSL, attemptFallback = true) {
@@ -5052,20 +5107,57 @@ async function clearAnalyticsData() {
       client.subscribe(sensor_topic);
       // Also subscribe to status topic to receive acks from ESP
       client.subscribe('esp32/cam/status');
+      // Subscribe to irrigation status (device-side updates)
+      client.subscribe(TOPIC_STATUS);
+      console.log('Subscribed to irrigation control topics');
       document.getElementById('mqttDot').classList.remove('offline');
+      flushPendingIrrigationCommands();
       // document.getElementById('mqttStatus').textContent = 'Online';
+      
+      // Enable pump controls when MQTT connects (independent of Camera HTTP status)
+      const pumpBtn = document.getElementById('pumpBtn');
+      const pumpCard = document.getElementById('pumpCard');
+      if (pumpBtn) pumpBtn.disabled = false;
+      if (pumpCard) {
+        pumpCard.style.opacity = '1';
+        pumpCard.style.pointerEvents = 'auto';
+      }
     }
 
     function onConnectionLost(responseObject) {
       if (responseObject.errorCode !== 0) {
         console.log("onConnectionLost:" + responseObject.errorMessage);
+        const mqttDot = document.getElementById('mqttDot');
+        if (mqttDot) mqttDot.classList.add('offline');
         // Maybe try to reconnect here
+        
+        // Disable pump controls if MQTT is lost
+        const pumpBtn = document.getElementById('pumpBtn');
+        const pumpCard = document.getElementById('pumpCard');
+        if (pumpBtn) pumpBtn.disabled = true;
+        if (pumpCard) {
+          pumpCard.style.opacity = '0.6';
+          pumpCard.style.pointerEvents = 'none';
+        }
       }
     }
 
     function onMessageArrived(message) {
       const payload = message.payloadString;
-      // Try JSON sensor update first
+      
+      // Handle irrigation status updates from ESP32
+      if (message.destinationName === TOPIC_STATUS) {
+        try {
+          const status = JSON.parse(payload);
+          console.log('📊 Pump Status Update:', status);
+          updatePumpStatus(status);
+          return;
+        } catch (e) {
+          console.error('Failed to parse pump status:', e);
+        }
+      }
+      
+      // Try JSON sensor update
       if (payload && payload[0] === '{') {
         try {
           const data = JSON.parse(payload);
@@ -5089,7 +5181,7 @@ async function clearAnalyticsData() {
       }
 
       // Handle plain-text control/status messages
-      console.log("MQTT message (text) arrived:", payload);
+      // console.log("MQTT message (text) arrived:", payload);
       if (payload.indexOf('PUMP_ON') !== -1) {
         console.log('ESP acknowledged PUMP_ON');
       } else if (payload.indexOf('PUMP_OFF') !== -1) {
@@ -5097,211 +5189,410 @@ async function clearAnalyticsData() {
       }
     }
 
-    function togglePump() {
-      const newState = pumpOn ? 'off' : 'on';
-      const command = newState === 'on' ? 'PUMP_ON' : 'PUMP_OFF';
-      
-      const message = new Paho.MQTT.Message(command);
-      message.destinationName = command_topic;
-      console.log('Publishing pump command:', command, 'to', command_topic);
-      client.send(message);
-
-      pumpOn = !pumpOn;
-      
-      // UI Updates for Control Card
+    let activePumpTimer = null;
+    let countdownInterval = null;
+    let lastScheduleSignature = null;
+    
+    // Update UI based on ESP32 device-side status
+    function updatePumpStatus(status) {
       const btn = document.getElementById('pumpBtn');
       const card = document.getElementById('pumpCard');
       const statusText = document.getElementById('pumpStatusText');
       const statusDot = document.getElementById('pumpStatusDot');
       const icon = document.getElementById('pumpIcon');
       
-      if (pumpOn) {
-        btn.innerHTML = '<span class="material-symbols-rounded">stop_circle</span> <span class="translatable">' + translateText('Deactivate Pump') + '</span>';
-        btn.className = 'btn err'; // Switch to error/red style for stop action
-        btn.style.width = '100%'; // Maintain width override
-        btn.style.padding = '16px';
-        btn.style.justifyContent = 'center';
-        btn.style.fontSize = '16px';
-        
+      const isOn = status.pump === 'ON';
+      pumpOn = isOn;
+      
+      if (isOn) {
+        if(btn) {
+          btn.innerHTML = '<span class="material-symbols-rounded">stop_circle</span> <span class="translatable">' + translateText('Deactivate Pump') + '</span>';
+          btn.className = 'btn err';
+        }
         if(card) card.style.borderLeftColor = 'var(--primary)';
         if(statusText) statusText.textContent = translateText('ON');
         if(statusDot) {
-            statusDot.style.background = 'var(--success)';
-            statusDot.style.boxShadow = '0 0 8px var(--success)';
+          statusDot.style.background = 'var(--success)';
+          statusDot.style.boxShadow = '0 0 8px var(--success)';
         }
         if(icon) icon.style.color = 'var(--primary)';
       } else {
-        btn.innerHTML = '<span class="material-symbols-rounded">power_settings_new</span> <span class="translatable">' + translateText('Activate Pump') + '</span>';
-        btn.className = 'btn pri'; // Switch back to primary style
-        btn.style.width = '100%';
-        btn.style.padding = '16px';
-        btn.style.justifyContent = 'center';
-        btn.style.fontSize = '16px';
-        
+        if(btn) {
+          btn.innerHTML = '<span class="material-symbols-rounded">power_settings_new</span> <span class="translatable">' + translateText('Activate Pump') + '</span>';
+          btn.className = 'btn pri';
+        }
         if(card) card.style.borderLeftColor = 'var(--outline-variant)';
         if(statusText) statusText.textContent = translateText('OFF');
         if(statusDot) {
-            statusDot.style.background = 'var(--on-surface-variant)';
-            statusDot.style.boxShadow = 'none';
+          statusDot.style.background = 'var(--on-surface-variant)';
+          statusDot.style.boxShadow = 'none';
         }
         if(icon) icon.style.color = 'var(--on-surface-variant)';
       }
+      
+      // Show mode and remaining time
+      if (status.mode && status.mode !== 'OFF') {
+        let timeInfo = '';
+        if (status.remaining_sec) {
+          timeInfo = Math.floor(status.remaining_sec / 60) + 'm ' + (status.remaining_sec % 60) + 's';
+        } else if (status.remaining_min) {
+          timeInfo = status.remaining_min + 'm';
+        } else if (status.on_delay_remaining) {
+          timeInfo = 'Starting in ' + status.on_delay_remaining + 's';
+        }
+        
+        if (timeInfo) {
+          const cdDisplay = document.getElementById('timerCountdown');
+          if (cdDisplay) {
+            cdDisplay.style.display = 'block';
+            cdDisplay.innerHTML = `⏱️ ${status.mode}: ${timeInfo}`;
+          }
+        }
+      }
+
+      // Update device schedule / quick timer / NTP info
+      const esps = document.getElementById('espScheduleStatus');
+      if (esps) {
+        const parts = [];
+        if (status.ntp_synced) {
+          parts.push('NTP: ' + (status.time ? status.time : 'synced'));
+        } else {
+          parts.push('NTP: unsynced');
+        }
+        if (status.schedule_enabled) {
+          parts.push('Schedule: ' + (status.schedule_start || '--') + ' for ' + (status.schedule_duration_min || '--') + 'm');
+        } else {
+          parts.push('Schedule: OFF');
+        }
+        if (status.quick_active) {
+          let q = 'Quick: active';
+          if (status.quick_on_delay_sec !== undefined) q += ' (on_delay ' + status.quick_on_delay_sec + 's)';
+          parts.push(q);
+        }
+        esps.textContent = parts.join(' | ');
+      }
+
+      // Detect schedule confirmation from ESP32
+      const currentSig = JSON.stringify({
+        en: status.schedule_enabled,
+        start: status.schedule_start,
+        dur: status.schedule_duration_min
+      });
+
+      if (lastScheduleSignature && lastScheduleSignature !== currentSig) {
+        if (status.schedule_enabled) {
+          showToast(`✅ ESP32 Confirmed: Schedule at ${status.schedule_start} for ${status.schedule_duration_min}m`, 'success');
+        } else {
+          try {
+            const last = JSON.parse(lastScheduleSignature);
+            if (last.en) showToast('✅ ESP32 Confirmed: Schedule Disabled', 'info');
+          } catch(e) {}
+        }
+      }
+      lastScheduleSignature = currentSig;
+    }
+
+    function togglePump(source = 'manual') {
+      if (source === 'manual') {
+        if (activePumpTimer) {
+          clearTimeout(activePumpTimer);
+          activePumpTimer = null;
+          showToast('Timer cancelled by manual action', 'info');
+        }
+        if (countdownInterval) {
+          clearInterval(countdownInterval);
+          countdownInterval = null;
+          const cd = document.getElementById('timerCountdown');
+          if(cd) cd.style.display = 'none';
+        }
+      }
+
+      const newState = pumpOn ? 'OFF' : 'ON';
+      
+      // Send manual override to ESP32 (device-side control)
+      const payload = JSON.stringify({
+        type: 'MANUAL',
+        state: newState
+      });
+      
+      const message = new Paho.MQTT.Message(payload);
+      message.destinationName = TOPIC_MANUAL;
+      message.retained = true;  // CRITICAL: Retained message for persistence
+      console.log('📤 Publishing manual override:', payload, 'to', TOPIC_MANUAL);
+      client.send(message);
+      
+      showToast('Manual ' + newState + ' command sent to ESP32', 'info');
+
+      // UI will be updated by ESP32 status messages (device-side control)
+      // No local state changes - ESP32 is the source of truth
     }
 
     // ==================== PUMP SCHEDULER ====================
-    let pumpSchedule = { enabled: false, time: '00:00', duration: 5 };
-    let lastTriggeredDate = null;
+    let pumpSchedules = []; // Array of { id, time, duration, enabled, lastTriggered }
 
     function initPumpScheduler() {
       // Always load from local storage first as baseline/fallback
-      const saved = localStorage.getItem('pumpSchedule');
+      const saved = localStorage.getItem('pumpSchedules');
       if (saved) {
-        try { pumpSchedule = JSON.parse(saved); updateScheduleUI(); } catch(e){}
-      }
-
-      // Load from Firebase if available
-      if (typeof db !== 'undefined' && db) {
-        // Use onSnapshot for real-time updates from other devices
-        db.collection('pumpSettings').doc('schedule').onSnapshot(doc => {
-          if (doc.exists) {
-            pumpSchedule = doc.data();
-            // Sync cloud data to local storage
-            localStorage.setItem('pumpSchedule', JSON.stringify(pumpSchedule));
-            updateScheduleUI();
+        try { 
+          const parsed = JSON.parse(saved);
+          // Handle migration from old single object to array
+          if (!Array.isArray(parsed) && parsed.time) {
+            pumpSchedules = [{ id: Date.now(), time: parsed.time, duration: parsed.duration || 5, enabled: parsed.enabled || false }];
+          } else {
+            pumpSchedules = parsed || [];
           }
-        }, err => console.log('Scheduler offline mode'));
+          renderSchedules(); 
+        } catch(e){}
       }
       
       // Check schedule every 10 seconds
-      setInterval(checkPumpSchedule, 10000);
+      // setInterval(checkPumpSchedule, 10000); // Client-side scheduler disabled to rely on ESP32
     }
 
-    function updateScheduleUI() {
-      const timeInput = document.getElementById('pumpStartTime');
-      const durInput = document.getElementById('pumpDuration');
-      const status = document.getElementById('scheduleStatus');
+    function renderSchedules() {
+      const list = document.getElementById('scheduleList');
+      if (!list) return;
+      list.innerHTML = '';
       
-      if (timeInput && pumpSchedule.time) timeInput.value = pumpSchedule.time;
-      if (durInput && pumpSchedule.duration) durInput.value = pumpSchedule.duration;
-      
-      if (status) {
-        if (pumpSchedule.enabled) {
-          status.innerHTML = '✅ <span class="translatable">Scheduled:</span> ' + pumpSchedule.time + ' (' + pumpSchedule.duration + ' min)';
-          status.style.color = 'var(--success)';
+      if (pumpSchedules.length === 0) {
+        list.innerHTML = '<div style="font-size:12px; color:var(--on-surface-variant); text-align:center; padding:8px;">No schedules set</div>';
+        return;
+      }
+
+      pumpSchedules.forEach((sch, index) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display: flex; gap: 8px; align-items: center; background: var(--surface-container); padding: 8px; border-radius: 8px;';
+        row.innerHTML = `
+          <input type="time" value="${sch.time}" onchange="updateSchedule(${index}, 'time', this.value)" style="background:transparent; border:none; color:var(--on-surface); font-family:var(--font-sans); font-size:13px;">
+          <span style="font-size:12px; color:var(--on-surface-variant);">for</span>
+          <input type="number" value="${sch.duration}" min="1" max="60" onchange="updateSchedule(${index}, 'duration', this.value)" style="width:40px; background:transparent; border:1px solid var(--outline-variant); border-radius:4px; color:var(--on-surface); padding:4px; font-size:13px;">
+          <span style="font-size:12px; color:var(--on-surface-variant);">min</span>
+          <div style="flex:1;"></div>
+          <label class="switch" style="display:flex; align-items:center;">
+            <input type="checkbox" ${sch.enabled ? 'checked' : ''} onchange="updateSchedule(${index}, 'enabled', this.checked)">
+            <span style="font-size:12px; margin-left:4px;">${sch.enabled ? 'ON' : 'OFF'}</span>
+          </label>
+          <button onclick="removeScheduleRow(${index})" style="background:transparent; border:none; color:var(--error); cursor:pointer; padding:4px;"><span class="material-symbols-rounded" style="font-size:18px;">delete</span></button>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    function addScheduleRow() {
+      pumpSchedules.push({ id: Date.now(), time: '08:00', duration: 5, enabled: true });
+      renderSchedules();
+      // Don't auto-save yet - wait for user to click Save
+    }
+
+    function removeScheduleRow(index) {
+      pumpSchedules.splice(index, 1);
+      renderSchedules();
+      savePumpSchedules();  // Auto-save and sync with ESP32
+    }
+
+    function updateSchedule(index, field, value) {
+      if (pumpSchedules[index]) {
+        if (field === 'duration') {
+          const val = parseInt(value);
+          pumpSchedules[index][field] = isNaN(val) ? 5 : val;
         } else {
-          status.innerHTML = '<span class="translatable">No active schedule</span>';
-          status.style.color = 'var(--on-surface-variant)';
+          pumpSchedules[index][field] = value;
         }
       }
     }
 
-    function savePumpSchedule() {
-      const timeInput = document.getElementById('pumpStartTime');
-      const durInput = document.getElementById('pumpDuration');
+    function setDelayTimer(mode) {
+      const mins = parseInt(document.getElementById('delayMinutes').value) || 0;
+      if (mins <= 0) return showToast('Invalid duration', 'error');
       
-      if (!timeInput.value) return alert('Please select a time');
+      const cdDisplay = document.getElementById('timerCountdown');
       
-      const newSchedule = {
-        enabled: true,
-        time: timeInput.value,
-        duration: parseInt(durInput.value) || 5,
-        updatedAt: new Date().toISOString()
-      };
-      
-      const saveLocally = () => {
-        localStorage.setItem('pumpSchedule', JSON.stringify(newSchedule));
-        pumpSchedule = newSchedule;
-        updateScheduleUI();
+      // Helper to start visual countdown
+      const startVisualCountdown = (label) => {
+        if(countdownInterval) clearInterval(countdownInterval);
+        if(cdDisplay) {
+          cdDisplay.style.display = 'block';
+          let seconds = mins * 60;
+          
+          const update = () => {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            cdDisplay.innerHTML = `
+              <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+                <span>⏳ <span class="translatable">${label}</span>: ${m}m ${s}s</span>
+                <button onclick="cancelTimer()" style="background: rgba(0,0,0,0.1); border: 1px solid currentColor; color: inherit; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 4px;"><span class="material-symbols-rounded" style="font-size: 14px;">close</span> Cancel</button>
+              </div>`;
+            if(seconds <= 0) {
+               clearInterval(countdownInterval);
+               cdDisplay.style.display = 'none';
+            }
+            seconds--;
+          };
+          update(); // Initial call
+          countdownInterval = setInterval(update, 1000);
+        }
       };
 
-      if (typeof db !== 'undefined' && db && firebaseEnabled) {
-        db.collection('pumpSettings').doc('schedule').set(newSchedule)
-          .then(() => {
-            showToast('Schedule saved to Cloud', 'success');
-            saveLocally(); // Keep local sync
-          })
-          .catch(e => {
-            console.warn('Firebase save error (using local fallback):', e);
-            saveLocally(); // Fallback on permission error
-            showToast('Saved locally (Cloud permission error)', 'warn');
-          });
+      console.log(`[Timer] Setting quick timer: Mode=${mode}, Duration=${mins} mins`);
+      
+      // Send QUICK_TIMER message to ESP32 (device-side execution)
+      let onDelaySec = 0;
+      let offDelayMin = mins;
+      
+      let toastMsg = '';
+      let toastType = 'info';
+      let countdownLabel = '';
+
+      if (mode === 'run') {
+        // Run immediately for X minutes
+        onDelaySec = 0;
+        offDelayMin = mins;
+        toastMsg = `Quick Timer: Run for ${mins} minutes`;
+        toastType = 'success';
+        countdownLabel = 'Running';
+      } else if (mode === 'on') {
+        // Turn ON after X minutes delay
+        onDelaySec = mins * 60;
+        offDelayMin = 0; // Will stay on until manual stop
+        toastMsg = `Quick Timer: ON after ${mins} minutes`;
+        toastType = 'info';
+        countdownLabel = 'Starting in';
       } else {
-        saveLocally();
-        showToast('Schedule saved locally', 'info');
+        // Turn OFF after X minutes delay
+        onDelaySec = 0;
+        offDelayMin = mins;
+        toastMsg = `Quick Timer: OFF after ${mins} minutes`;
+        toastType = 'info';
+        countdownLabel = 'Stopping in';
       }
+      
+      const payload = JSON.stringify({
+        type: 'QUICK_TIMER',
+        on_delay_sec: onDelaySec,
+        off_delay_min: offDelayMin
+      });
+
+      if (!publishIrrigationMessage(TOPIC_SCHEDULE, payload, { retained: true, qos: 1, queueKey: 'quick' })) {
+        return;
+      }
+
+      console.log('📤 Publishing quick timer:', payload);
+      showToast(toastMsg, toastType);
+      startVisualCountdown(countdownLabel);
+      
+      // Note: Timer runs on ESP32 - no local countdown needed
+      // ESP32 will send status updates via TOPIC_STATUS
+    }
+
+    function cancelTimer() {
+      if (activePumpTimer) {
+        clearTimeout(activePumpTimer);
+        activePumpTimer = null;
+      }
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+      const cd = document.getElementById('timerCountdown');
+      if(cd) cd.style.display = 'none';
+      
+      // Send command to cancel device timer (Force OFF)
+      if (client && client.isConnected()) {
+        const payload = JSON.stringify({ type: 'MANUAL', state: 'OFF' });
+        const message = new Paho.MQTT.Message(payload);
+        message.destinationName = TOPIC_MANUAL;
+        message.retained = true;
+        client.send(message);
+      }
+      
+      showToast('Timer cancelled', 'info');
+    }
+
+    function savePumpSchedules() {
+      localStorage.setItem('pumpSchedules', JSON.stringify(pumpSchedules));
+      
+      // Send first enabled schedule to ESP32 (device-side execution)
+      const enabledSchedule = pumpSchedules.find(s => s.enabled);
+      
+      if (!enabledSchedule) {
+        // No enabled schedules - send disable message to ESP32
+        const payload = JSON.stringify({
+          type: 'SCHEDULE',
+          enabled: false
+        });
+        
+        if (!publishIrrigationMessage(TOPIC_SCHEDULE, payload, { retained: true, qos: 1, queueKey: 'schedule' })) {
+          return;
+        }
+        
+        showToast('All schedules disabled', 'info');
+        console.log('📡 Disabled schedule on ESP32');
+        return;
+      }
+      
+      // Ensure time is strictly HH:MM (5 chars) for ESP32 parser
+      let timeStr = enabledSchedule.time || '08:00';
+      if (timeStr.length === 4) timeStr = '0' + timeStr; // Fix 8:00 -> 08:00
+      
+      // Ensure duration is a valid integer
+      const duration = parseInt(enabledSchedule.duration) || 5;
+
+      // Send enabled schedule to ESP32
+      const payload = JSON.stringify({
+        type: 'SCHEDULE',
+        start: timeStr,
+        duration_min: duration,
+        enabled: true
+      });
+
+      if (!publishIrrigationMessage(TOPIC_SCHEDULE, payload, { retained: true, qos: 1, queueKey: 'schedule' })) {
+        return;
+      }
+      
+      showToast(`Schedule set: ${timeStr} for ${duration}m`, 'success');
+      console.log('📡 Sent schedule to ESP32:', payload);
     }
 
     function checkPumpSchedule() {
-      if (!pumpSchedule.enabled || !pumpSchedule.time) return;
+      // Client-side scheduler disabled to prevent conflicts with ESP32 device-side scheduler
+      if (!pumpSchedules || !Array.isArray(pumpSchedules) || pumpSchedules.length === 0) {
+        // console.log('🕒 Scheduler: No schedules active');
+        return;
+      }
       
       const now = new Date();
       const currentTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
       const todayDate = now.toDateString();
+
+      console.log(`🕒 Scheduler Check: Current Time=${currentTime}, Active Schedules=${pumpSchedules.length}`);
       
-      // Trigger only once per day at the specific time
-      if (currentTime === pumpSchedule.time && lastTriggeredDate !== todayDate) {
-        lastTriggeredDate = todayDate;
+      pumpSchedules.forEach(sch => {
+        if (!sch.enabled) return;
         
-        if (!pumpOn) {
-          console.log('⏰ Schedule matched! Activating pump.');
-          togglePump(); // Turn ON
-          showToast('Scheduled watering started', 'info');
+        // Trigger only once per day at the specific time
+        if (sch.time === currentTime && sch.lastTriggered !== todayDate) {
+          sch.lastTriggered = todayDate;
           
-          // Auto-off timer
-          setTimeout(() => {
-            if (pumpOn) {
-              console.log('⏰ Duration ended. Deactivating pump.');
-              togglePump(); // Turn OFF
-              showToast('Scheduled watering finished', 'success');
-            }
-          }, (pumpSchedule.duration || 5) * 60 * 1000);
+          if (!pumpOn) {
+            console.log('✅ ⏰ Schedule MATCHED for time:', sch.time, '| Duration:', sch.duration);
+            togglePump('auto'); // Turn ON
+            showToast('Scheduled watering started (' + sch.duration + ' min)', 'info');
+            
+            // Auto-off timer
+            if (activePumpTimer) clearTimeout(activePumpTimer);
+            activePumpTimer = setTimeout(() => {
+              if (pumpOn) {
+                console.log('🛑 ⏰ Schedule duration (' + sch.duration + 'm) ended. Deactivating pump.');
+                togglePump('auto'); // Turn OFF
+                showToast('Scheduled watering finished', 'success');
+              }
+              activePumpTimer = null;
+            }, (sch.duration || 5) * 60 * 1000);
+          }
         }
-      }
+      });
     }
-
-    // ==================== DASHBOARD REFRESH & REAL-TIME STATUS ====================
-    function refreshDashboard(btn) {
-      if(btn) {
-        const icon = btn.querySelector('.material-symbols-rounded');
-        if(icon) icon.style.animation = 'spin 1s linear infinite';
-        btn.disabled = true;
-      }
-
-      // 1. Check ESP Connection
-      setIP();
-
-      // 2. Check MQTT
-      if (client && !client.isConnected()) {
-        console.log('Refreshing MQTT connection...');
-        tryConnect(mqtt_broker, mqtt_port, mqtt_path, mqtt_use_ssl);
-      }
-
-      // 3. Update Charts
-      if (typeof updateCharts === 'function') updateCharts();
-
-      // 4. Finish animation
-      setTimeout(() => {
-        if(btn) {
-          const icon = btn.querySelector('.material-symbols-rounded');
-          if(icon) icon.style.animation = 'none';
-          btn.disabled = false;
-        }
-        showToast('System status refreshed', 'success');
-      }, 1500);
-    }
-
-    // Periodic status check (Real-time indicators)
-    setInterval(() => {
-      // MQTT Status
-      const mqttDot = document.getElementById('mqttDot');
-      if (mqttDot) {
-        if (client && client.isConnected()) mqttDot.classList.remove('offline');
-        else mqttDot.classList.add('offline');
-      }
-
-      // Firebase/Internet Status
-      updateFirebaseStatus(navigator.onLine && firebaseEnabled);
-    }, 5000);
   </script>
 </body>
 

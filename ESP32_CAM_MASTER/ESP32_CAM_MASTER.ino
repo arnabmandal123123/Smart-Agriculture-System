@@ -1,76 +1,67 @@
 /*
-/*
- * Smart Agricultural Disease Monitor - Optimized ESP32-CAM
- * Endpoints: /capture, /capture.jpg, /stream, /sensor
- * Includes: Preferences-based config UI, robust WiFi, reduced FB pressure
+ * ESP32-CAM Smart Irrigation System with Device-Side Timer Logic
+ * 
+ * ARCHITECTURE:
+ * - Timer logic runs FULLY on ESP32-CAM (survives app kill/phone off)
+ * - MQTT retained messages store schedule/timer state
+ * - NTP for time sync (local clock for execution)
+ * - ESP32 sends PUMP_ON/PUMP_OFF commands to Arduino slave via Serial
+ * - Arduino controls relay on pin 10
+ * 
+ * PRIORITY: Manual Override > Quick Timer > Schedule
  */
-
-// Ensure the ESP32 board package is installed and configured in the Arduino IDE.
-// Added comments to guide the user on resolving the missing WiFi.h issue.
-// No code changes are made here as the issue is related to the development environment setup.
 
 #include <WiFi.h>
 #include <WebServer.h>
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
+#include <time.h>
+#include <Preferences.h>
 #include "esp_camera.h"
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
-#include <Preferences.h>
 
-// ========== MQTT Configuration ==========
+// ========== WIFI & MQTT CONFIGURATION ==========
+const char* ssid = "Arnabmandal";
+const char* password = "hm403496";
 const char* mqtt_server = "test.mosquitto.org";
 const int mqtt_port = 1883;
-const char* sensor_topic = "esp32/cam/sensors";
-const char* status_topic = "esp32/cam/status";
-const char* command_topic = "esp32/cam/command";
+
+// MQTT Topics (using retained messages for persistence)
+const char* TOPIC_SCHEDULE = "irrigation_arnab/pump/schedule";
+const char* TOPIC_MANUAL = "irrigation_arnab/pump/manual";
+const char* TOPIC_STATUS = "irrigation_arnab/pump/status";
+
+// NTP Configuration
+const char* ntpServer = "pool.ntp.org";
+const long gmtOffset_sec = 19800;       // Adjust for your timezone (IST = 19800)
+const int daylightOffset_sec = 0;
 
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
-
-unsigned long lastMqttHeartbeat = 0;
-unsigned long lastArduinoSeen = 0;
-bool arduinoConnected = false;
-
-// ============ CONFIGURATION ============
-const char* ssid = "Arnabmandal";
-const char* password = "hm403496";
-
-// ============ GLOBALS ============
-WebServer server(80);
-camera_fb_t* capturedFrame = NULL;
 Preferences prefs;
 
-// Stream ownership control to allow UI to take over MJPEG stream reliably
+// ========== GLOBAL OBJECTS ==========
+WebServer server(80);
+
+// Camera streaming
 volatile uint32_t g_streamOwner = 0;
 volatile uint32_t g_streamRequested = 0;
-
-static uint32_t clientId(const WiFiClient &c) {
-  IPAddress ip = c.remoteIP();
-  uint32_t ipInt = ((uint32_t)ip[0] << 24) | ((uint32_t)ip[1] << 16) | ((uint32_t)ip[2] << 8) | (uint32_t)ip[3];
-  return ipInt ^ (uint32_t)c.remotePort();
-}
-
-// Serial logging control: set to true to enable verbose frame-level logs
 static const bool SERIAL_DEBUG = false;
 
-// Logging helpers
-#define LOG_INFO(fmt, ...) Serial.printf((fmt), ##__VA_ARGS__)
-#define LOG_DBG(fmt, ...) if (SERIAL_DEBUG) Serial.printf((fmt), ##__VA_ARGS__)
+// Logging helpers - Use Serial1 for debug to keep Serial clean for Arduino
+#define LOG_INFO(fmt, ...) do { Serial1.printf((fmt), ##__VA_ARGS__); } while(0)
+#define LOG_DBG(fmt, ...) if (SERIAL_DEBUG) Serial1.printf((fmt), ##__VA_ARGS__)
 
-// Runtime network settings (may be persisted)
-bool useStaticIP = false;
-IPAddress staticIP;
-IPAddress staticGateway;
-IPAddress staticSubnet;
-IPAddress staticDNS;
+// ========== PIN DEFINITIONS ==========
+#define RELAY_PIN         12  // Active-LOW relay (LOW = ON, HIGH = OFF)
 
-// AI Thinker ESP32-CAM pins
+// AI Thinker ESP32-CAM Camera Pins
 #define PWDN_GPIO_NUM     32
 #define RESET_GPIO_NUM    -1
 #define XCLK_GPIO_NUM      0
 #define SIOD_GPIO_NUM     26
 #define SIOC_GPIO_NUM     27
-#define FLASH_LED_PIN      4
 #define Y9_GPIO_NUM       35
 #define Y8_GPIO_NUM       34
 #define Y7_GPIO_NUM       39
@@ -83,252 +74,577 @@ IPAddress staticDNS;
 #define HREF_GPIO_NUM     23
 #define PCLK_GPIO_NUM     22
 
+// ========== STATE MACHINES & TIMERS ==========
+enum PumpMode {
+  MODE_OFF,           // Default state
+  MODE_MANUAL,        // Manual override active
+  MODE_QUICK_TIMER,   // Quick timer active
+  MODE_SCHEDULE       // Scheduled run active
+};
+
+struct QuickTimer {
+  bool active;
+  unsigned long startMillis;
+  uint32_t onDelaySec;
+  uint32_t offDelayMin;
+  bool pumpHasStarted;  // Track if ON delay completed
+};
+
+struct Schedule {
+  bool enabled;
+  uint8_t startHour;
+  uint8_t startMinute;
+  uint32_t durationMin;
+  bool isRunning;
+  unsigned long startMillis;  // When pump actually started
+};
+
+struct ManualOverride {
+  bool active;
+  bool desiredState;  // true = ON, false = OFF
+};
+
+// State variables
+PumpMode currentMode = MODE_OFF;
+ManualOverride manualState = {false, false};
+QuickTimer quickTimer = {false, 0, 0, 0, false};
+Schedule schedule = {false, 0, 0, 0, false, 0};
+bool pumpPhysicalState = false;  // Current relay state (true = ON)
+bool ntpSynced = false;
+unsigned long lastNtpSync = 0;
+unsigned long lastMqttReconnect = 0;
+unsigned long lastStatusPublish = 0;
+bool quickTimerRestored = false;
+
+// ========== FUNCTION DECLARATIONS ==========
 bool initCamera();
-void callback(char* topic, byte* payload, unsigned int length);
-void reconnect();
+void setupWiFi();
+void setupNTP();
+void syncNTP();
+void mqttCallback(char* topic, byte* payload, unsigned int length);
+void mqttReconnect();
+void processTimerLogic();
+void setPumpState(bool state, const char* reason);
+void publishStatus();
+void handleStream();
+void handleCapture();
+void handleCaptureJPG();
+static uint32_t clientId(const WiFiClient &c);
+void restoreQuickTimerFromPrefs();
+void clearQuickTimerPrefs();
+void restoreScheduleFromPrefs();
 
 // ============ SETUP ============
 void setup() {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
-  // Serial now used for Arduino communication
-  Serial.begin(115200);
+  Serial.begin(115200);   // Clean channel for Arduino commands
+  Serial1.begin(115200);  // Debug output on GPIO2 (U0TXD alternate)
+  
+  LOG_INFO("\n\n========================================\n");
+  LOG_INFO("ESP32-CAM Irrigation System Starting\n");
+  LOG_INFO("========================================\n");
+
+  // Initialize relay (Active-LOW: HIGH = OFF)
+  pinMode(RELAY_PIN, OUTPUT);
+  digitalWrite(RELAY_PIN, HIGH);  // Ensure pump is OFF at boot
+  pumpPhysicalState = false;
+  Serial.println("PUMP_OFF");  // Send initial OFF command to Arduino
+  delay(100);  // Give Arduino time to process
+  LOG_INFO("Relay initialized (OFF)\n");
+
+  // Initialize preferences
+  prefs.begin("irrigation", false);
+  restoreScheduleFromPrefs();
 
   // Init Camera
   if (!initCamera()) {
-    // Can't use Serial.print here anymore.
-    // A more robust solution would be to blink an LED in an error pattern.
-    ESP.restart();
-  }
-
-  // Read persisted network settings
-  prefs.begin("cfg", false);
-  String savedSsid = prefs.getString("ssid", "");
-  String savedPass = prefs.getString("pass", "");
-  useStaticIP = prefs.getBool("useStatic", false);
-  if (useStaticIP) {
-    String sip = prefs.getString("ip", "");
-    String sg = prefs.getString("gw", "");
-    String ss = prefs.getString("sn", "");
-    String sd = prefs.getString("dns", "");
-    if (sip.length()) staticIP.fromString(sip);
-    if (sg.length()) staticGateway.fromString(sg);
-    if (ss.length()) staticSubnet.fromString(ss);
-    if (sd.length()) staticDNS.fromString(sd);
+    LOG_INFO("Camera init failed! Continuing without camera...\n");
   }
 
   // WiFi Connection
-  WiFi.mode(WIFI_STA);
-  WiFi.setSleep(false);
-  WiFi.setHostname("esp32-cam");
-  WiFi.disconnect(true);
-  delay(100);
+  setupWiFi();
 
-  const char* wifi_ssid = (savedSsid.length() > 0) ? savedSsid.c_str() : ssid;
-  const char* wifi_pass = (savedPass.length() > 0) ? savedPass.c_str() : password;
-
-  if (useStaticIP && staticIP) {
-    if (staticDNS) WiFi.config(staticIP, staticGateway, staticSubnet, staticDNS);
-    else WiFi.config(staticIP, staticGateway, staticSubnet);
-  }
-
-  WiFi.begin(wifi_ssid, wifi_pass);
-  WiFi.setAutoReconnect(true);
-  WiFi.persistent(true);
-
-  int attempts = 0;
-  while (WiFi.status() != WL_CONNECTED && attempts++ < 60) { // Reduced timeout
-    delay(500);
-  }
-
-  // Report WiFi connection status and provide a fallback AP for configuration
+  // Setup NTP time sync
   if (WiFi.status() == WL_CONNECTED) {
-    Serial.print("WiFi connected. IP: ");
-    Serial.println(WiFi.localIP());
-  } else {
-    Serial.println("WiFi connection failed. Starting configuration AP 'ESP32-CAM-Setup'");
-    WiFi.mode(WIFI_AP_STA);
-    WiFi.softAP("ESP32-CAM-Setup");
-    Serial.print("AP IP: ");
-    Serial.println(WiFi.softAPIP());
+    setupNTP();
   }
 
   // MQTT Setup
   mqttClient.setServer(mqtt_server, mqtt_port);
-  mqttClient.setCallback(callback);
+  mqttClient.setCallback(mqttCallback);
+  mqttClient.setKeepAlive(60);
+  mqttClient.setSocketTimeout(10);
 
-  // Web Server - Keep camera endpoints, remove sensor/pump
-  server.on("/", [](){
-    server.sendHeader("Access-Control-Allow-Origin", "*");
+  // Web Server
+  server.on("/", []() {
     server.sendHeader("Location", "/stream");
-    server.send(302, "text/plain", "Redirecting to stream");
+    server.send(302, "text/plain", "Redirecting");
   });
   server.on("/stream", handleStream);
   server.on("/capture", handleCapture);
   server.on("/capture.jpg", handleCaptureJPG);
-
-  // Config endpoints are still useful
-  server.on("/config", HTTP_GET, [](){
-    String s_curSsid = prefs.getString("ssid", ssid);
-    char curSsid[64] = {0};
-    s_curSsid.toCharArray(curSsid, sizeof(curSsid));
-    char page[512];
-    snprintf(page, sizeof(page),
-      "<html><body><h3>ESP32-CAM WiFi Config</h3>"
-      "<form action='/saveconfig' method='POST'>"
-      "SSID: <input name='ssid' value='%s'><br>"
-      "Password: <input name='pass' value=''><br>"
-      "<input type='submit' value='Save and Reboot'></form></body></html>",
-      curSsid);
-    server.send(200, "text/html", page);
-  });
-
-  server.on("/saveconfig", HTTP_POST, [](){
-    prefs.putString("ssid", server.arg("ssid"));
-    prefs.putString("pass", server.arg("pass"));
-    server.send(200, "text/html", "Saved. Rebooting...");
-    delay(500);
-    ESP.restart();
-  });
   
-  server.on("/reboot", HTTP_GET, handleReboot);
-  // Temporary debug endpoints to manually trigger pump commands (bypass MQTT)
-  server.on("/pump/on", HTTP_GET, [](){
-    Serial.println("PUMP_ON");
-    if (mqttClient.connected()) mqttClient.publish(status_topic, "PUMP_ON_HTTP");
-    server.send(200, "text/plain", "PUMP_ON sent");
-  });
-  server.on("/pump/off", HTTP_GET, [](){
-    Serial.println("PUMP_OFF");
-    if (mqttClient.connected()) mqttClient.publish(status_topic, "PUMP_OFF_HTTP");
-    server.send(200, "text/plain", "PUMP_OFF sent");
-  });
   server.begin();
-}
-
-// ========== MQTT CALLBACK ==========
-void callback(char* topic, byte* payload, unsigned int length) {
-  // Convert payload to a string
-  String message;
-  for (int i = 0; i < length; i++) {
-    message += (char)payload[i];
-  }
-
-  // Log incoming MQTT messages for debugging (info-level)
-  LOG_INFO("MQTT msg on '%s': %s\n", topic, message.c_str());
-  // Extra explicit debug line to make MQTT receipts obvious in the serial log
-  Serial.printf("MQTT RX: %s -> %s\n", topic, message.c_str());
-
-  if (String(topic) == command_topic) {
-    // Forward the raw command string to the Arduino over Serial and log clearly
-    LOG_INFO("Forwarding to Arduino: %s\n", message.c_str());
-    Serial.println(message);
-
-    // Also publish an acknowledgement on the status topic for UI visibility
-    if (message == "PUMP_ON") {
-      mqttClient.publish(status_topic, "PUMP_ON_RECEIVED");
-      LOG_INFO("Published PUMP_ON_RECEIVED\n");
-    } else if (message == "PUMP_OFF") {
-      mqttClient.publish(status_topic, "PUMP_OFF_RECEIVED");
-      LOG_INFO("Published PUMP_OFF_RECEIVED\n");
-    }
-  }
-}
-
-// ========== MQTT RECONNECT ==========
-void reconnect() {
-  // Loop until we're reconnected
-  while (!mqttClient.connected()) {
-    // Attempt to connect
-    if (mqttClient.connect("ESP32-CAM-Client")) {
-      mqttClient.publish(status_topic, "ESP32 Connected");
-      // Subscribe to the command topic
-      mqttClient.subscribe(command_topic);
-      Serial.println("MQTT connected and subscribed to command topic");
-    } else {
-      // Log connect failure and state, then wait 5 seconds before retrying
-      int st = mqttClient.state();
-      Serial.printf("MQTT connect failed, state=%d, retrying in 5s\n", st);
-      delay(5000);
-    }
-  }
-}
-
-// Helper: convert WiFi.status() code to human-readable text
-const char* wifiStatusText(wl_status_t s) {
-  switch (s) {
-    case WL_NO_SHIELD: return "No shield";
-    case WL_IDLE_STATUS: return "Idle";
-    case WL_NO_SSID_AVAIL: return "No SSID available";
-    case WL_SCAN_COMPLETED: return "Scan completed";
-    case WL_CONNECTED: return "Connected";
-    case WL_CONNECT_FAILED: return "Connect failed";
-    case WL_CONNECTION_LOST: return "Connection lost";
-    case WL_DISCONNECTED: return "Disconnected";
-    default: return "Unknown";
-  }
-}
-
-// Reboot endpoint
-void handleReboot() {
-  server.send(200, "text/plain", "Rebooting...");
-  delay(200);
-  ESP.restart();
+  LOG_INFO("HTTP server started\n");
+  LOG_INFO("System ready!\n");
+  Serial.println("SYSTEM_READY");  // Send status to Serial
 }
 
 // ============ MAIN LOOP ============
 void loop() {
+  // Handle HTTP requests (non-blocking)
   server.handleClient();
 
+  // Maintain MQTT connection
   if (WiFi.status() == WL_CONNECTED) {
     if (!mqttClient.connected()) {
-      reconnect();
-    }
-    mqttClient.loop();
-
-    // Periodic heartbeat to status topic for visibility
-    if (mqttClient.connected() && (millis() - lastMqttHeartbeat > 30000)) {
-      mqttClient.publish(status_topic, "ESP32 Heartbeat");
-      lastMqttHeartbeat = millis();
-    }
-
-    // Check Arduino serial input (from slave) and update connection state
-    if (Serial.available()) {
-      String data = Serial.readStringUntil('\n');
-      data.trim();
-      if (data.length() > 0) {
-        lastArduinoSeen = millis();
-        if (!arduinoConnected) {
-          arduinoConnected = true;
-          LOG_INFO("Arduino slave connected\n");
-          if (mqttClient.connected()) mqttClient.publish(status_topic, "ARDUINO_CONNECTED");
-        }
-
-        // Process the incoming sensor line as before
-        int tempIndex = data.indexOf("temp:");
-        int humidityIndex = data.indexOf(",humidity:");
-        int soilIndex = data.indexOf(",soil:");
-        if (tempIndex != -1 && humidityIndex != -1 && soilIndex != -1) {
-          String tempStr = data.substring(tempIndex + 5, humidityIndex);
-          String humidityStr = data.substring(humidityIndex + 10, soilIndex);
-          String soilStr = data.substring(soilIndex + 6);
-          char jsonBuffer[256];
-          snprintf(jsonBuffer, sizeof(jsonBuffer), 
-            "{\"temperature\":%s,\"humidity\":%s,\"soilMoisture\":%s,\"arduinoConnected\":true}", 
-            tempStr.c_str(), humidityStr.c_str(), soilStr.c_str());
-          mqttClient.publish(sensor_topic, jsonBuffer);
-        }
+      // Non-blocking reconnect (attempt every 5 seconds)
+      if (millis() - lastMqttReconnect > 5000) {
+        mqttReconnect();
+        lastMqttReconnect = millis();
       }
     } else {
-      // If no data recently, mark disconnected after timeout
-      if (arduinoConnected && (millis() - lastArduinoSeen > 5000)) {
-        arduinoConnected = false;
-        LOG_INFO("Arduino slave disconnected\n");
-        if (mqttClient.connected()) mqttClient.publish(status_topic, "ARDUINO_DISCONNECTED");
+      mqttClient.loop();  // Process MQTT messages
+    }
+
+    // Periodic NTP resync (every hour)
+    if (ntpSynced && (millis() - lastNtpSync > 3600000)) {
+      syncNTP();
+    }
+  }
+
+  // Restore quick timer once after time sync
+  if (ntpSynced && !quickTimerRestored) {
+    restoreQuickTimerFromPrefs();
+  }
+
+  // *** CRITICAL: Timer logic runs EVERY loop iteration ***
+  // This ensures pump control continues even without MQTT messages
+  processTimerLogic();
+
+  // Publish status periodically (every 10 seconds)
+  if (millis() - lastStatusPublish > 10000) {
+    publishStatus();
+    lastStatusPublish = millis();
+  }
+
+  yield();  // Let ESP32 background tasks run
+}
+
+// ========== WIFI SETUP ==========
+void setupWiFi() {
+  LOG_INFO("Connecting to WiFi: %s\n", ssid);
+  WiFi.mode(WIFI_STA);
+  WiFi.setSleep(false);  // Disable sleep for reliable operation
+  WiFi.begin(ssid, password);
+  
+  int attempts = 0;
+  while (WiFi.status() != WL_CONNECTED && attempts++ < 40) {
+    delay(500);
+    Serial1.print(".");  // Debug to Serial1, not Serial
+  }
+  
+  if (WiFi.status() == WL_CONNECTED) {
+    LOG_INFO("\nWiFi connected! IP: %s\n", WiFi.localIP().toString().c_str());
+    // Send status to Serial so Arduino can see it
+    Serial.print("WIFI_OK:");
+    Serial.println(WiFi.localIP().toString());
+  } else {
+    LOG_INFO("\nWiFi connection failed!\n");
+    Serial.println("WIFI_FAILED");
+  }
+}
+
+// ========== NTP TIME SYNC ==========
+void setupNTP() {
+  LOG_INFO("Syncing time with NTP...\n");
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  
+  // Wait for time sync (max 10 seconds)
+  int attempts = 0;
+  while (!ntpSynced && attempts++ < 20) {
+    struct tm timeinfo;
+    if (getLocalTime(&timeinfo)) {
+      ntpSynced = true;
+      lastNtpSync = millis();
+      LOG_INFO("NTP synced: %04d-%02d-%02d %02d:%02d:%02d\n",
+               timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
+               timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+      return;
+    }
+    delay(500);
+  }
+  LOG_INFO("NTP sync failed!\n");
+}
+
+void syncNTP() {
+  struct tm timeinfo;
+  if (getLocalTime(&timeinfo)) {
+    lastNtpSync = millis();
+    LOG_INFO("NTP resync: %02d:%02d:%02d\n", 
+             timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+  }
+}
+
+// ========== MQTT CALLBACK ==========
+// Parses retained messages and updates local state
+void mqttCallback(char* topic, byte* payload, unsigned int length) {
+  // Convert payload to string
+  char message[512];
+  if (length >= sizeof(message)) length = sizeof(message) - 1;
+  memcpy(message, payload, length);
+  message[length] = '\0';
+  
+  LOG_INFO("MQTT RX: %s -> %s\n", topic, message);
+
+  // Parse JSON payload
+  StaticJsonDocument<256> doc;
+  DeserializationError error = deserializeJson(doc, message);
+  
+  if (error) {
+    LOG_INFO("JSON parse error: %s\n", error.c_str());
+    return;
+  }
+
+  String topicStr = String(topic);
+  
+  // ========== SCHEDULE TOPIC ==========
+  if (topicStr == TOPIC_SCHEDULE) {
+    const char* type = doc["type"];
+    
+    if (strcmp(type, "SCHEDULE") == 0) {
+      // Parse: {"type":"SCHEDULE","start":"18:20","duration_min":60,"enabled":true}
+      // OR: {"type":"SCHEDULE","enabled":false} to disable
+      schedule.enabled = doc["enabled"];
+      
+      if (schedule.enabled) {
+        const char* startTime = doc["start"];
+        schedule.durationMin = doc["duration_min"];
+        
+        // Parse "HH:MM" format
+        if (startTime && strlen(startTime) == 5) {
+          schedule.startHour = (startTime[0] - '0') * 10 + (startTime[1] - '0');
+          schedule.startMinute = (startTime[3] - '0') * 10 + (startTime[4] - '0');
+        }
+        
+        LOG_INFO("Schedule updated: ENABLED at %02d:%02d for %u min\n",
+                 schedule.startHour, schedule.startMinute, schedule.durationMin);
+        
+        // Store in preferences (survives reboot)
+        prefs.putBool("sched_en", true);
+        prefs.putUChar("sched_hr", schedule.startHour);
+        prefs.putUChar("sched_min", schedule.startMinute);
+        prefs.putUInt("sched_dur", schedule.durationMin);
+      } else {
+        // Schedule disabled - stop if running
+        LOG_INFO("Schedule DISABLED\n");
+        schedule.isRunning = false;
+        prefs.putBool("sched_en", false);
+      }
+    }
+    else if (strcmp(type, "QUICK_TIMER") == 0) {
+      // Parse: {"type":"QUICK_TIMER","on_delay_sec":15,"off_delay_min":1}
+      quickTimer.onDelaySec = doc["on_delay_sec"];
+      quickTimer.offDelayMin = doc["off_delay_min"];
+      quickTimer.active = true;
+      quickTimer.startMillis = millis();
+      quickTimer.pumpHasStarted = false;
+
+      // Persist quick timer (so it survives reboot / website closed)
+      prefs.putBool("qt_active", true);
+      prefs.putUInt("qt_on", quickTimer.onDelaySec);
+      prefs.putUInt("qt_off", quickTimer.offDelayMin);
+      if (ntpSynced) {
+        time_t now;
+        time(&now);
+        if (now > 0) prefs.putULong("qt_epoch", (uint32_t)now);
+      }
+      
+      LOG_INFO("Quick Timer started: ON in %u sec, OFF after %u min\n",
+               quickTimer.onDelaySec, quickTimer.offDelayMin);
+    }
+  }
+  
+  // ========== MANUAL OVERRIDE TOPIC ==========
+  else if (topicStr == TOPIC_MANUAL) {
+    const char* type = doc["type"];
+    
+    if (strcmp(type, "MANUAL") == 0) {
+      // Parse: {"type":"MANUAL","state":"ON"} or {"type":"MANUAL","state":"OFF"}
+      const char* state = doc["state"];
+      
+      if (strcmp(state, "OFF") == 0) {
+        // User turned pump OFF - apply immediately then release manual control
+        // This allows timers/schedules to resume after user intervention
+        manualState.active = false;  // Release manual mode
+        manualState.desiredState = false;
+        // Cancel any active quick timer when user explicitly turns OFF
+        if (quickTimer.active) {
+          quickTimer.active = false;
+          quickTimer.pumpHasStarted = false;
+          clearQuickTimerPrefs();
+          LOG_INFO("Quick Timer cancelled by MANUAL OFF\n");
+        }
+        LOG_INFO("Manual override: OFF (released)\n");
+      } else {
+        // User turned pump ON - hold manual control
+        manualState.active = true;
+        manualState.desiredState = true;
+        LOG_INFO("Manual override: ON (active)\n");
+      }
+    }
+  }
+}
+
+// ========== MQTT RECONNECT (NON-BLOCKING) ==========
+void mqttReconnect() {
+  LOG_INFO("Attempting MQTT connection...\n");
+  
+  if (mqttClient.connect("ESP32-CAM-Irrigation")) {
+    LOG_INFO("MQTT connected!\n");
+    Serial.println("MQTT_OK");  // Send status to Serial
+    
+    // Subscribe to control topics
+    mqttClient.subscribe(TOPIC_SCHEDULE, 1);  // QoS 1 for reliability
+    mqttClient.subscribe(TOPIC_MANUAL, 1);
+    
+    // Restore state from preferences (in case ESP rebooted)
+    restoreScheduleFromPrefs();
+    
+    publishStatus();
+  } else {
+    LOG_INFO("MQTT connect failed, state=%d\n", mqttClient.state());
+  }
+}
+
+// ========== TIMER LOGIC (RUNS CONTINUOUSLY) ==========
+// This is the HEART of the system - runs independent of MQTT/app
+void processTimerLogic() {
+  bool desiredPumpState = false;
+  PumpMode newMode = MODE_OFF;
+  
+  // ========== PRIORITY 1: MANUAL OVERRIDE ==========
+  if (manualState.active) {
+    desiredPumpState = manualState.desiredState;
+    newMode = MODE_MANUAL;
+  }
+  // ========== PRIORITY 2: QUICK TIMER ==========
+  else if (quickTimer.active) {
+    unsigned long elapsed = (millis() - quickTimer.startMillis) / 1000;  // seconds
+    
+    if (elapsed < quickTimer.onDelaySec) {
+      // Still in ON delay period
+      desiredPumpState = false;
+      newMode = MODE_QUICK_TIMER;
+    }
+    else {
+      // Pump should be ON; if offDelayMin==0, keep ON until manual OFF
+      desiredPumpState = true;
+      newMode = MODE_QUICK_TIMER;
+      quickTimer.pumpHasStarted = true;
+
+      if (quickTimer.offDelayMin > 0) {
+        if (elapsed >= quickTimer.onDelaySec + (quickTimer.offDelayMin * 60)) {
+          // Timer expired
+          desiredPumpState = false;
+          quickTimer.active = false;
+          newMode = MODE_OFF;
+          clearQuickTimerPrefs();
+          LOG_INFO("Quick Timer completed\n");
+        }
+      }
+    }
+  }
+  // ========== PRIORITY 3: SCHEDULED RUN ==========
+  else if (schedule.enabled && ntpSynced) {
+    struct tm timeinfo;
+    if (getLocalTime(&timeinfo)) {
+      uint16_t currentMinutes = timeinfo.tm_hour * 60 + timeinfo.tm_min;
+      uint16_t scheduleMinutes = schedule.startHour * 60 + schedule.startMinute;
+      
+      // Check if we're within the scheduled window
+      if (!schedule.isRunning) {
+        // Check if it's time to start
+        if (currentMinutes == scheduleMinutes) {
+          schedule.isRunning = true;
+          schedule.startMillis = millis();
+          LOG_INFO("Schedule started at %02d:%02d\n", timeinfo.tm_hour, timeinfo.tm_min);
+        }
+      }
+      
+      if (schedule.isRunning) {
+        unsigned long runningMin = (millis() - schedule.startMillis) / 60000;
+        
+        if (runningMin < schedule.durationMin) {
+          desiredPumpState = true;
+          newMode = MODE_SCHEDULE;
+        } else {
+          // Schedule completed
+          desiredPumpState = false;
+          schedule.isRunning = false;
+          newMode = MODE_OFF;
+          LOG_INFO("Schedule completed\n");
+        }
       }
     }
   }
   
-  delay(10);
+  // Update mode if changed
+  if (newMode != currentMode) {
+    currentMode = newMode;
+    const char* modeNames[] = {"OFF", "MANUAL", "QUICK_TIMER", "SCHEDULE"};
+    LOG_INFO("Mode changed: %s\n", modeNames[currentMode]);
+  }
+  
+  // Apply pump state change if needed
+  if (desiredPumpState != pumpPhysicalState) {
+    setPumpState(desiredPumpState, "Timer Logic");
+  }
+}
+
+// ========== PUMP CONTROL ==========
+// Send commands to Arduino slave via Serial
+void setPumpState(bool state, const char* reason) {
+  pumpPhysicalState = state;
+  
+  if (state) {
+    Serial.println("PUMP_ON");      // Send command to Arduino
+    digitalWrite(RELAY_PIN, LOW);   // Turn ON (Active-LOW backup)
+    LOG_INFO("PUMP ON (%s)\n", reason);
+  } else {
+    Serial.println("PUMP_OFF");     // Send command to Arduino
+    digitalWrite(RELAY_PIN, HIGH);  // Turn OFF (backup)
+    LOG_INFO("PUMP OFF (%s)\n", reason);
+  }
+  
+  publishStatus();
+}
+
+// ========== STATUS PUBLISHING ==========
+void publishStatus() {
+  if (!mqttClient.connected()) return;
+  
+  StaticJsonDocument<256> doc;
+  doc["pump"] = pumpPhysicalState ? "ON" : "OFF";
+  
+  switch (currentMode) {
+    case MODE_MANUAL:
+      doc["mode"] = "MANUAL";
+      break;
+    case MODE_QUICK_TIMER:
+      doc["mode"] = "QUICK_TIMER";
+      {
+        unsigned long elapsed = (millis() - quickTimer.startMillis) / 1000;
+        if (quickTimer.pumpHasStarted) {
+          unsigned long remaining = quickTimer.offDelayMin * 60 - (elapsed - quickTimer.onDelaySec);
+          doc["remaining_sec"] = remaining > 0 ? remaining : 0;
+        } else {
+          doc["on_delay_remaining"] = quickTimer.onDelaySec - elapsed;
+        }
+      }
+      break;
+    case MODE_SCHEDULE:
+      doc["mode"] = "SCHEDULE";
+      if (schedule.isRunning) {
+        unsigned long runningMin = (millis() - schedule.startMillis) / 60000;
+        unsigned long remainingMin = schedule.durationMin - runningMin;
+        doc["remaining_min"] = remainingMin > 0 ? remainingMin : 0;
+      }
+      break;
+    default:
+      doc["mode"] = "OFF";
+  }
+  
+  if (ntpSynced) {
+    struct tm timeinfo;
+    if (getLocalTime(&timeinfo)) {
+      char timeBuf[32];
+      sprintf(timeBuf, "%02d:%02d:%02d", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+      doc["time"] = timeBuf;
+    }
+  }
+  
+  // Expose schedule / quick-timer / NTP state so UI can show device-side schedule info
+  doc["schedule_enabled"] = schedule.enabled;
+  char schedStart[6];
+  sprintf(schedStart, "%02d:%02d", schedule.startHour, schedule.startMinute);
+  doc["schedule_start"] = schedStart;
+  doc["schedule_duration_min"] = schedule.durationMin;
+  doc["ntp_synced"] = ntpSynced;
+  doc["quick_active"] = quickTimer.active;
+  if (quickTimer.active) {
+    doc["quick_on_delay_sec"] = quickTimer.onDelaySec;
+    doc["quick_off_min"] = quickTimer.offDelayMin;
+  }
+
+  char buffer[256];
+  serializeJson(doc, buffer);
+  // Publish retained status so clients receive latest device state on subscribe
+  mqttClient.publish(TOPIC_STATUS, buffer, true);
+}
+
+// ========== SCHEDULE PERSISTENCE ==========
+void restoreScheduleFromPrefs() {
+  schedule.enabled = prefs.getBool("sched_en", false);
+  schedule.startHour = prefs.getUChar("sched_hr", 0);
+  schedule.startMinute = prefs.getUChar("sched_min", 0);
+  schedule.durationMin = prefs.getUInt("sched_dur", 0);
+  schedule.isRunning = false;
+  schedule.startMillis = 0;
+
+  if (schedule.enabled) {
+    LOG_INFO("Restored schedule: %02d:%02d for %u min\n",
+             schedule.startHour, schedule.startMinute, schedule.durationMin);
+  }
+}
+
+// ========== QUICK TIMER PERSISTENCE ==========
+void clearQuickTimerPrefs() {
+  prefs.putBool("qt_active", false);
+  prefs.putUInt("qt_on", 0);
+  prefs.putUInt("qt_off", 0);
+  prefs.putULong("qt_epoch", 0);
+}
+
+void restoreQuickTimerFromPrefs() {
+  if (quickTimerRestored) return;
+  if (!prefs.getBool("qt_active", false)) {
+    quickTimerRestored = true;
+    return;
+  }
+
+  uint32_t onDelay = prefs.getUInt("qt_on", 0);
+  uint32_t offDelay = prefs.getUInt("qt_off", 0);
+  uint32_t startEpoch = prefs.getULong("qt_epoch", 0);
+
+  time_t now;
+  time(&now);
+  if (startEpoch == 0 || now <= 0 || now < (time_t)startEpoch) {
+    LOG_INFO("Quick Timer restore skipped (invalid time)\n");
+    quickTimerRestored = true;
+    return;
+  }
+
+  uint32_t elapsed = (uint32_t)(now - startEpoch);
+  uint32_t total = onDelay + (offDelay * 60);
+
+  if (offDelay > 0 && elapsed >= total) {
+    // Timer already completed
+    clearQuickTimerPrefs();
+    quickTimerRestored = true;
+    LOG_INFO("Quick Timer restore: expired\n");
+    return;
+  }
+
+  quickTimer.onDelaySec = onDelay;
+  quickTimer.offDelayMin = offDelay;
+  quickTimer.active = true;
+  quickTimer.startMillis = millis() - (elapsed * 1000UL);
+  quickTimer.pumpHasStarted = (elapsed >= onDelay);
+  quickTimerRestored = true;
+
+  LOG_INFO("Quick Timer restored: ON in %u sec, OFF after %u min (elapsed %u sec)\n",
+           quickTimer.onDelaySec, quickTimer.offDelayMin, elapsed);
 }
 
 // ============ CAMERA INIT ============
@@ -357,34 +673,35 @@ bool initCamera() {
   config.pixel_format = PIXFORMAT_JPEG;
 
   if (psramFound()) {
-    LOG_INFO("PSRAM found. Using optimized settings.\n");
-    // Use SVGA for higher resolution when PSRAM is available and allow larger frame buffer
+    LOG_INFO("PSRAM found\n");
     config.frame_size = FRAMESIZE_SVGA;
-    config.jpeg_quality = 16; // balance quality vs size for better FPS
-    config.fb_count = 3; // increase buffers to help maintain FPS during network I/O
+    config.jpeg_quality = 12;
+    config.fb_count = 2;
     config.fb_location = CAMERA_FB_IN_PSRAM;
     config.grab_mode = CAMERA_GRAB_LATEST;
   } else {
-    LOG_INFO("PSRAM not found. Using fallback settings.\n");
-    // Fallback: still request SVGA but keep conservative memory settings
-    config.frame_size = FRAMESIZE_SVGA;
-    config.jpeg_quality = 18;
+    LOG_INFO("No PSRAM\n");
+    config.frame_size = FRAMESIZE_VGA;
+    config.jpeg_quality = 12;
     config.fb_count = 1;
     config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
   }
 
   esp_err_t err = esp_camera_init(&config);
   if (err != ESP_OK) {
-    LOG_INFO("Camera initialization failed with error 0x%x\n", err);
+    LOG_INFO("Camera init failed: 0x%x\n", err);
     return false;
   }
-
-  sensor_t* s = esp_camera_sensor_get();
-  // Ensure frame size is applied at sensor level
-  s->set_framesize(s, FRAMESIZE_SVGA);
-  s->set_vflip(s, 0);
-  LOG_INFO("Camera initialized successfully.\n");
+  
+  LOG_INFO("Camera initialized\n");
   return true;
+}
+
+// ========== HTTP HANDLERS ==========
+static uint32_t clientId(const WiFiClient &c) {
+  IPAddress ip = c.remoteIP();
+  return ((uint32_t)ip[0] << 24) | ((uint32_t)ip[1] << 16) | 
+         ((uint32_t)ip[2] << 8) | (uint32_t)ip[3] ^ (uint32_t)c.remotePort();
 }
 
 // ============ STREAM HANDLER ============
@@ -393,14 +710,9 @@ void handleStream() {
   if (!client) return;
   client.setNoDelay(true);
 
-  // Debug: log incoming request and current stream ownership state
-  Serial.printf("HTTP REQ: /stream from %s:%u owner=%u requested=%u\n",
-                client.remoteIP().toString().c_str(), client.remotePort(), (unsigned)g_streamOwner, (unsigned)g_streamRequested);
-
   uint32_t myId = clientId(client);
-  LOG_DBG("Stream client connecting id=%u ip=%s port=%u\n", myId, client.remoteIP().toString().c_str(), client.remotePort());
+  LOG_DBG("Stream request from id=%u\n", myId);
 
-  // Request takeover; existing stream handlers will notice g_streamRequested and exit.
   g_streamRequested = myId;
   int wait = 0;
   while (g_streamOwner != 0 && g_streamOwner != myId && wait++ < 50) {
@@ -408,16 +720,15 @@ void handleStream() {
   }
 
   if (g_streamOwner != 0 && g_streamOwner != myId) {
-    LOG_INFO("Stream busy, cannot acquire ownership\n");
+    LOG_INFO("Stream busy\n");
     g_streamRequested = 0;
     server.send(503, "text/plain", "Stream busy");
     return;
   }
 
-  // Become owner
   g_streamOwner = myId;
   g_streamRequested = 0;
-  LOG_INFO("Stream ownership granted to id=%u\n", myId);
+  LOG_INFO("Stream started for id=%u\n", myId);
 
   const char HEADER[] = "HTTP/1.1 200 OK\r\n"
                         "Content-Type: multipart/x-mixed-replace; boundary=frame\r\n"
@@ -427,25 +738,17 @@ void handleStream() {
   client.write(HEADER, sizeof(HEADER) - 1);
 
   while (client.connected()) {
-    // Poll MQTT and Serial to keep things responsive during streaming
+    // Keep MQTT alive during streaming
     if (mqttClient.connected()) {
       mqttClient.loop();
     }
-    if (Serial.available()) {
-      String data = Serial.readStringUntil('\n');
-      data.trim();
-      if (data.length() > 0) {
-        lastArduinoSeen = millis();
-        if (!arduinoConnected) {
-          arduinoConnected = true;
-          if (mqttClient.connected()) mqttClient.publish(status_topic, "ARDUINO_CONNECTED");
-        }
-      }
-    }
+    
+    // *** CRITICAL: Continue timer logic during streaming ***
+    processTimerLogic();
 
     camera_fb_t* fb = esp_camera_fb_get();
     if (!fb) {
-      LOG_DBG("Camera frame capture failed. Retrying...\n");
+      LOG_DBG("Frame capture failed\n");
       delay(100);
       continue;
     }
@@ -454,9 +757,12 @@ void handleStream() {
 
     if (fb->len > 0) {
       char lenBuf[64];
-      int headerLen = snprintf(lenBuf, sizeof(lenBuf), "--frame\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n", fb->len);
+      int headerLen = snprintf(lenBuf, sizeof(lenBuf), 
+                               "--frame\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n", 
+                               fb->len);
       int wroteHdr = client.write(lenBuf, headerLen);
-      // Write image in chunks to avoid socket blocking on large single writes
+      
+      // Write image in chunks
       size_t wroteImg = 0;
       const uint8_t* data = (const uint8_t*)fb->buf;
       size_t remaining = fb->len;
@@ -464,25 +770,27 @@ void handleStream() {
       while (remaining && client.connected()) {
         size_t toWrite = (remaining > CHUNK) ? CHUNK : remaining;
         int r = client.write(data + wroteImg, toWrite);
-        if (r > 0) { wroteImg += r; remaining -= r; }
-        else break;
-        // Allow MQTT to process messages during large image transfers
+        if (r > 0) { 
+          wroteImg += r; 
+          remaining -= r; 
+        } else break;
+        
+        // Keep MQTT processing during large writes
         if (mqttClient.connected()) mqttClient.loop();
       }
+      
       int wroteTail = client.write("\r\n", 2);
-      LOG_DBG("Wrote header=%d/%d img=%d/%u tail=%d/2\n", wroteHdr, headerLen, wroteImg, (unsigned)fb->len, wroteTail);
+      
       if (wroteHdr != headerLen || wroteImg != fb->len || wroteTail != 2) {
-        LOG_INFO("Client write failed, ending stream.\n");
+        LOG_INFO("Client write failed, ending stream\n");
         esp_camera_fb_return(fb);
         break;
-      } else {
-        LOG_DBG("Stream frame sent successfully.\n");
       }
     }
 
-    // If another client requested the stream, and it's not this owner, stop streaming to allow takeover
+    // Check for takeover request
     if (g_streamRequested != 0 && g_streamRequested != g_streamOwner) {
-      Serial.println("Stream takeover requested; closing this stream to allow new client.");
+      LOG_INFO("Stream takeover requested\n");
       esp_camera_fb_return(fb);
       break;
     }
@@ -491,29 +799,20 @@ void handleStream() {
     yield();
   }
 
-  // Clear ownership if we were the owner
   if (g_streamOwner == myId) g_streamOwner = 0;
   g_streamRequested = 0;
-  Serial.println("Client disconnected.");
+  LOG_INFO("Stream ended for id=%u\n", myId);
 }
 
 // ============ CAPTURE HANDLERS ============
 void handleCapture() {
   LOG_DBG("HTTP /capture requested\n");
-  // Debug: log capture request and stream owner state
-  {
-    WiFiClient client = server.client();
-    if (client) Serial.printf("HTTP REQ: /capture from %s:%u owner=%u requested=%u\n", client.remoteIP().toString().c_str(), client.remotePort(), (unsigned)g_streamOwner, (unsigned)g_streamRequested);
-    else Serial.printf("HTTP REQ: /capture (no client) owner=%u requested=%u\n", (unsigned)g_streamOwner, (unsigned)g_streamRequested);
-  }
   server.sendHeader("Access-Control-Allow-Origin", "*");
-  if (capturedFrame) {
-    esp_camera_fb_return(capturedFrame);
-    capturedFrame = NULL;
-  }
-  capturedFrame = esp_camera_fb_get();
-  if (capturedFrame) {
+  
+  camera_fb_t* fb = esp_camera_fb_get();
+  if (fb) {
     server.send(200, "text/plain", "OK");
+    esp_camera_fb_return(fb);
   } else {
     server.send(500, "text/plain", "Failed to capture frame");
   }
@@ -521,52 +820,46 @@ void handleCapture() {
 
 void handleCaptureJPG() {
   LOG_DBG("HTTP /capture.jpg requested\n");
-  // Debug: log capture.jpg request and stream owner state
-  {
-    WiFiClient client = server.client();
-    if (client) Serial.printf("HTTP REQ: /capture.jpg from %s:%u owner=%u requested=%u\n", client.remoteIP().toString().c_str(), client.remotePort(), (unsigned)g_streamOwner, (unsigned)g_streamRequested);
-    else Serial.printf("HTTP REQ: /capture.jpg (no client) owner=%u requested=%u\n", (unsigned)g_streamOwner, (unsigned)g_streamRequested);
-  }
-  server.sendHeader("Access-Control-Allow-Origin", "*");
-  bool usedLocal = false;
-  if (!capturedFrame) {
-    // Capture on-demand so clients can request the image directly
-    capturedFrame = esp_camera_fb_get();
-    usedLocal = true;
-  }
-  if (!capturedFrame) {
+  
+  camera_fb_t* fb = esp_camera_fb_get();
+  if (!fb) {
     server.send(500, "text/plain", "Failed to capture frame");
     return;
   }
+  
   WiFiClient client = server.client();
   if (!client) {
-    if (usedLocal) { esp_camera_fb_return(capturedFrame); capturedFrame = NULL; }
+    esp_camera_fb_return(fb);
     return;
   }
+  
   client.setNoDelay(true);
   char hdr[128];
-  int hdrLen = snprintf(hdr, sizeof(hdr), "HTTP/1.1 200 OK\r\nContent-Type: image/jpeg\r\nContent-Length: %u\r\nAccess-Control-Allow-Origin: *\r\n\r\n", (unsigned)capturedFrame->len);
-          if (hdrLen > 0) {
-            int hw = client.write(hdr, hdrLen);
-            LOG_DBG("Header write: %d/%d\n", hw, hdrLen);
-          }
-      // Send image in chunks to avoid large single socket writes
-      size_t written = 0;
-      const uint8_t* cbuf = (const uint8_t*)capturedFrame->buf;
-      size_t remaining = capturedFrame->len;
-      const size_t CHUNK = 1024;
-      while (remaining && client.connected()) {
-        size_t toWrite = (remaining > CHUNK) ? CHUNK : remaining;
-        int r = client.write(cbuf + written, toWrite);
-        if (r > 0) { written += r; remaining -= r; } else break;
-      }
-      LOG_DBG("Image write: %u/%u\n", (unsigned)written, (unsigned)capturedFrame->len);
-  if (usedLocal) {
-    esp_camera_fb_return(capturedFrame);
-    capturedFrame = NULL;
-  } else {
-    // If this image came from a prior /capture, return the FB to free memory
-    esp_camera_fb_return(capturedFrame);
-    capturedFrame = NULL;
+  int hdrLen = snprintf(hdr, sizeof(hdr), 
+                        "HTTP/1.1 200 OK\r\n"
+                        "Content-Type: image/jpeg\r\n"
+                        "Content-Length: %u\r\n"
+                        "Access-Control-Allow-Origin: *\r\n\r\n", 
+                        (unsigned)fb->len);
+  
+  if (hdrLen > 0) {
+    client.write(hdr, hdrLen);
   }
+  
+  // Send image in chunks
+  size_t written = 0;
+  const uint8_t* cbuf = (const uint8_t*)fb->buf;
+  size_t remaining = fb->len;
+  const size_t CHUNK = 1024;
+  while (remaining && client.connected()) {
+    size_t toWrite = (remaining > CHUNK) ? CHUNK : remaining;
+    int r = client.write(cbuf + written, toWrite);
+    if (r > 0) { 
+      written += r; 
+      remaining -= r; 
+    } else break;
+  }
+  
+  LOG_DBG("Sent %u/%u bytes\n", (unsigned)written, (unsigned)fb->len);
+  esp_camera_fb_return(fb);
 }

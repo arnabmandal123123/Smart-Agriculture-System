@@ -49,6 +49,15 @@ void handleCommand(const char *cmd) {
   } else if (strcmp(t, "PUMP_OFF") == 0) {
     digitalWrite(pumpPin, LOW);
     Serial.println("ACTION: pump -> OFF");
+  } else if (strncmp(t, "WIFI_OK:", 8) == 0) {
+    Serial.print("✅ ESP32 WiFi: ");
+    Serial.println(t + 8);  // Print IP address
+  } else if (strcmp(t, "WIFI_FAILED") == 0) {
+    Serial.println("❌ ESP32 WiFi FAILED");
+  } else if (strcmp(t, "MQTT_OK") == 0) {
+    Serial.println("✅ ESP32 MQTT Connected");
+  } else if (strcmp(t, "SYSTEM_READY") == 0) {
+    Serial.println("✅ ESP32 System Ready!");
   }
 }
 
