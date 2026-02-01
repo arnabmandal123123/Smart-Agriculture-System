@@ -498,8 +498,164 @@
     }
     .timeline-container {
       position: relative;
-      height: 500px;
     }
+
+    /* ==========================================
+       BOTTOM NAVIGATION - YouTube Style
+       ========================================== */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(18, 18, 18, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      height: 65px;
+      z-index: 1000;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .bottom-nav .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 8px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      text-decoration: none;
+      color: rgba(255, 255, 255, 0.6);
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .bottom-nav .nav-item:hover {
+      color: rgba(255, 255, 255, 0.9);
+      transform: translateY(-2px);
+    }
+
+    .bottom-nav .nav-item.active {
+      color: var(--primary);
+    }
+
+    .bottom-nav .nav-item.active::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 3px;
+      background: var(--primary);
+      border-radius: 0 0 3px 3px;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        width: 0;
+        opacity: 0;
+      }
+      to {
+        width: 40px;
+        opacity: 1;
+      }
+    }
+
+    .bottom-nav .nav-icon {
+      font-size: 24px;
+      transition: transform 0.3s ease;
+    }
+
+    .bottom-nav .nav-item.active .nav-icon {
+      transform: scale(1.1);
+    }
+
+    .bottom-nav .nav-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      text-transform: capitalize;
+    }
+
+    /* Tab Content Sections */
+    .tab-content {
+      display: none;
+      animation: fadeInTab 0.4s ease-out;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeInTab {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Add bottom padding to main content to prevent overlap with bottom nav */
+    body {
+      padding-bottom: 85px; /* 65px nav height + 20px spacing */
+    }
+
+    /* Mobile optimization for bottom nav */
+    @media (max-width: 480px) {
+      .bottom-nav {
+        height: 60px;
+      }
+      
+      .bottom-nav .nav-icon {
+        font-size: 22px;
+      }
+      
+      .bottom-nav .nav-label {
+        font-size: 10px;
+      }
+    }
+
+    /* Analysis Logs Page (nested under More tab) */
+    .logs-page {
+      display: none;
+    }
+
+    .logs-page.active {
+      display: block;
+    }
+
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      color: var(--on-surface);
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 20px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .back-button:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateX(-2px);
+    }
+
     /* Plant Selector */
     #plantSelector button {
       background: var(--surface) !important;
@@ -721,220 +877,388 @@
 </head>
 <body>
   <main class="wrap">
-    <section class="hero">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                  <p class="translatable"></p>
-                  <h1 class="translatable">Agri-Nigrani</h1>
-                  <p class="translatable"></p>
-                </div>
-                <div id="languageSelector" style="display: flex; gap: 8px; align-items: center;">
-                  <button class="btn sec" onclick="translateToBangla()" title="Switch to Bangla">বাংলা</button>
-                  <button class="btn sec" onclick="translateToEnglish()" title="Switch to English">ENGLISH</button>
-                </div>
-              </div>
-            </section>
-        
-            <article class="card">
-              <div class="head">
-                <h2 class="translatable">SYSTEM DASHBOARD</h2>
-                <button class="btn sec" onclick="location.reload()"><span>🔄</span> <span class="translatable">Restart</span></button>
-              </div>
-              <section class="status">
-                <div class="chip"><span class="dot offline" id="espDot"></span><span id="espStatus" class="translatable">ESP</span></div>
-                <div class="chip"><span class="dot offline" id="camDot"></span><span id="cs" class="translatable">Camera</span></div>
-                <div class="chip"><span class="dot offline" id="mqttDot"></span><span id="mqttStatus" class="translatable">MQTT</span></div>
-                <div class="chip"><span class="dot offline" id="firebaseDot"></span><span id="firebaseText" class="translatable">Firebase</span></div>
-              </section>
-            </article>
-
-    <section class="grid">
+    <!-- ==========================================
+         HOME TAB - Dashboard Overview & Pump Control
+         ========================================== -->
+    <div id="homeTab" class="tab-content active">
+      <section class="hero">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <p class="translatable"></p>
+            <h1 class="translatable">Agri-Nigrani</h1>
+            <p class="translatable"></p>
+          </div>
+          <div id="languageSelector" style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn sec" onclick="translateToBangla()" title="Switch to Bangla">বাংলা</button>
+            <button class="btn sec" onclick="translateToEnglish()" title="Switch to English">ENGLISH</button>
+          </div>
+        </div>
+      </section>
+  
       <article class="card">
         <div class="head">
-          <h2 class="translatable">Live Camera Stream</h2>
-          <span class="pill translatable">Live</span>
+          <h2 class="translatable">SYSTEM DASHBOARD</h2>
+          <button class="btn sec" onclick="location.reload()"><span>🔄</span> <span class="translatable">Restart</span></button>
         </div>
-        <div class="ip-config">
-          <span style="font-size: 14px; color: var(--on-surface-variant); font-weight: 500;" class="translatable">ESP32 Camera IP:</span>
-          <input type="text" id="ipInput" placeholder="10.180.248.XXX" value="10.180.248.33">
-          <button onclick="setIP()" class="translatable">Connect</button>
-          <span id="connStatus" class="conn-status" aria-live="polite"></span>
+        <section class="status">
+          <div class="chip"><span class="dot offline" id="espDot"></span><span id="espStatus" class="translatable">ESP</span></div>
+          <div class="chip"><span class="dot offline" id="camDot"></span><span id="cs" class="translatable">Camera</span></div>
+          <div class="chip"><span class="dot offline" id="mqttDot"></span><span id="mqttStatus" class="translatable">MQTT</span></div>
+          <div class="chip"><span class="dot offline" id="firebaseDot"></span><span id="firebaseText" class="translatable">Firebase</span></div>
+        </section>
+      </article>
+
+      <!-- Pump Control on Home Tab -->
+      <article class="card">
+        <div class="head">
+          <h2 class="translatable">Pump Control</h2>
         </div>
-        <div class="frame">
-          <img id="str" alt="Stream" style="display: none;">
-          <p id="streamPlaceholder" style="color: var(--on-surface-variant); font-size: 14px;" class="translatable">Enter ESP32 IP address above</p>
-        </div>
-        
-        <!-- Plant Selection -->
-        <div style="padding: 20px; background: var(--surface-container); border-radius: 12px; margin-top: 24px;">
-          <h4 style="margin: 0 0 12px 0; color: var(--primary); font-size: 14px; font-weight: 600;" class="translatable">
-            🌱 Select Crop for Analysis
-          </h4>
-          <div id="plantSelector" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px;">
-            <!-- Plant buttons will be inserted here -->
-          </div>
-          <div id="selectedPlantInfo" style="margin-top: 12px; padding: 12px; background: var(--surface); border-radius: 8px; border-left: 4px solid var(--primary); box-shadow: var(--elevation-1);">
-            <div style="font-size: 13px; font-weight: 500; color: var(--on-surface); margin-bottom: 4px;">
-              <span class="translatable">Selected:</span> <span id="selectedPlantName" style="color: var(--primary);">🌿 All Plants</span>
-            </div>
-            <div style="font-size: 12px; color: var(--on-surface-variant);" id="selectedPlantDesc">Using all 7 AI models for comprehensive analysis</div>
-          </div>
-        </div>
-        
         <div class="actions">
-          <button id="visualBtn" class="btn pri" onclick="visualOnly()" disabled><span >🔍</span> <span class="translatable">Analyze Stream</span></button>
-          <button id="toggleBtn" class="btn sec" onclick="toggleStream()" disabled><span >📹</span> <span class="translatable">Start Stream</span></button>
+          <button id="pumpBtn" class="btn pri" onclick="togglePump()"><span class="translatable">Toggle Pump</span></button>
         </div>
       </article>
+    </div>
 
-      <article class="card">
-        <div class="head">
-          <h2 class="translatable">Analyze Local Image</h2>
-          <span class="pill translatable">Local</span>
-        </div>
-        <div id="localImagePreview" class="frame" style="display: none;min-height: 240px;"></div>
-        <p id="localImagePlaceholder" style="color: var(--on-surface-variant); font-size: 14px; text-align: center;" class="translatable">Select an image to analyze</p>
-        <div class="actions">
-          <input type="file" id="imageInput" accept="image/*" capture="environment" style="display: none;">
-          <input type="file" id="imageInputGallery" accept="image/*" style="display: none;">
-
-          <div class="local-image-controls" style="display:flex; gap:8px;">
-            <button class="btn sec translatable" onclick="document.getElementById('imageInput').click()">Capture Photo</button>
-            <button class="btn sec translatable" onclick="document.getElementById('imageInputGallery').click()">Choose from Gallery</button>
+    <!-- ==========================================
+         ANALYSE TAB - Camera, Disease Detection
+         ========================================== -->
+    <div id="analyseTab" class="tab-content">
+      <section class="grid">
+        <article class="card">
+          <div class="head">
+            <h2 class="translatable">Live Camera Stream</h2>
+            <span class="pill translatable">Live</span>
           </div>
-
-          <div id="batchProgress" class="batch-progress" style="display:none; margin-top:12px;">
-            <div class="bar" style="width:0%; height:8px; border-radius:6px; background:linear-gradient(90deg,var(--primary),#0b4eb3);"></div>
-            <div class="label" id="batchProgressLabel" style="margin-top:6px; font-size:13px; color:var(--on-surface-variant);"></div>
+          <div class="ip-config">
+            <span style="font-size: 14px; color: var(--on-surface-variant); font-weight: 500;" class="translatable">ESP32 Camera IP:</span>
+            <input type="text" id="ipInput" placeholder="10.180.248.XXX" value="10.180.248.33">
+            <button onclick="setIP()" class="translatable">Connect</button>
+            <span id="connStatus" class="conn-status" aria-live="polite"></span>
           </div>
-          <button id="localAnalyzeBtn" class="btn pri translatable" onclick="analyzeLocalImage()" disabled>Analyze Image</button>
-        </div>
-      </article>
+          <div class="frame">
+            <img id="str" alt="Stream" style="display: none;">
+            <p id="streamPlaceholder" style="color: var(--on-surface-variant); font-size: 14px;" class="translatable">Enter ESP32 IP address above</p>
+          </div>
+          
+          <!-- Plant Selection -->
+          <div style="padding: 20px; background: var(--surface-container); border-radius: 12px; margin-top: 24px;">
+            <h4 style="margin: 0 0 12px 0; color: var(--primary); font-size: 14px; font-weight: 600;" class="translatable">
+              🌱 Select Crop for Analysis
+            </h4>
+            <div id="plantSelector" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px;">
+              <!-- Plant buttons will be inserted here -->
+            </div>
+            <div id="selectedPlantInfo" style="margin-top: 12px; padding: 12px; background: var(--surface); border-radius: 8px; border-left: 4px solid var(--primary); box-shadow: var(--elevation-1);">
+              <div style="font-size: 13px; font-weight: 500; color: var(--on-surface); margin-bottom: 4px;">
+                <span class="translatable">Selected:</span> <span id="selectedPlantName" style="color: var(--primary);">🌿 All Plants</span>
+              </div>
+              <div style="font-size: 12px; color: var(--on-surface-variant);" id="selectedPlantDesc">Using all 7 AI models for comprehensive analysis</div>
+            </div>
+          </div>
+          
+          <div class="actions">
+            <button id="visualBtn" class="btn pri" onclick="visualOnly()" disabled><span >🔍</span> <span class="translatable">Analyze Stream</span></button>
+            <button id="toggleBtn" class="btn sec" onclick="toggleStream()" disabled><span >📹</span> <span class="translatable">Start Stream</span></button>
+          </div>
+        </article>
 
-      <article class="card">
-        <div class="head">
-          <h2 class="translatable">Diagnostic Results</h2>
-        </div>
-        <div id="res" class="results">
-          <div class="rc">
-            <div class="t translatable">Awaiting Analysis</div>
-            <p style="color: var(--on-surface-variant); font-size: 14px; margin-bottom: 16px;" class="translatable">Connect to a device and then run diagnostics.</p>
-            
-            <!-- Disease Detection Models Display -->
-            <div style="background: rgba(26, 115, 232, 0.05); border-radius: 8px; padding: 16px; margin-top: 12px;">
-              <h4 style="margin: 0 0 12px 0; color: var(--primary); font-size: 14px; font-weight: 600;" class="translatable">
-                Active Detection Models
-              </h4>
-              <div id="modelsList" style="display: flex; flex-direction: column; gap: 8px;">
-                <!-- Models will be displayed here -->
+        <article class="card">
+          <div class="head">
+            <h2 class="translatable">Analyze Local Image</h2>
+            <span class="pill translatable">Local</span>
+          </div>
+          <div id="localImagePreview" class="frame" style="display: none;min-height: 240px;"></div>
+          <p id="localImagePlaceholder" style="color: var(--on-surface-variant); font-size: 14px; text-align: center;" class="translatable">Select an image to analyze</p>
+          <div class="actions">
+            <input type="file" id="imageInput" accept="image/*" capture="environment" style="display: none;">
+            <input type="file" id="imageInputGallery" accept="image/*" style="display: none;">
+
+            <div class="local-image-controls" style="display:flex; gap:8px;">
+              <button class="btn sec translatable" onclick="document.getElementById('imageInput').click()">Capture Photo</button>
+              <button class="btn sec translatable" onclick="document.getElementById('imageInputGallery').click()">Choose from Gallery</button>
+            </div>
+
+            <div id="batchProgress" class="batch-progress" style="display:none; margin-top:12px;">
+              <div class="bar" style="width:0%; height:8px; border-radius:6px; background:linear-gradient(90deg,var(--primary),#0b4eb3);"></div>
+              <div class="label" id="batchProgressLabel" style="margin-top:6px; font-size:13px; color:var(--on-surface-variant);"></div>
+            </div>
+            <button id="localAnalyzeBtn" class="btn pri translatable" onclick="analyzeLocalImage()" disabled>Analyze Image</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="head">
+            <h2 class="translatable">Diagnostic Results</h2>
+          </div>
+          <div id="res" class="results">
+            <div class="rc">
+              <div class="t translatable">Awaiting Analysis</div>
+              <p style="color: var(--on-surface-variant); font-size: 14px; margin-bottom: 16px;" class="translatable">Connect to a device and then run diagnostics.</p>
+              
+              <!-- Disease Detection Models Display -->
+              <div style="background: rgba(26, 115, 232, 0.05); border-radius: 8px; padding: 16px; margin-top: 12px;">
+                <h4 style="margin: 0 0 12px 0; color: var(--primary); font-size: 14px; font-weight: 600;" class="translatable">
+                  Active Detection Models
+                </h4>
+                <div id="modelsList" style="display: flex; flex-direction: column; gap: 8px;">
+                  <!-- Models will be displayed here -->
+                </div>
               </div>
             </div>
           </div>
+          <div id="ctx" class="ctx">
+            <h4 class="translatable">Context notes</h4>
+            <ul>
+              <li class="translatable">Awaiting connection...</li>
+            </ul>
+          </div>
+        </article>
+      </section>
+    </div>
+
+    <!-- ==========================================
+         MONITOR TAB - Environmental Sensors
+         ========================================== -->
+    <div id="monitorTab" class="tab-content">
+      <article class="card">
+        <div class="head">
+          <h2 class="translatable">Environment Monitor</h2>
+          <div class="chip"><span class="dot" id="arduinoDot"></span><span id="arduinoStatus" class="translatable">Not Connected</span></div>
         </div>
-        <div id="ctx" class="ctx">
-          <h4 class="translatable">Context notes</h4>
-          <ul>
-            <li class="translatable">Awaiting connection...</li>
-          </ul>
+        <div class="sg">
+          <div class="sc">
+            <div class="l translatable">Temperature</div>
+            <div class="v" id="temperature">--</div>
+            <div class="u">°C</div>
+          </div>
+          <div class="sc">
+            <div class="l translatable">Humidity</div>
+            <div class="v" id="humidity">--</div>
+            <div class="u">%</div>
+          </div>
+          <div class="sc">
+            <div class="l translatable">Soil Moisture</div>
+            <div class="v" id="soilMoisture">--</div>
+            <div class="u"></div>
+          </div>
         </div>
-        
-        <!-- AI Verification Section Removed -->
       </article>
-    </section>
+    </div>
 
-    <article class="card">
-      <div class="head">
-        <h2 class="translatable">Environment Monitor</h2>
-        <div class="chip"><span class="dot" id="arduinoDot"></span><span id="arduinoStatus" class="translatable">Not Connected</span></div>
-      </div>
-      <div class="sg">
-        <div class="sc">
-          <div class="l translatable">Temperature</div>
-          <div class="v" id="temperature">--</div>
-          <div class="u">°C</div>
-        </div>
-        <div class="sc">
-          <div class="l translatable">Humidity</div>
-          <div class="v" id="humidity">--</div>
-          <div class="u">%</div>
-        </div>
-        <div class="sc">
-          <div class="l translatable">Soil Moisture</div>
-          <div class="v" id="soilMoisture">--</div>
-          <div class="u"></div>
-        </div>
-      </div>
-      <div class="actions">
-        <button id="pumpBtn" class="btn pri" onclick="togglePump()"><span class="translatable">Toggle Pump</span></button>
-      </div>
-    </article>
-
-    <!-- Environment panel removed for visual-only workflow -->
-
-    <article class="card">
-      <!-- Platform analytics (charts and stats) removed -->
-
-      <div style="margin-top: 16px;">
-        <div class="card" style="padding: 20px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <h3 style="font-size: 16px; margin: 0; color: var(--primary); font-weight: 600;" class="translatable">🎯 Model Performance Feedback</h3>
-            <button onclick="resetModelFeedback()" style="background: var(--error); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px;">
-              <span class="translatable">🗑️</span>
-              <span class="translatable">Reset Feedback Data</span>
-            </button>
+    <!-- ==========================================
+         ANALYTICS TAB - Charts & Performance
+         ========================================== -->
+    <div id="analyticsTab" class="tab-content">
+      <article class="card">
+        <div style="margin-top: 16px;">
+          <div class="card" style="padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h3 style="font-size: 16px; margin: 0; color: var(--primary); font-weight: 600;" class="translatable">🎯 Model Performance Feedback</h3>
+              <button onclick="resetModelFeedback()" style="background: var(--error); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px;">
+                <span class="translatable">🗑️</span>
+                <span class="translatable">Reset Feedback Data</span>
+              </button>
+            </div>
+            <div id="modelPrecisionChartContainer" style="height: 500px; width: 100%;">
+              <canvas id="modelPrecisionChart"></canvas>
+            </div>
+            <p style="margin-top: 12px; font-size: 12px; color: var(--on-surface-variant); text-align: center;" class="translatable">Rate model predictions to see real-world accuracy. Higher bars = better performance.</p>
           </div>
-          <div id="modelPrecisionChartContainer" style="height: 500px; width: 100%;">
-            <canvas id="modelPrecisionChart"></canvas>
-          </div>
-          <p style="margin-top: 12px; font-size: 12px; color: var(--on-surface-variant); text-align: center;" class="translatable">Rate model predictions to see real-world accuracy. Higher bars = better performance.</p>
         </div>
       </article>
 
       <article class="card">
-        <div class="head">
-          <h2 class="translatable">Diagnostic History</h2>
-          <div style="display: flex; gap: 8px; align-items: center;">
-            <span class="firebase-status" id="firebaseStatus">
-              <span id="firebaseIcon">⚪</span>
-              <span id="firebaseStatusText" class="translatable">Not connected</span>
-            </span>
-            <button class="btn sec" onclick="syncWithFirebase()"><span class="translatable">Sync</span></button>
-            <button class="btn sec" onclick="resyncLocalLogs()"><span class="translatable">Resync</span></button>
-            <div id="resyncProgress" class="resync-progress" style="display:none; align-items:center; gap:8px;">
-              <div class="resync-bar" aria-hidden="true"><div class="resync-bar-fill" style="width:0%"></div></div>
-              <div class="resync-text" id="resyncProgressText"></div>
-            </div>
-          </div>
-        </div>
-
         <div class="card" style="padding: 12px; margin-bottom: 16px;">
           <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--on-surface-variant);" class="translatable">Detection Timeline</h3>
           <div class="timeline-container">
             <canvas id="timelineChart"></canvas>
           </div>
         </div>
-
-        <div class="card" style="padding: 12px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <h3 style="font-size: 14px; margin: 0; color: var(--on-surface-variant);" class="translatable">Analysis Log</h3>
-            <div class="analysis-controls">
-              <button class="btn sec translatable" onclick="loadFromFirebase()" style="padding: 8px 16px; font-size: 13px;">📥 Load</button>
-              <button class="btn sec translatable" onclick="filterHistory('all')" style="padding: 8px 16px; font-size: 13px;">All</button>
-              <button class="btn sec translatable" onclick="filterHistory('diseases')" style="padding: 8px 16px; font-size: 13px;">Diseases</button>
-              <button class="btn sec translatable" onclick="filterHistory('healthy')" style="padding: 8px 16px; font-size: 13px;">Healthy</button>
-              <button class="btn pri" onclick="clearAnalyticsData()" style="padding: 8px 16px; font-size: 13px;"><span class="translatable">🗑️ Clear Diagnostic Log</span></button>
-            </div>
-
-          </div>
-          <div class="history-panel" id="historyPanel">
-            <p style="text-align: center; color: var(--on-surface-variant); padding: 32px;" class="translatable">No diagnostic logs yet. Run your first analysis to get started.</p>
-          </div>
-        </div>
       </article>
-    </main>
+    </div>
+
+    <!-- ==========================================
+         MORE TAB - Settings & Analysis Logs
+         ========================================== -->
+    <div id="moreTab" class="tab-content">
+      <!-- More Tab Menu -->
+      <div id="moreMenu" class="more-menu">
+        <article class="card">
+          <div class="head">
+            <h2 class="translatable">More Options</h2>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <button class="btn sec" onclick="showLogsPage()" style="justify-content: flex-start; text-align: left; padding: 16px;">
+              📊 <span class="translatable">Analysis Logs</span>
+            </button>
+            <!-- Future settings can be added here -->
+          </div>
+        </article>
+      </div>
+
+      <!-- Analysis Logs Page (hidden by default) -->
+      <div id="logsPage" class="logs-page">
+        <button class="back-button" onclick="hideLogsPage()">
+          ← <span class="translatable">Back to More</span>
+        </button>
+
+        <article class="card">
+          <div class="head">
+            <h2 class="translatable">Diagnostic History</h2>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <span class="firebase-status" id="firebaseStatus">
+                <span id="firebaseIcon">⚪</span>
+                <span id="firebaseStatusText" class="translatable">Not connected</span>
+              </span>
+              <button class="btn sec" onclick="syncWithFirebase()"><span class="translatable">Sync</span></button>
+              <button class="btn sec" onclick="resyncLocalLogs()"><span class="translatable">Resync</span></button>
+              <div id="resyncProgress" class="resync-progress" style="display:none; align-items:center; gap:8px;">
+                <div class="resync-bar" aria-hidden="true"><div class="resync-bar-fill" style="width:0%"></div></div>
+                <div class="resync-text" id="resyncProgressText"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="padding: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h3 style="font-size: 14px; margin: 0; color: var(--on-surface-variant);" class="translatable">Analysis Log</h3>
+              <div class="analysis-controls">
+                <button class="btn sec translatable" onclick="loadFromFirebase()" style="padding: 8px 16px; font-size: 13px;">📥 Load</button>
+                <button class="btn sec translatable" onclick="filterHistory('all')" style="padding: 8px 16px; font-size: 13px;">All</button>
+                <button class="btn sec translatable" onclick="filterHistory('diseases')" style="padding: 8px 16px; font-size: 13px;">Diseases</button>
+                <button class="btn sec translatable" onclick="filterHistory('healthy')" style="padding: 8px 16px; font-size: 13px;">Healthy</button>
+                <button class="btn pri" onclick="clearAnalyticsData()" style="padding: 8px 16px; font-size: 13px;"><span class="translatable">🗑️ Clear Diagnostic Log</span></button>
+              </div>
+            </div>
+            <div class="history-panel" id="historyPanel">
+              <p style="text-align: center; color: var(--on-surface-variant); padding: 32px;" class="translatable">No diagnostic logs yet. Run your first analysis to get started.</p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </main>
+
+  <!-- ==========================================
+       BOTTOM NAVIGATION BAR
+       ========================================== -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" onclick="showTab('home')">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-label translatable">Home</div>
+    </div>
+    <div class="nav-item" onclick="showTab('analyse')">
+      <div class="nav-icon">🔬</div>
+      <div class="nav-label translatable">Analyse</div>
+    </div>
+    <div class="nav-item" onclick="showTab('monitor')">
+      <div class="nav-icon">📊</div>
+      <div class="nav-label translatable">Monitor</div>
+    </div>
+    <div class="nav-item" onclick="showTab('analytics')">
+      <div class="nav-icon">📈</div>
+      <div class="nav-label translatable">Analytics</div>
+    </div>
+    <div class="nav-item" onclick="showTab('more')">
+      <div class="nav-icon">⚙️</div>
+      <div class="nav-label translatable">More</div>
+    </div>
+  </nav>
 
     <!-- Toast container for user messages -->
     <div id="toasts" aria-live="polite" style="position: fixed; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 8px; z-index: 9999;"></div>
+
+    <script>
+      // ==========================================
+      // TAB NAVIGATION SYSTEM
+      // ==========================================
+      
+      /**
+       * Show a specific tab and hide others
+       * @param {string} tabName - The tab to show ('home', 'analyse', 'monitor', 'analytics', 'more')
+       */
+      function showTab(tabName) {
+        // Hide all tabs
+        const allTabs = document.querySelectorAll('.tab-content');
+        allTabs.forEach(tab => {
+          tab.classList.remove('active');
+        });
+        
+        // Show selected tab
+        const targetTab = document.getElementById(tabName + 'Tab');
+        if (targetTab) {
+          targetTab.classList.add('active');
+          
+          // Scroll to top smoothly
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        }
+        
+        // Update nav items
+        const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+        navItems.forEach(item => {
+          item.classList.remove('active');
+        });
+        
+        // Add active class to clicked nav item
+        event.currentTarget.classList.add('active');
+        
+        // Store active tab in localStorage for persistence
+        try {
+          localStorage.setItem('activeTab', tabName);
+        } catch (e) {
+          console.warn('Could not save active tab to localStorage');
+        }
+        
+        // Trigger chart updates if analytics tab is opened
+        if (tabName === 'analytics') {
+          setTimeout(() => {
+            updateCharts();
+          }, 100);
+        }
+      }
+      
+      /**
+       * Show the Analysis Logs page (nested under More tab)
+       */
+      function showLogsPage() {
+        document.getElementById('moreMenu').style.display = 'none';
+        document.getElementById('logsPage').classList.add('active');
+      }
+      
+      /**
+       * Hide the Analysis Logs page and return to More menu
+       */
+      function hideLogsPage() {
+        document.getElementById('logsPage').classList.remove('active');
+        document.getElementById('moreMenu').style.display = 'block';
+      }
+      
+      // Restore last active tab on page load
+      document.addEventListener('DOMContentLoaded', () => {
+        try {
+          const savedTab = localStorage.getItem('activeTab');
+          if (savedTab && savedTab !== 'home') {
+            // Find and click the corresponding nav item
+            const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+            navItems.forEach(item => {
+              const onclick = item.getAttribute('onclick');
+              if (onclick && onclick.includes(savedTab)) {
+                // Manually trigger tab switch
+                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+                document.getElementById(savedTab + 'Tab')?.classList.add('active');
+                document.querySelectorAll('.bottom-nav .nav-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+              }
+            });
+          }
+        } catch (e) {
+          console.warn('Could not restore active tab');
+        }
+      });
+    </script>
 
     <script>
       document.addEventListener('DOMContentLoaded', () => {
@@ -1224,6 +1548,18 @@ function calculateConsensus(results) {
       'Advanced Crop Diagnostics Platform': 'উন্নত ফসল নির্ণয়ের প্ল্যাটফর্ম',
       'Agri-Nigrani: Crop Analysis': 'কৃষি-নিগ্রানি: ফসল বিশ্লেষণ',
       'Real-time analysis, AI-driven insights, and sensor integration.': 'রিয়েল-টাইম বিশ্লেষণ, এআই-চালিত অন্তর্দৃষ্টি এবং সেন্সর ইন্টিগ্রেশন।',
+      
+      /* Navigation */
+      'Home': 'হোম',
+      'Analyse': 'বিশ্লেষণ',
+      'Monitor': 'মনিটর',
+      'Analytics': 'অ্যানালিটিক্স',
+      'More': 'আরো',
+      'More Options': 'আরো অপশন',
+      'Analysis Logs': 'বিশ্লেষণ লগ',
+      'Back to More': 'আরো-তে ফিরে যান',
+      'Pump Control': 'পাম্প নিয়ন্ত্রণ',
+      
       'SYSTEM DASHBOARD': 'সিস্টেম ড্যাশবোর্ড',
       'Restart': 'পুনরায় চালু করুন',
       'ESP': 'ইএসপি',
