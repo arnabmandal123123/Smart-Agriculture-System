@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
@@ -7,8 +8,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#1a73e8">
-  <meta name="description" content="Professional ESP32-CAM agricultural disease detection system with AI verification, 10-model consensus analysis, and real-time sensor monitoring.">
-  <meta name="keywords" content="agriculture, plant disease detection, ESP32-CAM, AI, machine learning, crop health monitoring">
+  <meta name="description"
+    content="Professional ESP32-CAM agricultural disease detection system with AI verification, 10-model consensus analysis, and real-time sensor monitoring.">
+  <meta name="keywords"
+    content="agriculture, plant disease detection, ESP32-CAM, AI, machine learning, crop health monitoring">
   <meta name="author" content="Smart Agricultural System">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
@@ -16,7 +19,9 @@
   <link rel="dns-prefetch" href="https://www.gstatic.com">
   <title>ESP32-CAM Disease Monitor - Smart Agriculture</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <!-- Firebase SDK - Using Firestore for all data storage -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -31,29 +36,29 @@
       --primary-container: rgba(62, 166, 255, 0.15);
       --on-primary: #0f0f0f;
       --on-primary-container: #dbeafe;
-      
+
       --secondary: #c084fc;
       --secondary-container: rgba(192, 132, 252, 0.15);
-      
+
       --surface: #1e1e1e;
       --surface-glass: rgba(30, 30, 30, 0.98);
       --surface-container: #272727;
-      
+
       --on-surface: #f1f1f1;
       --on-surface-variant: #aaaaaa;
-      
+
       --outline: #3f3f3f;
       --outline-variant: #303030;
-      
+
       --error: #ff4e45;
       --error-container: rgba(255, 78, 69, 0.2);
       --success: #2ba640;
       --warn: #fbc02d;
-      
+
       --elevation-1: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
       --elevation-2: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
       --elevation-3: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-      
+
       --radius: 16px;
       --font-sans: 'Roboto', system-ui, sans-serif;
       --font-body: 'Roboto', system-ui, sans-serif;
@@ -87,26 +92,26 @@
       --primary-container: #dbeafe;
       --on-primary: #ffffff;
       --on-primary-container: #1e40af;
-      
+
       --secondary: #7c3aed;
       --secondary-container: #ede9fe;
-      
+
       --surface: #ffffff;
       --surface-glass: rgba(255, 255, 255, 0.85);
       --surface-container: #f1f5f9;
-      
+
       --on-surface: #0f172a;
       --on-surface-variant: #475569;
-      
+
       --outline: #cbd5e1;
       --outline-variant: #e2e8f0;
-      
+
       --error: #dc2626;
       --error-container: #fee2e2;
-      
+
       --bg-color: #f8fafc;
       --bg-gradient: radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.1) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(124, 58, 237, 0.1) 0px, transparent 50%);
-      
+
       --input-bg: rgba(0, 0, 0, 0.06);
       --card-sub-bg: rgba(0, 0, 0, 0.04);
       --chip-bg: rgba(0, 0, 0, 0.06);
@@ -115,7 +120,7 @@
       --placeholder: rgba(0, 0, 0, 0.4);
       --card-hover-bg: rgba(255, 255, 255, 0.95);
       --card-hover-border: rgba(0, 0, 0, 0.15);
-      
+
       --elevation-1: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
 
@@ -133,7 +138,8 @@
       background-attachment: fixed;
       color: var(--on-surface);
       padding: 24px;
-      padding-bottom: 100px; /* Space for nav */
+      padding-bottom: 100px;
+      /* Space for nav */
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
       transition: background-color 0.3s ease, color 0.3s ease;
@@ -146,18 +152,31 @@
       flex-direction: column;
       gap: 24px;
       animation: fadeIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-      perspective: 1200px; /* 3D Perspective */
+      perspective: 1200px;
+      /* 3D Perspective */
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* Generic spinner animation used by inline spinners */
     @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     /* Hero Section */
@@ -169,31 +188,42 @@
       box-shadow: 0 20px 40px -10px rgba(59, 130, 246, 0.4);
       position: relative;
       overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-    
+
     .hero::before {
       content: '';
       position: absolute;
-      top: -50%; left: -50%; width: 200%; height: 200%;
-      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
       animation: rotate 20s linear infinite;
     }
-    
+
     .hero:hover {
       transform: translateY(-5px) scale(1.01);
       box-shadow: 0 30px 60px -12px rgba(59, 130, 246, 0.5);
     }
 
-    @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes rotate {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
     .hero h1 {
       font-size: 32px;
       font-weight: 700;
       margin-bottom: 8px;
       letter-spacing: -0.5px;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     /* Cards */
@@ -247,7 +277,7 @@
       border: 1px solid var(--outline-variant);
       transition: var(--transition);
     }
-    
+
     .ip-config:focus-within {
       border-color: var(--primary);
       box-shadow: 0 0 0 2px var(--primary-container);
@@ -265,12 +295,29 @@
     }
 
     /* Local image controls */
-    .local-image-controls .btn { padding: 8px 12px; font-size: 14px; }
+    .local-image-controls .btn {
+      padding: 8px 12px;
+      font-size: 14px;
+    }
 
     /* Batch progress indicator */
-    .batch-progress { width: 100%; max-width: 420px; }
-    .batch-progress .bar { transition: width 220ms cubic-bezier(.2,0,.2,1); box-shadow: 0 2px 6px rgba(0,0,0,0.25); height: 8px; border-radius: 6px; }
-    .batch-progress .label { margin-top: 6px; font-size: 13px; color: var(--on-surface-variant); }
+    .batch-progress {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .batch-progress .bar {
+      transition: width 220ms cubic-bezier(.2, 0, .2, 1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+      height: 8px;
+      border-radius: 6px;
+    }
+
+    .batch-progress .label {
+      margin-top: 6px;
+      font-size: 13px;
+      color: var(--on-surface-variant);
+    }
 
     .status {
       display: grid;
@@ -279,10 +326,32 @@
     }
 
     /* Compact resync progress indicator */
-    .resync-progress { display: inline-flex; gap: 8px; align-items: center; }
-    .resync-bar { width: 120px; height: 8px; background: var(--outline-variant); border-radius: 6px; overflow: hidden; }
-    .resync-bar-fill { height: 100%; background: linear-gradient(90deg,var(--primary),#0b4eb3); transition: width 250ms cubic-bezier(.2,0,.2,1); }
-    .resync-text { font-size: 12px; color: var(--on-surface-variant); min-width: 40px; text-align: right; }
+    .resync-progress {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .resync-bar {
+      width: 120px;
+      height: 8px;
+      background: var(--outline-variant);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .resync-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), #0b4eb3);
+      transition: width 250ms cubic-bezier(.2, 0, .2, 1);
+    }
+
+    .resync-text {
+      font-size: 12px;
+      color: var(--on-surface-variant);
+      min-width: 40px;
+      text-align: right;
+    }
 
     .actions {
       margin-top: 24px;
@@ -291,8 +360,14 @@
       flex-wrap: wrap;
     }
 
-    .ip-config span.translatable { margin-right: 6px; }
-    .ip-config input::placeholder { color: var(--placeholder); }
+    .ip-config span.translatable {
+      margin-right: 6px;
+    }
+
+    .ip-config input::placeholder {
+      color: var(--placeholder);
+    }
+
     .ip-config button {
       padding: 8px 12px;
       border-radius: 8px;
@@ -303,12 +378,25 @@
       font-weight: 500;
       box-shadow: none;
     }
-    .ip-config button:hover { background: var(--primary-hover); }
+
+    .ip-config button:hover {
+      background: var(--primary-hover);
+    }
 
     /* Ensure conn-status stands out on black background */
-    .conn-status { color: var(--on-surface-variant); }
-    .conn-status.success { color: var(--success); background: rgba(20,108,46,0.08); }
-    .conn-status.error { color: var(--error); background: rgba(179,38,30,0.08); }
+    .conn-status {
+      color: var(--on-surface-variant);
+    }
+
+    .conn-status.success {
+      color: var(--success);
+      background: rgba(20, 108, 46, 0.08);
+    }
+
+    .conn-status.error {
+      color: var(--error);
+      background: rgba(179, 38, 30, 0.08);
+    }
 
     /* Connection status pill */
     .conn-status {
@@ -321,6 +409,7 @@
       transition: var(--transition);
       color: var(--on-surface-variant);
     }
+
     .conn-status::before {
       content: '';
       width: 10px;
@@ -329,12 +418,36 @@
       display: inline-block;
       background: transparent;
     }
-    .conn-status.success { color: var(--success); background: rgba(20,108,46,0.08); }
-    .conn-status.success::before { background: var(--success); box-shadow: 0 0 0 4px rgba(20,108,46,0.08); }
-    .conn-status.error { color: var(--error); background: rgba(179,38,30,0.08); }
-    .conn-status.error::before { background: var(--error); box-shadow: 0 0 0 4px rgba(179,38,30,0.08); }
-    .conn-status.warn { color: var(--warn); background: rgba(239,108,0,0.08); }
-    .conn-status.warn::before { background: var(--warn); box-shadow: 0 0 0 4px rgba(239,108,0,0.08); }
+
+    .conn-status.success {
+      color: var(--success);
+      background: rgba(20, 108, 46, 0.08);
+    }
+
+    .conn-status.success::before {
+      background: var(--success);
+      box-shadow: 0 0 0 4px rgba(20, 108, 46, 0.08);
+    }
+
+    .conn-status.error {
+      color: var(--error);
+      background: rgba(179, 38, 30, 0.08);
+    }
+
+    .conn-status.error::before {
+      background: var(--error);
+      box-shadow: 0 0 0 4px rgba(179, 38, 30, 0.08);
+    }
+
+    .conn-status.warn {
+      color: var(--warn);
+      background: rgba(239, 108, 0, 0.08);
+    }
+
+    .conn-status.warn::before {
+      background: var(--warn);
+      box-shadow: 0 0 0 4px rgba(239, 108, 0, 0.08);
+    }
 
     /* Buttons */
     .btn {
@@ -351,10 +464,10 @@
       gap: 8px;
       letter-spacing: 0.3px;
       /* 3D Button Base */
-      box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+      box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
       position: relative;
     }
-    
+
     .btn .material-symbols-rounded {
       font-size: 20px;
       margin-right: 0;
@@ -399,8 +512,10 @@
       border: 1px solid var(--error);
       box-shadow: 0 4px 0 #b91c1c;
     }
+
     .btn.err:hover {
-      background: #d32f2f; /* Darker red */
+      background: #d32f2f;
+      /* Darker red */
       border-color: #d32f2f;
       transform: translateY(-2px);
       box-shadow: 0 6px 0 #b91c1c;
@@ -417,9 +532,10 @@
       background: var(--surface-container);
       border-radius: 12px;
       padding: 20px;
-      border: 1px solid rgba(0,0,0,0.05);
+      border: 1px solid rgba(0, 0, 0, 0.05);
     }
-    .rc .t { 
+
+    .rc .t {
       font-weight: 500;
       font-size: 16px;
       margin-bottom: 8px;
@@ -427,6 +543,7 @@
       justify-content: space-between;
       align-items: center;
     }
+
     .badge {
       padding: 4px 8px;
       border-radius: 4px;
@@ -434,18 +551,22 @@
       font-weight: 600;
       text-transform: uppercase;
     }
+
     .badge.ok {
       background: #c4eed0;
       color: var(--success);
     }
+
     .badge.warn {
       background: #ffebb0;
       color: var(--warn);
     }
+
     .badge.err {
       background: var(--error-container);
       color: var(--error);
     }
+
     .ctx {
       background: var(--surface-container);
       border-radius: 12px;
@@ -463,21 +584,28 @@
       position: relative;
       width: 100%;
     }
+
     .timeline-container {
       position: relative;
-      height: 400px; /* Desktop default */
+      height: 400px;
+      /* Desktop default */
       width: 100%;
     }
 
     /* Mobile Chart Responsiveness */
     @media (max-width: 600px) {
-      .timeline-container, #modelPrecisionChartContainer {
-        height: 50vh !important; /* Use viewport height on mobile */
+
+      .timeline-container,
+      #modelPrecisionChartContainer {
+        height: 50vh !important;
+        /* Use viewport height on mobile */
         min-height: 300px;
         max-height: 500px;
       }
+
       .card {
-        padding: 16px !important; /* Reduce padding on mobile for more chart width */
+        padding: 16px !important;
+        /* Reduce padding on mobile for more chart width */
       }
     }
 
@@ -498,7 +626,7 @@
       justify-content: space-between;
       padding: 8px 16px;
       z-index: 1000;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
 
     .bottom-nav .nav-item {
@@ -518,16 +646,23 @@
       color: var(--primary);
       background: rgba(59, 130, 246, 0.1);
     }
-    
-    .bottom-nav .nav-item.active::before { display: none; } /* Remove old indicator */
 
-    .bottom-nav .nav-icon { 
-      font-size: 24px; 
+    .bottom-nav .nav-item.active::before {
+      display: none;
+    }
+
+    /* Remove old indicator */
+
+    .bottom-nav .nav-icon {
+      font-size: 24px;
       margin-bottom: 4px;
       font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
-    
-    .bottom-nav .nav-label { font-size: 10px; font-weight: 600; }
+
+    .bottom-nav .nav-label {
+      font-size: 10px;
+      font-weight: 600;
+    }
 
     /* Tab Content Sections */
     .tab-content {
@@ -547,6 +682,7 @@
         opacity: 0;
         transform: translateY(10px);
       }
+
       to {
         opacity: 1;
         transform: translateY(0);
@@ -589,7 +725,7 @@
       border: 1px solid rgba(255, 255, 255, 0.1) !important;
       transition: var(--transition) !important;
     }
-    
+
     #plantSelector button:hover {
       background: rgba(255, 255, 255, 0.08) !important;
       border-color: var(--primary) !important;
@@ -597,10 +733,22 @@
     }
 
     /* Scrollbar */
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: var(--bg-color); }
-    ::-webkit-scrollbar-thumb { background: var(--surface-container); border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--outline); }
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-color);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--surface-container);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--outline);
+    }
 
     .card-enter {
       animation: card-enter-animation 0.5s ease-out forwards;
@@ -621,11 +769,15 @@
       grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
       gap: 24px;
     }
-    
-    section.grid { grid-template-columns: 2fr 1fr; }
-    
+
+    section.grid {
+      grid-template-columns: 2fr 1fr;
+    }
+
     @media (max-width: 900px) {
-      section.grid { grid-template-columns: 1fr; }
+      section.grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     /* Sensor Cards */
@@ -634,7 +786,7 @@
       grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
       gap: 16px;
     }
-    
+
     .sc {
       background: var(--card-sub-bg);
       border-radius: 16px;
@@ -643,17 +795,17 @@
       border: 1px solid rgba(255, 255, 255, 0.05);
       transition: var(--transition);
       transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
-      box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+      box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
     }
-    
+
     .sc:hover {
       background: rgba(255, 255, 255, 0.06);
       transform: translateY(-2px);
       transform: translateY(-6px) scale(1.05);
-      box-shadow: 0 10px 0 rgba(0,0,0,0.2), 0 20px 40px rgba(0,0,0,0.3);
+      box-shadow: 0 10px 0 rgba(0, 0, 0, 0.2), 0 20px 40px rgba(0, 0, 0, 0.3);
       z-index: 2;
     }
-    
+
     .sc .v {
       font-size: 28px;
       font-weight: 700;
@@ -661,8 +813,14 @@
       margin: 8px 0;
       text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
     }
-    
-    .sc .l { font-size: 13px; color: var(--on-surface-variant); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .sc .l {
+      font-size: 13px;
+      color: var(--on-surface-variant);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
 
     /* Status Chips */
     .chip {
@@ -676,36 +834,45 @@
       align-items: center;
       gap: 8px;
     }
-    
+
     .dot {
-      width: 8px; height: 8px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       background: var(--success);
       box-shadow: 0 0 8px var(--success);
     }
-    
+
     .dot.offline {
       background: var(--error);
       box-shadow: 0 0 8px var(--error);
     }
 
     /* Results Table */
-    .results-table tr { border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .results-table th { font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; font-size: 12px; }
+    .results-table tr {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .results-table th {
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      font-size: 12px;
+    }
 
     /* Frame/Image Container */
     .frame {
       background: #000;
       border-radius: 16px;
       overflow: hidden;
-      box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
-      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       min-height: 240px;
       display: grid;
       place-items: center;
       position: relative;
     }
-    
+
     .frame img {
       width: 100%;
       height: auto;
@@ -743,7 +910,7 @@
       align-items: center;
       padding: 12px 16px;
       background: var(--surface-container);
-      border-bottom: 1px solid rgba(0,0,0,0.03);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.03);
     }
 
     .log-meta {
@@ -763,9 +930,22 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-    .log-badge.low { background: rgba(52, 168, 83, 0.1); color: var(--success); }
-    .log-badge.moderate { background: rgba(251, 188, 4, 0.1); color: var(--warn); }
-    .log-badge.high, .log-badge.critical { background: rgba(234, 67, 53, 0.1); color: var(--error); }
+
+    .log-badge.low {
+      background: rgba(52, 168, 83, 0.1);
+      color: var(--success);
+    }
+
+    .log-badge.moderate {
+      background: rgba(251, 188, 4, 0.1);
+      color: var(--warn);
+    }
+
+    .log-badge.high,
+    .log-badge.critical {
+      background: rgba(234, 67, 53, 0.1);
+      color: var(--error);
+    }
 
     .log-delete-btn {
       background: transparent;
@@ -779,6 +959,7 @@
       justify-content: center;
       transition: background 0.2s, color 0.2s;
     }
+
     .log-delete-btn:hover {
       background: rgba(234, 67, 53, 0.1);
       color: var(--error);
@@ -790,11 +971,51 @@
       cursor: pointer;
     }
 
-    .log-main-row {
+    /* Status Bar Styling */
+    .status-bar {
+      position: fixed;
+      bottom: 80px;
+      /* Above bottom nav */
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 6px;
+      gap: 16px;
+      background: var(--surface-container);
+      padding: 8px 16px;
+      border-radius: 50px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      z-index: 2000;
+      border: 1px solid var(--outline-variant);
+      backdrop-filter: blur(10px);
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--on-surface-variant);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-item.online .status-indicator {
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    .status-item.offline .status-indicator {
+      background: var(--error);
+      box-shadow: none;
+    }
+
+    .status-item .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--on-surface-variant);
+      transition: all 0.3s;
     }
 
     .log-title {
@@ -826,11 +1047,21 @@
       background: var(--bg-color);
       animation: slideDown 0.2s ease-out;
     }
-    .log-card.expanded .log-details { display: block; }
+
+    .log-card.expanded .log-details {
+      display: block;
+    }
 
     @keyframes slideDown {
-      from { opacity: 0; transform: translateY(-5px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(-5px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .log-section-title {
@@ -847,12 +1078,21 @@
       display: flex;
       justify-content: space-between;
       padding: 8px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       font-size: 13px;
     }
-    .log-model-row:last-child { border-bottom: none; }
-    .log-model-name { color: var(--on-surface); }
-    .log-model-result { font-weight: 500; }
+
+    .log-model-row:last-child {
+      border-bottom: none;
+    }
+
+    .log-model-name {
+      color: var(--on-surface);
+    }
+
+    .log-model-result {
+      font-weight: 500;
+    }
 
     /* Sensor Grid in Logs */
     .log-sensor-grid {
@@ -860,6 +1100,7 @@
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
     }
+
     .log-sensor-item {
       background: var(--surface-container);
       padding: 8px;
@@ -870,6 +1111,7 @@
       font-size: 12px;
       color: var(--on-surface);
     }
+
     .log-sensor-item .material-symbols-rounded {
       font-size: 18px;
       margin-bottom: 4px;
@@ -882,8 +1124,10 @@
       gap: 8px;
       overflow-x: auto;
       padding-bottom: 4px;
-      margin-right: auto; /* Push clear button to right */
+      margin-right: auto;
+      /* Push clear button to right */
     }
+
     .filter-chip {
       background: var(--surface-container);
       border: 1px solid var(--outline-variant);
@@ -896,7 +1140,11 @@
       transition: all 0.2s;
       white-space: nowrap;
     }
-    .filter-chip:hover { background: var(--outline-variant); }
+
+    .filter-chip:hover {
+      background: var(--outline-variant);
+    }
+
     .filter-chip.active {
       background: var(--primary-container);
       color: var(--primary);
@@ -911,7 +1159,7 @@
       flex-direction: column;
       gap: 16px;
     }
-    
+
     .res-card {
       background: var(--surface);
       border: 1px solid var(--outline-variant);
@@ -920,27 +1168,27 @@
       transition: transform 0.2s ease, box-shadow 0.2s ease;
       position: relative;
     }
-    
+
     .res-card:hover {
       border-color: var(--primary);
       box-shadow: var(--elevation-1);
     }
-    
+
     .res-header {
       padding: 16px 20px;
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       background: var(--surface-container);
-      border-bottom: 1px solid rgba(0,0,0,0.05);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     }
-    
+
     .res-title-group {
       display: flex;
       flex-direction: column;
       gap: 4px;
     }
-    
+
     .res-disease-name {
       font-size: 18px;
       font-weight: 700;
@@ -948,7 +1196,7 @@
       margin: 0;
       letter-spacing: -0.5px;
     }
-    
+
     .res-model-name {
       font-size: 11px;
       font-family: 'Roboto Mono', monospace;
@@ -956,7 +1204,7 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-    
+
     .res-badge {
       font-size: 11px;
       font-weight: 700;
@@ -967,16 +1215,31 @@
       white-space: nowrap;
       margin-left: 12px;
     }
-    
-    .res-badge.high { background: rgba(234, 67, 53, 0.1); color: #EA4335; }
-    .res-badge.med { background: rgba(251, 188, 4, 0.1); color: #FBBC04; }
-    .res-badge.low { background: rgba(52, 168, 83, 0.1); color: #34A853; }
-    .res-badge.healthy { background: rgba(52, 168, 83, 0.1); color: #34A853; }
-    
+
+    .res-badge.high {
+      background: rgba(234, 67, 53, 0.1);
+      color: #EA4335;
+    }
+
+    .res-badge.med {
+      background: rgba(251, 188, 4, 0.1);
+      color: #FBBC04;
+    }
+
+    .res-badge.low {
+      background: rgba(52, 168, 83, 0.1);
+      color: #34A853;
+    }
+
+    .res-badge.healthy {
+      background: rgba(52, 168, 83, 0.1);
+      color: #34A853;
+    }
+
     .res-body {
       padding: 20px;
     }
-    
+
     .res-metrics {
       display: flex;
       gap: 32px;
@@ -984,12 +1247,12 @@
       padding-bottom: 16px;
       border-bottom: 1px solid var(--outline-variant);
     }
-    
+
     .res-metric {
       display: flex;
       flex-direction: column;
     }
-    
+
     .res-metric-label {
       font-size: 11px;
       text-transform: uppercase;
@@ -998,20 +1261,20 @@
       letter-spacing: 0.5px;
       margin-bottom: 4px;
     }
-    
+
     .res-metric-value {
       font-size: 18px;
       font-weight: 500;
       color: var(--on-surface);
     }
-    
+
     .res-remedy {
       background: var(--bg-color);
       border: 1px solid var(--outline-variant);
       border-radius: 8px;
       padding: 16px;
     }
-    
+
     .res-remedy-header {
       display: flex;
       align-items: center;
@@ -1023,19 +1286,27 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-    
+
     .res-remedy-content {
       font-size: 14px;
       line-height: 1.6;
       color: var(--on-surface);
     }
-    
+
     .remedy-block {
       margin-bottom: 8px;
     }
-    .remedy-block:last-child { margin-bottom: 0; }
-    .remedy-type { font-weight: 600; color: var(--on-surface); margin-right: 4px; }
-    
+
+    .remedy-block:last-child {
+      margin-bottom: 0;
+    }
+
+    .remedy-type {
+      font-weight: 600;
+      color: var(--on-surface);
+      margin-right: 4px;
+    }
+
     .res-feedback {
       padding: 12px 20px;
       background: var(--surface);
@@ -1044,17 +1315,17 @@
       justify-content: space-between;
       align-items: center;
     }
-    
+
     .res-feedback-text {
       font-size: 12px;
       color: var(--on-surface-variant);
     }
-    
+
     .res-feedback-actions {
       display: flex;
       gap: 8px;
     }
-    
+
     .res-btn-feedback {
       background: transparent;
       border: 1px solid var(--outline-variant);
@@ -1069,19 +1340,19 @@
       gap: 6px;
       transition: all 0.2s;
     }
-    
+
     .res-btn-feedback:hover {
       background: var(--surface-container);
       color: var(--on-surface);
       border-color: var(--on-surface-variant);
     }
-    
+
     .res-btn-feedback.correct:hover {
       border-color: var(--success);
       color: var(--success);
       background: rgba(52, 168, 83, 0.05);
     }
-    
+
     .res-btn-feedback.wrong:hover {
       border-color: var(--error);
       color: var(--error);
@@ -1101,46 +1372,63 @@
       position: relative;
       overflow: hidden;
     }
-    
+
     .consensus-card::before {
       content: '';
       position: absolute;
-      left: 0; top: 0; bottom: 0;
+      left: 0;
+      top: 0;
+      bottom: 0;
       width: 4px;
       background: var(--outline);
     }
-    
-    .consensus-card.healthy::before { background: var(--success); }
-    .consensus-card.disease::before { background: var(--error); }
-    
+
+    .consensus-card.healthy::before {
+      background: var(--success);
+    }
+
+    .consensus-card.disease::before {
+      background: var(--error);
+    }
+
     .consensus-header {
       display: flex;
       align-items: center;
       gap: 12px;
     }
-    
+
     .consensus-icon {
-      width: 32px; height: 32px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 18px;
     }
-    
-    .consensus-card.healthy .consensus-icon { background: rgba(52, 168, 83, 0.1); color: var(--success); }
-    .consensus-card.disease .consensus-icon { background: rgba(234, 67, 53, 0.1); color: var(--error); }
-    
+
+    .consensus-card.healthy .consensus-icon {
+      background: rgba(52, 168, 83, 0.1);
+      color: var(--success);
+    }
+
+    .consensus-card.disease .consensus-icon {
+      background: rgba(234, 67, 53, 0.1);
+      color: var(--error);
+    }
+
     .consensus-title {
       font-size: 16px;
       font-weight: 700;
       color: var(--on-surface);
     }
-    
+
     .consensus-verdict {
       font-size: 14px;
       color: var(--on-surface-variant);
       margin-left: 44px;
     }
-    
+
     .consensus-note {
       font-size: 13px;
       color: var(--on-surface-variant);
@@ -1153,26 +1441,106 @@
 
     /* Mobile Adjustments */
     @media (max-width: 600px) {
-      body { padding: 16px; padding-bottom: 90px; }
-      .hero { padding: 24px; text-align: center; }
-      .hero h1 { font-size: 24px; }
-      .bottom-nav { width: 94%; bottom: 16px; }
-      .head { flex-direction: column; align-items: stretch; }
-      .head .btn { width: 100%; }
-      .ip-config { flex-direction: column; align-items: stretch; }
-      .ip-config button { width: 100%; }
-      .grid, .sg, .status { grid-template-columns: 1fr; gap: 16px; }
-      .actions { flex-direction: column; align-items: stretch; }
-      .actions .btn { width: 100%; }
-      
+      body {
+        padding: 16px;
+        padding-bottom: 90px;
+      }
+
+      .hero {
+        padding: 24px;
+        text-align: center;
+      }
+
+      .hero h1 {
+        font-size: 24px;
+      }
+
+      .bottom-nav {
+        width: 94%;
+        bottom: 16px;
+      }
+
+      .head {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .head .btn {
+        width: 100%;
+      }
+
+      .ip-config {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .ip-config button {
+        width: 100%;
+      }
+
+      .grid,
+      .sg,
+      .status {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .actions .btn {
+        width: 100%;
+      }
+
       /* Responsive Table */
-      .results-table, .results-table thead, .results-table tbody, .results-table th, .results-table td, .results-table tr { display: block; }
-      .results-table thead tr { position: absolute; top: -9999px; left: -9999px; }
-      .results-table tr { border: 1px solid rgba(255,255,255,0.1); margin-bottom: 16px; border-radius: 12px; padding: 12px; background: rgba(255,255,255,0.02); }
-      .results-table td { border: none; position: relative; padding-left: 50%; text-align: right; padding-top: 8px; padding-bottom: 8px; }
-      .results-table td:before { position: absolute; top: 8px; left: 0; width: 45%; padding-right: 10px; white-space: nowrap; text-align: left; font-weight: 600; color: var(--on-surface-variant); content: attr(data-label); }
+      .results-table,
+      .results-table thead,
+      .results-table tbody,
+      .results-table th,
+      .results-table td,
+      .results-table tr {
+        display: block;
+      }
+
+      .results-table thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+      }
+
+      .results-table tr {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 16px;
+        border-radius: 12px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .results-table td {
+        border: none;
+        position: relative;
+        padding-left: 50%;
+        text-align: right;
+        padding-top: 8px;
+        padding-bottom: 8px;
+      }
+
+      .results-table td:before {
+        position: absolute;
+        top: 8px;
+        left: 0;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        text-align: left;
+        font-weight: 600;
+        color: var(--on-surface-variant);
+        content: attr(data-label);
+      }
     }
-    
+
     /* Utility */
     .pill {
       background: var(--primary-container);
@@ -1183,14 +1551,14 @@
       font-weight: 700;
       text-transform: uppercase;
     }
-    
+
     /* Toast */
     .toast {
       background: rgba(30, 41, 59, 0.95);
       backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
       min-width: 220px;
       max-width: 360px;
       padding: 12px 14px;
@@ -1203,16 +1571,41 @@
       transform: translateY(6px);
       transition: opacity 240ms ease, transform 240ms ease;
     }
-    .toast.show { opacity: 1; transform: translateY(0); }
-    .toast.info { border-left: 4px solid var(--primary); }
-    .toast.success { border-left: 4px solid var(--success); }
-    .toast.error { border-left: 4px solid var(--error); }
-    .toast .label { font-weight: 500; }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .toast.info {
+      border-left: 4px solid var(--primary);
+    }
+
+    .toast.success {
+      border-left: 4px solid var(--success);
+    }
+
+    .toast.error {
+      border-left: 4px solid var(--error);
+    }
+
+    .toast .label {
+      font-weight: 500;
+    }
 
     /* Theme Switch Visuals */
-    html[data-theme="dark"] .theme-switch-on { display: inline-block !important; }
-    html[data-theme="light"] .theme-switch-off { display: inline-block !important; }
-    html[data-theme="light"] .theme-switch-on, html[data-theme="dark"] .theme-switch-off { display: none !important; }
+    html[data-theme="dark"] .theme-switch-on {
+      display: inline-block !important;
+    }
+
+    html[data-theme="light"] .theme-switch-off {
+      display: inline-block !important;
+    }
+
+    html[data-theme="light"] .theme-switch-on,
+    html[data-theme="dark"] .theme-switch-off {
+      display: none !important;
+    }
 
     /* Language Selector in Menu */
     #languageSelector {
@@ -1222,6 +1615,7 @@
       display: flex;
       gap: 4px;
     }
+
     #languageSelector button {
       border: none;
       background: transparent;
@@ -1233,19 +1627,21 @@
       color: var(--on-surface-variant);
       transition: all 0.2s;
     }
+
     #languageSelector button.active {
       background: var(--surface);
       color: var(--primary);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
-    
+
     /* Control Card Styles */
     .control-card {
       border-left: 4px solid var(--outline-variant);
       transition: border-color 0.3s ease;
     }
-    </style>
+  </style>
 </head>
+
 <body>
   <main class="wrap">
     <!-- ==========================================
@@ -1261,17 +1657,22 @@
           </div>
         </div>
       </section>
-  
+
       <article class="card">
         <div class="head">
           <h2 class="translatable">System Dashboard</h2>
-          <button class="btn sec" onclick="location.reload()"><span class="material-symbols-rounded">refresh</span> <span class="translatable">Refresh</span></button>
+          <button class="btn sec" onclick="location.reload()"><span class="material-symbols-rounded">refresh</span>
+            <span class="translatable">Refresh</span></button>
         </div>
         <section class="status">
-          <div class="chip"><span class="dot offline" id="espDot"></span><span id="espStatus" class="translatable">ESP</span></div>
-          <div class="chip"><span class="dot offline" id="camDot"></span><span id="cs" class="translatable">Camera</span></div>
-          <div class="chip"><span class="dot offline" id="mqttDot"></span><span id="mqttStatus" class="translatable">MQTT</span></div>
-          <div class="chip"><span class="dot offline" id="firebaseDot"></span><span id="firebaseText" class="translatable">Firebase</span></div>
+          <div class="chip"><span class="dot offline" id="espDot"></span><span id="espStatus"
+              class="translatable">ESP</span></div>
+          <div class="chip"><span class="dot offline" id="camDot"></span><span id="cs"
+              class="translatable">Camera</span></div>
+          <div class="chip"><span class="dot offline" id="mqttDot"></span><span id="mqttStatus"
+              class="translatable">MQTT</span></div>
+          <div class="chip"><span class="dot offline" id="firebaseDot"></span><span id="firebaseText"
+              class="translatable">Firebase</span></div>
         </section>
       </article>
 
@@ -1288,13 +1689,15 @@
         <div class="head">
           <h2 class="translatable">Irrigation Control</h2>
           <div class="chip" style="background: var(--surface-container); border: none;">
-            <span class="dot" id="pumpStatusDot" style="background: var(--on-surface-variant); box-shadow: none;"></span>
+            <span class="dot" id="pumpStatusDot"
+              style="background: var(--on-surface-variant); box-shadow: none;"></span>
             <span id="pumpStatusText" class="translatable" style="font-weight: 700;">OFF</span>
           </div>
         </div>
-        
+
         <!-- Device-Side Control Info Banner -->
-        <div style="padding: 12px; background: var(--primary-container); border-radius: 8px; margin-bottom: 16px; border-left: 4px solid var(--primary);">
+        <div
+          style="padding: 12px; background: var(--primary-container); border-radius: 8px; margin-bottom: 16px; border-left: 4px solid var(--primary);">
           <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
             <span class="material-symbols-rounded" style="font-size: 18px; color: var(--primary);">info</span>
             <span style="font-weight: 600; color: var(--primary); font-size: 13px;">Device-Side Timer Control</span>
@@ -1304,52 +1707,72 @@
           </div>
 
           <!-- Device status (NTP / Schedule / Quick Timer) -->
-          <div id="espScheduleStatus" style="font-size:13px; color:var(--on-surface-variant); padding:8px 12px; border-radius:8px; background: rgba(255,255,255,0.02); margin-top:8px;">NTP: — | Schedule: OFF</div>
+          <div id="espScheduleStatus"
+            style="font-size:13px; color:var(--on-surface-variant); padding:8px 12px; border-radius:8px; background: rgba(255,255,255,0.02); margin-top:8px;">
+            NTP: — | Schedule: OFF</div>
         </div>
-        
+
         <div style="display: flex; flex-direction: column; gap: 20px;">
-          <div style="display: flex; align-items: center; gap: 16px; padding: 16px; background: var(--surface-container); border-radius: 12px; border: 1px solid rgba(0,0,0,0.05);">
-            <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--surface); display: flex; align-items: center; justify-content: center; box-shadow: var(--elevation-1);">
-              <span class="material-symbols-rounded" id="pumpIcon" style="font-size: 24px; color: var(--on-surface-variant);">water_drop</span>
+          <div
+            style="display: flex; align-items: center; gap: 16px; padding: 16px; background: var(--surface-container); border-radius: 12px; border: 1px solid rgba(0,0,0,0.05);">
+            <div
+              style="width: 48px; height: 48px; border-radius: 50%; background: var(--surface); display: flex; align-items: center; justify-content: center; box-shadow: var(--elevation-1);">
+              <span class="material-symbols-rounded" id="pumpIcon"
+                style="font-size: 24px; color: var(--on-surface-variant);">water_drop</span>
             </div>
             <div>
-              <div style="font-weight: 600; font-size: 15px; color: var(--on-surface);" class="translatable">Main Pump</div>
-              <div style="font-size: 13px; color: var(--on-surface-variant);" class="translatable">Manual override control</div>
+              <div style="font-weight: 600; font-size: 15px; color: var(--on-surface);" class="translatable">Main Pump
+              </div>
+              <div style="font-size: 13px; color: var(--on-surface-variant);" class="translatable">Manual override
+                control</div>
             </div>
           </div>
 
-          <button id="pumpBtn" class="btn pri" onclick="togglePump()" style="width: 100%; padding: 16px; justify-content: center; font-size: 16px; margin-top: 4px;">
-            <span class="material-symbols-rounded">power_settings_new</span> 
+          <button id="pumpBtn" class="btn pri" onclick="togglePump()"
+            style="width: 100%; padding: 16px; justify-content: center; font-size: 16px; margin-top: 4px;">
+            <span class="material-symbols-rounded">power_settings_new</span>
             <span class="translatable">Activate Pump</span>
           </button>
 
           <!-- Schedule Section -->
           <div style="margin-top: 12px; padding-top: 16px; border-top: 1px solid var(--outline-variant);">
             <!-- Quick Delay Timer -->
-            <h3 style="font-size: 14px; margin-bottom: 8px; color: var(--on-surface); font-weight: 600;" class="translatable">⏱️ Quick Timer</h3>
+            <h3 style="font-size: 14px; margin-bottom: 8px; color: var(--on-surface); font-weight: 600;"
+              class="translatable">⏱️ Quick Timer</h3>
             <div style="display: flex; gap: 8px; margin-bottom: 16px;">
-              <input type="number" id="delayMinutes" min="1" max="120" value="10" placeholder="Min" style="width: 60px; padding: 8px; background: var(--surface-container); border: 1px solid var(--outline-variant); border-radius: 8px; color: var(--on-surface); font-family: var(--font-sans);">
-              <button class="btn sec" onclick="setDelayTimer('run')" style="flex: 1; font-size: 12px; padding: 8px; justify-content: center; background: var(--primary-container); color: var(--primary); border-color: var(--primary-container);">
+              <input type="number" id="delayMinutes" min="1" max="120" value="10" placeholder="Min"
+                style="width: 60px; padding: 8px; background: var(--surface-container); border: 1px solid var(--outline-variant); border-radius: 8px; color: var(--on-surface); font-family: var(--font-sans);">
+              <button class="btn sec" onclick="setDelayTimer('run')"
+                style="flex: 1; font-size: 12px; padding: 8px; justify-content: center; background: var(--primary-container); color: var(--primary); border-color: var(--primary-container);">
                 <span class="translatable">Run</span>
               </button>
-              <button class="btn sec" onclick="setDelayTimer('on')" style="flex: 1; font-size: 12px; padding: 8px; justify-content: center;">
+              <button class="btn sec" onclick="setDelayTimer('on')"
+                style="flex: 1; font-size: 12px; padding: 8px; justify-content: center;">
                 <span class="translatable">On Delay</span>
               </button>
-              <button class="btn sec" onclick="setDelayTimer('off')" style="flex: 1; font-size: 12px; padding: 8px; justify-content: center;">
+              <button class="btn sec" onclick="setDelayTimer('off')"
+                style="flex: 1; font-size: 12px; padding: 8px; justify-content: center;">
                 <span class="translatable">Off Delay</span>
               </button>
             </div>
-            <div id="timerCountdown" style="display: none; margin-bottom: 12px; padding: 10px; background: var(--primary-container); border-radius: 8px; color: var(--primary); font-size: 14px; text-align: center; font-weight: 600; border: 1px solid var(--primary);"></div>
+            <div id="timerCountdown"
+              style="display: none; margin-bottom: 12px; padding: 10px; background: var(--primary-container); border-radius: 8px; color: var(--primary); font-size: 14px; text-align: center; font-weight: 600; border: 1px solid var(--primary);">
+            </div>
 
             <!-- Multi-Schedule -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <h3 style="font-size: 14px; margin: 0; color: var(--on-surface); font-weight: 600;" class="translatable">📅 Schedules</h3>
-              <button class="btn sec" onclick="addScheduleRow()" style="padding: 4px 8px; font-size: 12px; min-height: 24px;"><span class="material-symbols-rounded" style="font-size: 16px;">add</span> <span class="translatable">Add</span></button>
+              <h3 style="font-size: 14px; margin: 0; color: var(--on-surface); font-weight: 600;" class="translatable">
+                📅 Schedules</h3>
+              <button class="btn sec" onclick="addScheduleRow()"
+                style="padding: 4px 8px; font-size: 12px; min-height: 24px;"><span class="material-symbols-rounded"
+                  style="font-size: 16px;">add</span> <span class="translatable">Add</span></button>
             </div>
             <div id="scheduleList" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;"></div>
-            
-            <button id="scheduleBtn" class="btn sec" onclick="savePumpSchedules()" style="width: 100%; justify-content: center;">
-              <span class="material-symbols-rounded">event_available</span> <span class="translatable">Set Schedule</span>
+
+            <button id="scheduleBtn" class="btn sec" onclick="savePumpSchedules()"
+              style="width: 100%; justify-content: center;">
+              <span class="material-symbols-rounded">event_available</span> <span class="translatable">Set
+                Schedule</span>
             </button>
           </div>
         </div>
@@ -1367,35 +1790,45 @@
             <span class="pill translatable">Live</span>
           </div>
           <div class="ip-config">
-            <span style="font-size: 14px; color: var(--on-surface-variant); font-weight: 500;" class="translatable">ESP32 Camera IP:</span>
+            <span style="font-size: 14px; color: var(--on-surface-variant); font-weight: 500;"
+              class="translatable">ESP32 Camera IP:</span>
             <input type="text" id="ipInput" placeholder="10.180.248.XXX" value="10.180.248.33">
             <button onclick="setIP()" class="translatable">Connect</button>
             <span id="connStatus" class="conn-status" aria-live="polite"></span>
           </div>
           <div class="frame">
             <img id="str" alt="Stream" style="display: none;">
-            <p id="streamPlaceholder" style="color: var(--on-surface-variant); font-size: 14px;" class="translatable">Enter ESP32 IP address above</p>
+            <p id="streamPlaceholder" style="color: var(--on-surface-variant); font-size: 14px;" class="translatable">
+              Enter ESP32 IP address above</p>
           </div>
-          
+
           <!-- Plant Selection -->
           <div style="padding: 20px; background: var(--surface-container); border-radius: 12px; margin-top: 24px;">
-            <h4 style="margin: 0 0 12px 0; color: var(--primary); font-size: 14px; font-weight: 600;" class="translatable">
+            <h4 style="margin: 0 0 12px 0; color: var(--primary); font-size: 14px; font-weight: 600;"
+              class="translatable">
               🌱 Select Crop for Analysis
             </h4>
-            <div id="plantSelector" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px;">
+            <div id="plantSelector"
+              style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px;">
               <!-- Plant buttons will be inserted here -->
             </div>
-            <div id="selectedPlantInfo" style="margin-top: 12px; padding: 12px; background: var(--surface); border-radius: 8px; border-left: 4px solid var(--primary); box-shadow: var(--elevation-1);">
+            <div id="selectedPlantInfo"
+              style="margin-top: 12px; padding: 12px; background: var(--surface); border-radius: 8px; border-left: 4px solid var(--primary); box-shadow: var(--elevation-1);">
               <div style="font-size: 13px; font-weight: 500; color: var(--on-surface); margin-bottom: 4px;">
-                <span class="translatable">Selected:</span> <span id="selectedPlantName" style="color: var(--primary);">🌿 All Plants</span>
+                <span class="translatable">Selected:</span> <span id="selectedPlantName"
+                  style="color: var(--primary);">🌿 All Plants</span>
               </div>
-              <div style="font-size: 12px; color: var(--on-surface-variant);" id="selectedPlantDesc">Using all 7 AI models for comprehensive analysis</div>
+              <div style="font-size: 12px; color: var(--on-surface-variant);" id="selectedPlantDesc">Using all 7 AI
+                models for comprehensive analysis</div>
             </div>
           </div>
-          
+
           <div class="actions">
-            <button id="visualBtn" class="btn pri" onclick="visualOnly()" disabled><span class="material-symbols-rounded">document_scanner</span> <span class="translatable">Analyze Stream</span></button>
-            <button id="toggleBtn" class="btn sec" onclick="toggleStream()" disabled><span class="material-symbols-rounded">videocam</span> <span class="translatable">Start Stream</span></button>
+            <button id="visualBtn" class="btn pri" onclick="visualOnly()" disabled><span
+                class="material-symbols-rounded">document_scanner</span> <span class="translatable">Analyze
+                Stream</span></button>
+            <button id="toggleBtn" class="btn sec" onclick="toggleStream()" disabled><span
+                class="material-symbols-rounded">videocam</span> <span class="translatable">Start Stream</span></button>
           </div>
         </article>
 
@@ -1405,21 +1838,29 @@
             <span class="pill translatable">Local</span>
           </div>
           <div id="localImagePreview" class="frame" style="display: none;min-height: 240px;"></div>
-          <p id="localImagePlaceholder" style="color: var(--on-surface-variant); font-size: 14px; text-align: center;" class="translatable">Select an image to analyze</p>
+          <p id="localImagePlaceholder" style="color: var(--on-surface-variant); font-size: 14px; text-align: center;"
+            class="translatable">Select an image to analyze</p>
           <div class="actions">
             <input type="file" id="imageInput" accept="image/*" capture="environment" style="display: none;">
             <input type="file" id="imageInputGallery" accept="image/*" style="display: none;">
 
             <div class="local-image-controls" style="display:flex; gap:8px;">
-              <button class="btn sec translatable" onclick="document.getElementById('imageInput').click()">Capture Photo</button>
-              <button class="btn sec translatable" onclick="document.getElementById('imageInputGallery').click()">Choose from Gallery</button>
+              <button class="btn sec translatable" onclick="document.getElementById('imageInput').click()">Capture
+                Photo</button>
+              <button class="btn sec translatable" onclick="document.getElementById('imageInputGallery').click()">Choose
+                from Gallery</button>
             </div>
 
             <div id="batchProgress" class="batch-progress" style="display:none; margin-top:12px;">
-              <div class="bar" style="width:0%; height:8px; border-radius:6px; background:linear-gradient(90deg,var(--primary),#0b4eb3);"></div>
-              <div class="label" id="batchProgressLabel" style="margin-top:6px; font-size:13px; color:var(--on-surface-variant);"></div>
+              <div class="bar"
+                style="width:0%; height:8px; border-radius:6px; background:linear-gradient(90deg,var(--primary),#0b4eb3);">
+              </div>
+              <div class="label" id="batchProgressLabel"
+                style="margin-top:6px; font-size:13px; color:var(--on-surface-variant);"></div>
             </div>
-            <button id="localAnalyzeBtn" class="btn pri" onclick="analyzeLocalImage()" disabled><span class="material-symbols-rounded">image_search</span> <span class="translatable">Analyze Image</span></button>
+            <button id="localAnalyzeBtn" class="btn pri" onclick="analyzeLocalImage()" disabled><span
+                class="material-symbols-rounded">image_search</span> <span class="translatable">Analyze
+                Image</span></button>
           </div>
         </article>
 
@@ -1430,11 +1871,13 @@
           <div id="res" class="results">
             <div class="rc">
               <div class="t translatable">Awaiting Analysis</div>
-              <p style="color: var(--on-surface-variant); font-size: 14px; margin-bottom: 16px;" class="translatable">Connect to a device and then run diagnostics.</p>
-              
+              <p style="color: var(--on-surface-variant); font-size: 14px; margin-bottom: 16px;" class="translatable">
+                Connect to a device and then run diagnostics.</p>
+
               <!-- Disease Detection Models Display -->
               <div style="background: rgba(26, 115, 232, 0.05); border-radius: 8px; padding: 16px; margin-top: 12px;">
-                <h4 style="margin: 0 0 12px 0; color: var(--primary); font-size: 14px; font-weight: 600;" class="translatable">
+                <h4 style="margin: 0 0 12px 0; color: var(--primary); font-size: 14px; font-weight: 600;"
+                  class="translatable">
                   Active Detection Models
                 </h4>
                 <div id="modelsList" style="display: flex; flex-direction: column; gap: 8px;">
@@ -1460,7 +1903,8 @@
       <article class="card">
         <div class="head">
           <h2 class="translatable">Environment Monitor</h2>
-          <div class="chip"><span class="dot" id="arduinoDot"></span><span id="arduinoStatus" class="translatable">Not Connected</span></div>
+          <div class="chip"><span class="dot" id="arduinoDot"></span><span id="arduinoStatus" class="translatable">Not
+              Connected</span></div>
         </div>
         <div class="sg">
           <div class="sc">
@@ -1486,12 +1930,52 @@
          ANALYTICS TAB - Charts & Performance
          ========================================== -->
     <div id="analyticsTab" class="tab-content">
+      <!-- Environmental Sensor Charts -->
+      <article class="card">
+        <div class="head">
+          <h2 class="translatable">📊 Environmental Data</h2>
+          <div class="filter-group" style="margin-left: auto;">
+            <button class="filter-chip active" onclick="filterSensorTimeline('1d')" data-filter="1d">1 Day</button>
+            <button class="filter-chip" onclick="filterSensorTimeline('1w')" data-filter="1w">1 Week</button>
+            <button class="filter-chip" onclick="filterSensorTimeline('1m')" data-filter="1m">1 Month</button>
+            <button class="filter-chip" onclick="filterSensorTimeline('1y')" data-filter="1y">1 Year</button>
+            <button class="filter-chip" onclick="filterSensorTimeline('all')" data-filter="all">All</button>
+          </div>
+        </div>
+
+        <!-- Temperature Chart -->
+        <div class="card" style="padding: 20px; margin-bottom: 16px;">
+          <h3
+            style="font-size: 16px; margin: 0 0 16px 0; color: var(--primary); font-weight: 600; display: flex; align-items: center; gap: 8px;">
+            <span class="material-symbols-rounded">thermostat</span>
+            <span class="translatable">Temperature History</span>
+          </h3>
+          <div style="position: relative; height: 300px; width: 100%;">
+            <canvas id="temperatureChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Humidity Chart -->
+        <div class="card" style="padding: 20px; margin-bottom: 16px;">
+          <h3
+            style="font-size: 16px; margin: 0 0 16px 0; color: var(--primary); font-weight: 600; display: flex; align-items: center; gap: 8px;">
+            <span class="material-symbols-rounded">water_drop</span>
+            <span class="translatable">Humidity History</span>
+          </h3>
+          <div style="position: relative; height: 300px; width: 100%;">
+            <canvas id="humidityChart"></canvas>
+          </div>
+        </div>
+      </article>
+
       <article class="card">
         <div style="margin-top: 16px;">
           <div class="card" style="padding: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-              <h3 style="font-size: 16px; margin: 0; color: var(--primary); font-weight: 600;" class="translatable">🎯 Model Performance Feedback</h3>
-              <button onclick="resetModelFeedback()" style="background: var(--error); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px;">
+              <h3 style="font-size: 16px; margin: 0; color: var(--primary); font-weight: 600;" class="translatable">🎯
+                Model Performance Feedback</h3>
+              <button onclick="resetModelFeedback()"
+                style="background: var(--error); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px;">
                 <span class="material-symbols-rounded" style="font-size: 16px;">delete</span>
                 <span class="translatable">Reset Feedback Data</span>
               </button>
@@ -1499,14 +1983,17 @@
             <div id="modelPrecisionChartContainer" style="position: relative; height: 400px; width: 100%;">
               <canvas id="modelPrecisionChart"></canvas>
             </div>
-            <p style="margin-top: 12px; font-size: 12px; color: var(--on-surface-variant); text-align: center;" class="translatable">Rate model predictions to see real-world accuracy. Higher bars = better performance.</p>
+            <p style="margin-top: 12px; font-size: 12px; color: var(--on-surface-variant); text-align: center;"
+              class="translatable">Rate model predictions to see real-world accuracy. Higher bars = better performance.
+            </p>
           </div>
         </div>
       </article>
 
       <article class="card">
         <div class="card" style="padding: 12px; margin-bottom: 16px;">
-          <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--on-surface-variant);" class="translatable">Detection Timeline</h3>
+          <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--on-surface-variant);" class="translatable">
+            Detection Timeline</h3>
           <div class="timeline-container">
             <canvas id="timelineChart"></canvas>
           </div>
@@ -1525,16 +2012,21 @@
             <h2 class="translatable">Menu</h2>
           </div>
           <div style="display: flex; flex-direction: column;">
-            
+
             <!-- Language Setting -->
-            <div class="btn sec" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; width: 100%; cursor: default; border: none; border-bottom: 1px solid var(--outline-variant); border-radius: 0; background: transparent; box-shadow: none;">
+            <div class="btn sec"
+              style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; width: 100%; cursor: default; border: none; border-bottom: 1px solid var(--outline-variant); border-radius: 0; background: transparent; box-shadow: none;">
               <div style="display: flex; align-items: center; gap: 16px;">
-                <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--surface-container); display: flex; align-items: center; justify-content: center;">
-                  <span class="material-symbols-rounded" style="font-size: 20px; color: var(--on-surface);">translate</span>
+                <div
+                  style="width: 40px; height: 40px; border-radius: 50%; background: var(--surface-container); display: flex; align-items: center; justify-content: center;">
+                  <span class="material-symbols-rounded"
+                    style="font-size: 20px; color: var(--on-surface);">translate</span>
                 </div>
                 <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                  <span class="translatable" style="font-weight: 600; font-size: 15px; color: var(--on-surface);">Language</span>
-                  <span class="translatable" style="font-size: 12px; color: var(--on-surface-variant);">English / বাংলা</span>
+                  <span class="translatable"
+                    style="font-weight: 600; font-size: 15px; color: var(--on-surface);">Language</span>
+                  <span class="translatable" style="font-size: 12px; color: var(--on-surface-variant);">English /
+                    বাংলা</span>
                 </div>
               </div>
               <div id="languageSelector">
@@ -1544,30 +2036,43 @@
             </div>
 
             <!-- Theme Toggle Setting -->
-            <div onclick="toggleTheme()" class="btn sec" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; width: 100%; cursor: pointer; border: none; border-bottom: 1px solid var(--outline-variant); border-radius: 0; background: transparent; box-shadow: none;">
+            <div onclick="toggleTheme()" class="btn sec"
+              style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; width: 100%; cursor: pointer; border: none; border-bottom: 1px solid var(--outline-variant); border-radius: 0; background: transparent; box-shadow: none;">
               <div style="display: flex; align-items: center; gap: 16px;">
-                <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--surface-container); display: flex; align-items: center; justify-content: center;">
-                  <span class="material-symbols-rounded" id="themeToggleBtn" style="font-size: 20px; color: var(--on-surface);">dark_mode</span>
+                <div
+                  style="width: 40px; height: 40px; border-radius: 50%; background: var(--surface-container); display: flex; align-items: center; justify-content: center;">
+                  <span class="material-symbols-rounded" id="themeToggleBtn"
+                    style="font-size: 20px; color: var(--on-surface);">dark_mode</span>
                 </div>
                 <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                  <span class="translatable" style="font-weight: 600; font-size: 15px; color: var(--on-surface);">Appearance</span>
-                  <span class="translatable" style="font-size: 12px; color: var(--on-surface-variant);">Dark / Light theme</span>
+                  <span class="translatable"
+                    style="font-weight: 600; font-size: 15px; color: var(--on-surface);">Appearance</span>
+                  <span class="translatable" style="font-size: 12px; color: var(--on-surface-variant);">Dark / Light
+                    theme</span>
                 </div>
               </div>
-              <span class="material-symbols-rounded theme-switch-on" style="font-size: 32px; color: var(--primary);">toggle_on</span>
-              <span class="material-symbols-rounded theme-switch-off" style="font-size: 32px; color: var(--on-surface-variant);">toggle_off</span>
+              <span class="material-symbols-rounded theme-switch-on"
+                style="font-size: 32px; color: var(--primary);">toggle_on</span>
+              <span class="material-symbols-rounded theme-switch-off"
+                style="font-size: 32px; color: var(--on-surface-variant);">toggle_off</span>
             </div>
 
-            <button class="btn sec" onclick="showLogsPage()" style="justify-content: flex-start; text-align: left; padding: 16px 20px; border: none; border-radius: 0; background: transparent; box-shadow: none; width: 100%;">
+            <button class="btn sec" onclick="showLogsPage()"
+              style="justify-content: flex-start; text-align: left; padding: 16px 20px; border: none; border-radius: 0; background: transparent; box-shadow: none; width: 100%;">
               <div style="display: flex; align-items: center; gap: 16px; width: 100%;">
-                <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--surface-container); display: flex; align-items: center; justify-content: center;">
-                  <span class="material-symbols-rounded" style="font-size: 20px; color: var(--on-surface);">list_alt</span>
+                <div
+                  style="width: 40px; height: 40px; border-radius: 50%; background: var(--surface-container); display: flex; align-items: center; justify-content: center;">
+                  <span class="material-symbols-rounded"
+                    style="font-size: 20px; color: var(--on-surface);">list_alt</span>
                 </div>
                 <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                  <span class="translatable" style="font-weight: 600; font-size: 15px; color: var(--on-surface);">Analysis Logs</span>
-                  <span class="translatable" style="font-size: 12px; color: var(--on-surface-variant);">View history</span>
+                  <span class="translatable"
+                    style="font-weight: 600; font-size: 15px; color: var(--on-surface);">Analysis Logs</span>
+                  <span class="translatable" style="font-size: 12px; color: var(--on-surface-variant);">View
+                    history</span>
                 </div>
-                <span class="material-symbols-rounded" style="margin-left: auto; color: var(--on-surface-variant);">chevron_right</span>
+                <span class="material-symbols-rounded"
+                  style="margin-left: auto; color: var(--on-surface-variant);">chevron_right</span>
               </div>
             </button>
             <!-- Future settings can be added here -->
@@ -1586,13 +2091,16 @@
             <h2 class="translatable">Diagnostic History</h2>
             <div style="display: flex; gap: 8px; align-items: center;">
               <span class="firebase-status" id="firebaseStatus">
-                <span id="firebaseIcon" class="material-symbols-rounded" style="font-size: 18px;">radio_button_unchecked</span>
+                <span id="firebaseIcon" class="material-symbols-rounded"
+                  style="font-size: 18px;">radio_button_unchecked</span>
                 <span id="firebaseStatusText" class="translatable">Not connected</span>
               </span>
               <button class="btn sec" onclick="syncWithFirebase()"><span class="translatable">Sync</span></button>
               <button class="btn sec" onclick="resyncLocalLogs()"><span class="translatable">Resync</span></button>
               <div id="resyncProgress" class="resync-progress" style="display:none; align-items:center; gap:8px;">
-                <div class="resync-bar" aria-hidden="true"><div class="resync-bar-fill" style="width:0%"></div></div>
+                <div class="resync-bar" aria-hidden="true">
+                  <div class="resync-bar-fill" style="width:0%"></div>
+                </div>
                 <div class="resync-text" id="resyncProgressText"></div>
               </div>
             </div>
@@ -1600,19 +2108,25 @@
 
           <div class="card" style="padding: 12px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-              <h3 style="font-size: 14px; margin: 0; color: var(--on-surface-variant);" class="translatable">Analysis Log</h3>
+              <h3 style="font-size: 14px; margin: 0; color: var(--on-surface-variant);" class="translatable">Analysis
+                Log</h3>
               <div class="analysis-controls" style="display: flex; gap: 8px; align-items: center; width: 100%;">
                 <div class="filter-group">
                   <button class="filter-chip active" onclick="filterHistory('all')" data-filter="all">All</button>
-                  <button class="filter-chip" onclick="filterHistory('diseases')" data-filter="diseases">Diseases</button>
+                  <button class="filter-chip" onclick="filterHistory('diseases')"
+                    data-filter="diseases">Diseases</button>
                   <button class="filter-chip" onclick="filterHistory('healthy')" data-filter="healthy">Healthy</button>
                 </div>
-                <button class="btn sec translatable" onclick="loadFromFirebase()" style="padding: 6px 12px; font-size: 12px;">📥 Load</button>
-                <button class="btn pri" onclick="clearAnalyticsData()" style="padding: 8px 16px; font-size: 13px;"><span class="material-symbols-rounded" style="font-size: 16px;">delete</span> <span class="translatable">Clear Diagnostic Log</span></button>
+                <button class="btn sec translatable" onclick="loadFromFirebase()"
+                  style="padding: 6px 12px; font-size: 12px;">📥 Load</button>
+                <button class="btn pri" onclick="clearAnalyticsData()" style="padding: 8px 16px; font-size: 13px;"><span
+                    class="material-symbols-rounded" style="font-size: 16px;">delete</span> <span
+                    class="translatable">Clear Diagnostic Log</span></button>
               </div>
             </div>
             <div class="history-panel" id="historyPanel">
-              <p style="text-align: center; color: var(--on-surface-variant); padding: 32px;" class="translatable">No diagnostic logs yet. Run your first analysis to get started.</p>
+              <p style="text-align: center; color: var(--on-surface-variant); padding: 32px;" class="translatable">No
+                diagnostic logs yet. Run your first analysis to get started.</p>
             </div>
           </div>
         </article>
@@ -1646,306 +2160,308 @@
     </div>
   </nav>
 
-    <!-- Toast container for user messages -->
-    <div id="toasts" aria-live="polite" style="position: fixed; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 8px; z-index: 9999;"></div>
+  <!-- Toast container for user messages -->
+  <div id="toasts" aria-live="polite"
+    style="position: fixed; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 8px; z-index: 9999;">
+  </div>
 
-    <script>
-      // ==========================================
-      // THEME MANAGEMENT
-      // ==========================================
-      function initTheme() {
-        const savedTheme = localStorage.getItem('theme');
-        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const themeBtn = document.getElementById('themeToggleBtn');
-        
-        let theme = savedTheme;
-        if (!theme) {
-          theme = systemDark ? 'dark' : 'light';
-        }
-        
-        document.documentElement.setAttribute('data-theme', theme);
-        if (themeBtn) themeBtn.textContent = theme === 'dark' ? 'dark_mode' : 'light_mode';
+  <script>
+    // ==========================================
+    // THEME MANAGEMENT
+    // ==========================================
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme');
+      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const themeBtn = document.getElementById('themeToggleBtn');
+
+      let theme = savedTheme;
+      if (!theme) {
+        theme = systemDark ? 'dark' : 'light';
       }
 
-      function toggleTheme() {
-        const current = document.documentElement.getAttribute('data-theme');
-        const newTheme = current === 'dark' ? 'light' : 'dark';
-        
+      document.documentElement.setAttribute('data-theme', theme);
+      if (themeBtn) themeBtn.textContent = theme === 'dark' ? 'dark_mode' : 'light_mode';
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const newTheme = current === 'dark' ? 'light' : 'dark';
+
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+
+      const themeBtn = document.getElementById('themeToggleBtn');
+      if (themeBtn) themeBtn.textContent = newTheme === 'dark' ? 'dark_mode' : 'light_mode';
+
+      // Update charts to reflect new theme colors
+      setTimeout(updateCharts, 100);
+    }
+
+    // Initialize immediately
+    initTheme();
+
+    // Listen for system changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+      if (!localStorage.getItem('theme')) {
+        const newTheme = e.matches ? 'dark' : 'light';
         document.documentElement.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme);
-        
         const themeBtn = document.getElementById('themeToggleBtn');
         if (themeBtn) themeBtn.textContent = newTheme === 'dark' ? 'dark_mode' : 'light_mode';
-        
-        // Update charts to reflect new theme colors
         setTimeout(updateCharts, 100);
       }
-
-      // Initialize immediately
-      initTheme();
-      
-      // Listen for system changes
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-        if (!localStorage.getItem('theme')) {
-          const newTheme = e.matches ? 'dark' : 'light';
-          document.documentElement.setAttribute('data-theme', newTheme);
-          const themeBtn = document.getElementById('themeToggleBtn');
-          if (themeBtn) themeBtn.textContent = newTheme === 'dark' ? 'dark_mode' : 'light_mode';
-          setTimeout(updateCharts, 100);
-        }
-      });
-
-      // ==========================================
-      // TAB NAVIGATION SYSTEM
-      // ==========================================
-      
-      /**
-       * Show a specific tab and hide others
-       * @param {string} tabName - The tab to show ('home', 'analyse', 'monitor', 'analytics', 'more')
-       */
-      function showTab(tabName) {
-        // Hide all tabs
-        const allTabs = document.querySelectorAll('.tab-content');
-        allTabs.forEach(tab => {
-          tab.classList.remove('active');
-        });
-        
-        // Show selected tab
-        const targetTab = document.getElementById(tabName + 'Tab');
-        if (targetTab) {
-          targetTab.classList.add('active');
-          
-          // Scroll to top smoothly
-          window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-          });
-        }
-        
-        // Update nav items
-        const navItems = document.querySelectorAll('.bottom-nav .nav-item');
-        navItems.forEach(item => {
-          item.classList.remove('active');
-        });
-        
-        // Add active class to clicked nav item
-        event.currentTarget.classList.add('active');
-        
-        // Store active tab in localStorage for persistence
-        try {
-          localStorage.setItem('activeTab', tabName);
-        } catch (e) {
-          console.warn('Could not save active tab to localStorage');
-        }
-        
-        // Trigger chart updates if analytics tab is opened
-        if (tabName === 'analytics') {
-          setTimeout(() => {
-            updateCharts();
-          }, 100);
-        }
-      }
-      
-      /**
-       * Show the Analysis Logs page (nested under More tab)
-       */
-      function showLogsPage() {
-        document.getElementById('moreMenu').style.display = 'none';
-        document.getElementById('logsPage').classList.add('active');
-      }
-      
-      /**
-       * Hide the Analysis Logs page and return to More menu
-       */
-      function hideLogsPage() {
-        document.getElementById('logsPage').classList.remove('active');
-        document.getElementById('moreMenu').style.display = 'block';
-      }
-      
-      // Restore last active tab on page load
-      document.addEventListener('DOMContentLoaded', () => {
-        try {
-          const savedTab = localStorage.getItem('activeTab');
-          if (savedTab && savedTab !== 'home') {
-            // Find and click the corresponding nav item
-            const navItems = document.querySelectorAll('.bottom-nav .nav-item');
-            navItems.forEach(item => {
-              const onclick = item.getAttribute('onclick');
-              if (onclick && onclick.includes(savedTab)) {
-                // Manually trigger tab switch
-                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-                document.getElementById(savedTab + 'Tab')?.classList.add('active');
-                document.querySelectorAll('.bottom-nav .nav-item').forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
-              }
-            });
-          }
-        } catch (e) {
-          console.warn('Could not restore active tab');
-        }
-      });
-    </script>
-
-    <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        const cards = document.querySelectorAll('.card');
-        cards.forEach((card, index) => {
-          card.classList.add('card-enter');
-          card.style.animationDelay = `${index * 100}ms`;
-        });
-
-        // Handle local image selection (camera input)
-        function handleLocalImageFile(file) {
-          if (!file) return;
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            const preview = document.getElementById('localImagePreview');
-            const placeholder = document.getElementById('localImagePlaceholder');
-            preview.innerHTML = `<img src="${e.target.result}" style="max-width:100%; max-height:400px; border-radius:8px;" alt="Selected image">`;
-            preview.style.display = 'block';
-            if (placeholder) placeholder.style.display = 'none';
-            document.getElementById('localAnalyzeBtn').disabled = false;
-          };
-          reader.readAsDataURL(file);
-        }
-
-        document.getElementById('imageInput').addEventListener('change', (event) => {
-          handleLocalImageFile(event.target.files && event.target.files[0]);
-        });
-
-        // Gallery/file-manager input
-        document.getElementById('imageInputGallery').addEventListener('change', (event) => {
-          handleLocalImageFile(event.target.files && event.target.files[0]);
-        });
-      });
-
-      
-async function infer(base64Image, model) {
-  try {
-    console.log('Calling model:', model.name);
-    const rf = await fetch('https://serverless.roboflow.com/' + model.id + '?api_key=' + K, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: base64Image
     });
 
-    if (!rf.ok) {
-      throw Error('HTTP ' + rf.status);
-    }
+    // ==========================================
+    // TAB NAVIGATION SYSTEM
+    // ==========================================
 
-    const data = await rf.json();
-    console.log(model.name + ' response:', data);
-
-    // Apply class name mapping if model returns numeric IDs
-    if (CLASS_NAME_MAPPING[model.id] && data.predictions) {
-      data.predictions = data.predictions.map(pred => {
-        if (CLASS_NAME_MAPPING[model.id][pred.class]) {
-          console.log('Mapping class ID "' + pred.class + '" to "' + CLASS_NAME_MAPPING[model.id][pred.class] + '" for ' + model.name);
-          return { ...pred, class: CLASS_NAME_MAPPING[model.id][pred.class] };
-        }
-        return pred;
+    /**
+     * Show a specific tab and hide others
+     * @param {string} tabName - The tab to show ('home', 'analyse', 'monitor', 'analytics', 'more')
+     */
+    function showTab(tabName) {
+      // Hide all tabs
+      const allTabs = document.querySelectorAll('.tab-content');
+      allTabs.forEach(tab => {
+        tab.classList.remove('active');
       });
+
+      // Show selected tab
+      const targetTab = document.getElementById(tabName + 'Tab');
+      if (targetTab) {
+        targetTab.classList.add('active');
+
+        // Scroll to top smoothly
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      }
+
+      // Update nav items
+      const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+      navItems.forEach(item => {
+        item.classList.remove('active');
+      });
+
+      // Add active class to clicked nav item
+      event.currentTarget.classList.add('active');
+
+      // Store active tab in localStorage for persistence
+      try {
+        localStorage.setItem('activeTab', tabName);
+      } catch (e) {
+        console.warn('Could not save active tab to localStorage');
+      }
+
+      // Trigger chart updates if analytics tab is opened
+      if (tabName === 'analytics') {
+        setTimeout(() => {
+          updateCharts();
+        }, 100);
+      }
     }
 
-    return { name: model.name, type: model.type, data: data, error: null, modelId: model.id };
-  } catch (e) {
-    console.error(model.name + ' error:', e);
-    return { name: model.name, type: model.type, data: null, error: e.message, modelId: model.id };
-  }
-}
+    /**
+     * Show the Analysis Logs page (nested under More tab)
+     */
+    function showLogsPage() {
+      document.getElementById('moreMenu').style.display = 'none';
+      document.getElementById('logsPage').classList.add('active');
+    }
 
-function calculateConsensus(results) {
-    const diseaseDetections = [];
-    const healthyDetections = [];
+    /**
+     * Hide the Analysis Logs page and return to More menu
+     */
+    function hideLogsPage() {
+      document.getElementById('logsPage').classList.remove('active');
+      document.getElementById('moreMenu').style.display = 'block';
+    }
 
-    results.forEach(r => {
+    // Restore last active tab on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        const savedTab = localStorage.getItem('activeTab');
+        if (savedTab && savedTab !== 'home') {
+          // Find and click the corresponding nav item
+          const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+          navItems.forEach(item => {
+            const onclick = item.getAttribute('onclick');
+            if (onclick && onclick.includes(savedTab)) {
+              // Manually trigger tab switch
+              document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+              document.getElementById(savedTab + 'Tab')?.classList.add('active');
+              document.querySelectorAll('.bottom-nav .nav-item').forEach(i => i.classList.remove('active'));
+              item.classList.add('active');
+            }
+          });
+        }
+      } catch (e) {
+        console.warn('Could not restore active tab');
+      }
+    });
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const cards = document.querySelectorAll('.card');
+      cards.forEach((card, index) => {
+        card.classList.add('card-enter');
+        card.style.animationDelay = `${index * 100}ms`;
+      });
+
+      // Handle local image selection (camera input)
+      function handleLocalImageFile(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const preview = document.getElementById('localImagePreview');
+          const placeholder = document.getElementById('localImagePlaceholder');
+          preview.innerHTML = `<img src="${e.target.result}" style="max-width:100%; max-height:400px; border-radius:8px;" alt="Selected image">`;
+          preview.style.display = 'block';
+          if (placeholder) placeholder.style.display = 'none';
+          document.getElementById('localAnalyzeBtn').disabled = false;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      document.getElementById('imageInput').addEventListener('change', (event) => {
+        handleLocalImageFile(event.target.files && event.target.files[0]);
+      });
+
+      // Gallery/file-manager input
+      document.getElementById('imageInputGallery').addEventListener('change', (event) => {
+        handleLocalImageFile(event.target.files && event.target.files[0]);
+      });
+    });
+
+
+    async function infer(base64Image, model) {
+      try {
+        console.log('Calling model:', model.name);
+        const rf = await fetch('https://serverless.roboflow.com/' + model.id + '?api_key=' + K, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: base64Image
+        });
+
+        if (!rf.ok) {
+          throw Error('HTTP ' + rf.status);
+        }
+
+        const data = await rf.json();
+        console.log(model.name + ' response:', data);
+
+        // Apply class name mapping if model returns numeric IDs
+        if (CLASS_NAME_MAPPING[model.id] && data.predictions) {
+          data.predictions = data.predictions.map(pred => {
+            if (CLASS_NAME_MAPPING[model.id][pred.class]) {
+              console.log('Mapping class ID "' + pred.class + '" to "' + CLASS_NAME_MAPPING[model.id][pred.class] + '" for ' + model.name);
+              return { ...pred, class: CLASS_NAME_MAPPING[model.id][pred.class] };
+            }
+            return pred;
+          });
+        }
+
+        return { name: model.name, type: model.type, data: data, error: null, modelId: model.id };
+      } catch (e) {
+        console.error(model.name + ' error:', e);
+        return { name: model.name, type: model.type, data: null, error: e.message, modelId: model.id };
+      }
+    }
+
+    function calculateConsensus(results) {
+      const diseaseDetections = [];
+      const healthyDetections = [];
+
+      results.forEach(r => {
         if (r.error) return;
 
         let disease = '';
         let conf = 0;
 
         if (r.type === 'detection' && r.data.predictions && r.data.predictions.length > 0) {
-            const top = r.data.predictions.reduce((a, b) => a.confidence > b.confidence ? a : b);
-            disease = top.class;
-            conf = top.confidence * 100;
+          const top = r.data.predictions.reduce((a, b) => a.confidence > b.confidence ? a : b);
+          disease = top.class;
+          conf = top.confidence * 100;
 
-            if (!disease || disease === '' || /^\d+$/.test(disease)) {
-                console.warn('⚠️ Model "' + r.name + '" returned invalid class name:', disease);
-                return;
-            }
+          if (!disease || disease === '' || /^\d+$/.test(disease)) {
+            console.warn('⚠️ Model "' + r.name + '" returned invalid class name:', disease);
+            return;
+          }
         } else if (r.type === 'classification' && (r.data.top || r.data.predicted_classes)) {
-            disease = r.data.top || r.data.predicted_classes[0];
-            conf = (r.data.confidence || 0) * 100;
+          disease = r.data.top || r.data.predicted_classes[0];
+          conf = (r.data.confidence || 0) * 100;
         }
 
         const diseaseNormalized = (disease || '').toLowerCase().trim();
 
         if (conf > 0 && disease) {
-            if (diseaseNormalized === 'healthy' || diseaseNormalized === 'no detection') {
-                healthyDetections.push({ model: r.name, disease, confidence: conf });
-            } else {
-                diseaseDetections.push({ model: r.name, disease, confidence: conf });
-            }
+          if (diseaseNormalized === 'healthy' || diseaseNormalized === 'no detection') {
+            healthyDetections.push({ model: r.name, disease, confidence: conf });
+          } else {
+            diseaseDetections.push({ model: r.name, disease, confidence: conf });
+          }
         }
-    });
+      });
 
-    let primaryDisease = 'Healthy';
-    let primaryConfidence = 0;
-    let consensusNote = '';
+      let primaryDisease = 'Healthy';
+      let primaryConfidence = 0;
+      let consensusNote = '';
 
-    if (diseaseDetections.length > 0) {
+      if (diseaseDetections.length > 0) {
         const diseaseVotes = {};
         diseaseDetections.forEach(d => {
-            const key = d.disease.toLowerCase();
-            if (!diseaseVotes[key]) {
-                diseaseVotes[key] = { disease: d.disease, votes: 0, totalConf: 0, models: [] };
-            }
-            diseaseVotes[key].votes++;
-            diseaseVotes[key].totalConf += d.confidence;
-            diseaseVotes[key].models.push(d.model);
+          const key = d.disease.toLowerCase();
+          if (!diseaseVotes[key]) {
+            diseaseVotes[key] = { disease: d.disease, votes: 0, totalConf: 0, models: [] };
+          }
+          diseaseVotes[key].votes++;
+          diseaseVotes[key].totalConf += d.confidence;
+          diseaseVotes[key].models.push(d.model);
         });
 
         let bestDisease = null;
         let bestScore = 0;
 
         for (const key in diseaseVotes) {
-            const vote = diseaseVotes[key];
-            const avgConf = vote.totalConf / vote.votes;
-            const score = (vote.votes * 50) + avgConf;
+          const vote = diseaseVotes[key];
+          const avgConf = vote.totalConf / vote.votes;
+          const score = (vote.votes * 50) + avgConf;
 
-            if (score > bestScore) {
-                bestScore = score;
-                bestDisease = vote;
-            }
+          if (score > bestScore) {
+            bestScore = score;
+            bestDisease = vote;
+          }
         }
 
         if (bestDisease) {
-            primaryDisease = bestDisease.disease;
-            primaryConfidence = bestDisease.totalConf / bestDisease.votes;
+          primaryDisease = bestDisease.disease;
+          primaryConfidence = bestDisease.totalConf / bestDisease.votes;
 
-            if (healthyDetections.length > 0) {
-                consensusNote = '⚠️ Consensus Override: ' + diseaseDetections.length + ' model(s) detected disease, ' +
-                    healthyDetections.length + ' said healthy. Prioritizing disease detection.';
-            }
+          if (healthyDetections.length > 0) {
+            consensusNote = '⚠️ Consensus Override: ' + diseaseDetections.length + ' model(s) detected disease, ' +
+              healthyDetections.length + ' said healthy. Prioritizing disease detection.';
+          }
 
-            if (bestDisease.votes > 1) {
-                consensusNote += ' ✓ ' + bestDisease.votes + ' models agree on "' + primaryDisease + '"';
-            }
+          if (bestDisease.votes > 1) {
+            consensusNote += ' ✓ ' + bestDisease.votes + ' models agree on "' + primaryDisease + '"';
+          }
         }
-    } else if (healthyDetections.length === results.length - results.filter(r => r.error).length) {
+      } else if (healthyDetections.length === results.length - results.filter(r => r.error).length) {
         primaryDisease = 'Healthy';
         primaryConfidence = healthyDetections.reduce((sum, h) => sum + h.confidence, 0) / healthyDetections.length;
         consensusNote = '✓ All models agree: Leaf appears healthy';
-    }
+      }
 
-    return {
+      return {
         disease: primaryDisease,
         confidence: primaryConfidence,
         note: consensusNote,
         diseaseCount: diseaseDetections.length,
         healthyCount: healthyDetections.length
-    };
-}
+      };
+    }
 
     // Resize an image file on the client to limit CPU/memory usage on phones
     function resizeImageFile(file, maxDim = 1024, quality = 0.8) {
@@ -2048,7 +2564,7 @@ function calculateConsensus(results) {
         showMultiModelResults(results, null, consensusData);
 
         // Hide progress after a moment
-        setTimeout(() => { if (progressEl) { progressEl.style.display = 'none'; progressEl.setAttribute('aria-hidden','true'); } }, 700);
+        setTimeout(() => { if (progressEl) { progressEl.style.display = 'none'; progressEl.setAttribute('aria-hidden', 'true'); } }, 700);
       } catch (e) {
         document.getElementById('res').innerHTML = `<div class="rc"><div class="t">Failed<span class="badge err">Error</span></div><p style="color: var(--on-surface-variant); font-size: 14px;">${e.message || e}</p></div>`;
       } finally {
@@ -2074,7 +2590,7 @@ function calculateConsensus(results) {
       'Advanced Crop Diagnostics Platform': 'উন্নত ফসল নির্ণয়ের প্ল্যাটফর্ম',
       'Agri-Nigrani: Crop Analysis': 'কৃষি-নিগ্রানি: ফসল বিশ্লেষণ',
       'Real-time analysis, AI-driven insights, and sensor integration.': 'রিয়েল-টাইম বিশ্লেষণ, এআই-চালিত অন্তর্দৃষ্টি এবং সেন্সর ইন্টিগ্রেশন।',
-      
+
       /* Navigation */
       'Home': 'হোম',
       'Analyse': 'বিশ্লেষণ',
@@ -2085,7 +2601,7 @@ function calculateConsensus(results) {
       'Analysis Logs': 'বিশ্লেষণ লগ',
       'Back to More': 'আরো-তে ফিরে যান',
       'Pump Control': 'পাম্প নিয়ন্ত্রণ',
-      
+
       'SYSTEM DASHBOARD': 'সিস্টেম ড্যাশবোর্ড',
       'Restart': 'পুনরায় চালু করুন',
       'ESP': 'ইএসপি',
@@ -2276,7 +2792,7 @@ function calculateConsensus(results) {
 
     // Helper to get current language
     function getLang() {
-      try { return localStorage.getItem('lang') || 'en'; } catch(e) { return 'en'; }
+      try { return localStorage.getItem('lang') || 'en'; } catch (e) { return 'en'; }
     }
 
     // Translate a single string if available
@@ -2310,14 +2826,14 @@ function calculateConsensus(results) {
 
     function translateToBangla() {
       applyTranslation(TRANSLATIONS_BN);
-      try { localStorage.setItem('lang', 'bn'); } catch(e) { /* ignore */ }
+      try { localStorage.setItem('lang', 'bn'); } catch (e) { /* ignore */ }
       const bnBtn = document.querySelector('#languageSelector button[onclick="translateToBangla()"]');
       const enBtn = document.querySelector('#languageSelector button[onclick="translateToEnglish()"]');
       if (bnBtn) bnBtn.classList.add('active');
       if (enBtn) enBtn.classList.remove('active');
 
       // Also re-render dynamic pieces if any are visible
-      try { initPlantSelector(); displayActiveModels(); updateFirebaseStatus(firebaseReady); refreshRuntimeTranslations(); } catch(e){ /* ignore */ }
+      try { initPlantSelector(); displayActiveModels(); updateFirebaseStatus(firebaseReady); refreshRuntimeTranslations(); } catch (e) { /* ignore */ }
     }
 
     // Re-apply translations to runtime/hardware status texts where possible
@@ -2358,11 +2874,11 @@ function calculateConsensus(results) {
           if (v.includes('Not Connected') || v.includes('সংযুক্ত নয়')) arduinoStatus.textContent = translateText('Not Connected');
         }
 
-      } catch(e) { /* ignore */ }
+      } catch (e) { /* ignore */ }
     }
 
     function translateToEnglish() {
-      try { localStorage.setItem('lang', 'en'); } catch(e) { /* ignore */ }
+      try { localStorage.setItem('lang', 'en'); } catch (e) { /* ignore */ }
       location.reload();
     }
 
@@ -2378,7 +2894,7 @@ function calculateConsensus(results) {
           if (enBtn) enBtn.classList.add('active');
           if (bnBtn) bnBtn.classList.remove('active');
         }
-      } catch(e) { /* ignore storage errors */ }
+      } catch (e) { /* ignore storage errors */ }
     });
   </script>
 
@@ -2388,7 +2904,7 @@ function calculateConsensus(results) {
     // Toggle automatic migration of legacy ESP32 IP from 192.168.1.33 -> 10.180.248.33
     // Default: false to preserve user-set IP addresses (e.g., when your ESP provides 192.168.1.33)
     const ALLOW_AUTO_IP_MIGRATION = false;
-    
+
     // Optimized logging wrapper
     const log = {
       info: (...args) => !PRODUCTION_MODE && console.log(...args),
@@ -2397,7 +2913,7 @@ function calculateConsensus(results) {
       success: (msg) => !PRODUCTION_MODE && console.log('✅', msg),
       debug: (...args) => !PRODUCTION_MODE && console.log('🔍', ...args)
     };
-    
+
     // ==================== FIREBASE CONFIGURATION ======================================
     // Firebase project: agriculture-project-diploma
     const firebaseConfig = {
@@ -2410,7 +2926,7 @@ function calculateConsensus(results) {
       appId: "1:821352370665:web:8133f8dffdb5f84bcbbb78",
       measurementId: "G-C4YL29SEP4"
     };
-    
+
     // Google Cloud services removed - using Firebase Firestore only for storage
 
     // Initialize Firebase
@@ -2429,10 +2945,10 @@ function calculateConsensus(results) {
       db = firebase.firestore();
       auth = firebase.auth();
       functions = firebase.functions();
-      
+
       // Note: Offline persistence is optional and causes deprecation warnings in Firebase 9.22.0+
       // System works fine without it - data is saved to Firebase and localStorage
-      
+
       // Create promise that resolves when Firebase is ready
       firebaseReadyPromise = new Promise((resolve, reject) => {
         // Anonymous authentication for simplicity
@@ -2453,7 +2969,7 @@ function calculateConsensus(results) {
             reject(err);
           });
       });
-      
+
       console.log('✅ Firebase initialized');
     } catch (error) {
       log.warn('⚠️ Firebase not configured or disabled:', error.message);
@@ -2466,27 +2982,27 @@ function calculateConsensus(results) {
       const iconEl = document.getElementById('firebaseIcon');
       const textEl = document.getElementById('firebaseStatusText');
       const firebaseDot = document.getElementById('firebaseDot');
-      
+
       if (connected) {
-        if(statusEl) statusEl.className = 'firebase-status connected';
-        if(iconEl) iconEl.textContent = 'cloud_done';
-        if(textEl) textEl.textContent = '';
-        if(firebaseDot) firebaseDot.classList.remove('offline');
+        if (statusEl) statusEl.className = 'firebase-status connected';
+        if (iconEl) iconEl.textContent = 'cloud_done';
+        if (textEl) textEl.textContent = '';
+        if (firebaseDot) firebaseDot.classList.remove('offline');
       } else {
-        if(statusEl) statusEl.className = 'firebase-status disconnected';
-        if(iconEl) iconEl.textContent = 'cloud_off';
-        if(textEl) textEl.textContent = translateText('Local storage only');
+        if (statusEl) statusEl.className = 'firebase-status disconnected';
+        if (iconEl) iconEl.textContent = 'cloud_off';
+        if (textEl) textEl.textContent = translateText('Local storage only');
         if (firebaseDot) firebaseDot.classList.add('offline');
       }
     }
 
     // ==================== ROBOFLOW CONFIGURATION ====================
     const K = 'uRVv39iPfwzK4NJJ0Gsw';
-    
+
     // Google Cloud services removed - using Firebase Firestore only
-    
+
     // Storage simplified - images stored as base64 in Firestore documents
-    
+
     // Class name mapping for models that return numeric IDs
     const CLASS_NAME_MAPPING = {
       'tomato-disease-k8es2/2': {
@@ -2507,7 +3023,7 @@ function calculateConsensus(results) {
         '2': 'Potato Healthy'
       }
     };
-    
+
     // Multiple models for comparison
     const MODELS = [
       { id: 'plant-disease-detection-z9xot/2', name: 'Object Detection (YOLOv8)', type: 'detection', forPlants: 'all' },
@@ -2518,7 +3034,7 @@ function calculateConsensus(results) {
       { id: 'tomato-disease-k8es2/2', name: 'Tomato Disease (92.3% mAP)', type: 'detection', forPlants: ['tomato'] },
       { id: 'eggplant-fruit-disease-detection/21', name: 'Eggplant Disease (47.8% mAP)', type: 'detection', forPlants: ['eggplant', 'brinjal'] }
     ];
-    
+
     // Plant types available for selection
     const PLANT_TYPES = [
       { id: 'all', name: 'All Plants (General)', icon: '🌿', models: 7, description: 'Use all 7 models for comprehensive analysis' },
@@ -2529,9 +3045,9 @@ function calculateConsensus(results) {
       { id: 'tomato', name: 'Tomato', icon: '🍅', models: 2, description: 'General model + Tomato specialist' },
       { id: 'eggplant', name: 'Eggplant/Brinjal', icon: '🍆', models: 2, description: 'General model + Eggplant specialist' }
     ];
-    
+
     let selectedPlantType = 'all'; // Default to all plants
-    
+
     // Disease remedies database
     const REMEDIES = {
       // Enhanced with specific medicine names, brands, and dosages
@@ -2554,7 +3070,7 @@ function calculateConsensus(results) {
       'downy mildew': '🔹 Organic: Copper fungicide, Bacillus subtilis. 🔹 Chemical: Metalaxyl (Ridomil 35SD) 2g/L, Cymoxanil + Mancozeb 2.5g/L, Fosetyl-Al 3g/L. Apply weekly.',
       'alternaria': '🔹 Organic: Neem extract, Trichoderma. 🔹 Chemical: Mancozeb 75% WP 2g/L, Iprodione (Rovral 50WP) 2ml/L, Difenoconazole 1ml/L. Rotate fungicides.',
       'fusarium': '🔹 Soil treatment: Carbendazim 2g/L drench, Metalaxyl 1g/L. 🔹 Seed treatment: Thiram 75% WS 3g/kg seed. 🔹 Biocontrol: Trichoderma viride 5g/L.',
-      
+
       // Additional vegetable crop diseases
       'damping off': '🔹 Seed treatment: Thiram 75% WS 2g/kg seed, Captan 50% WP 2g/kg. 🔹 Soil drench: Metalaxyl 1g/L, Copper oxychloride 2g/L. Pre-planting treatment recommended.',
       'fruit rot': '🔹 Organic: Copper fungicide, Trichoderma. 🔹 Chemical: Carbendazim 1g/L, Thiophanate-methyl 1g/L. Spray at fruit set and repeat every 10 days.',
@@ -2587,7 +3103,7 @@ function calculateConsensus(results) {
       'stem borer': '🔹 Organic: Neem cake soil application 100g/plant. 🔹 Chemical: Chlorpyrifos 20% EC 2ml/L, Cartap hydrochloride (Padan 50SP) 1g/L. Spray at whorl stage.',
       'cutworm': '🔹 Organic: Neem cake, wood ash around stem. 🔹 Chemical: Chlorpyrifos 20% EC 2ml/L soil drench, Quinalphos 25% EC 2ml/L. Apply at evening.',
       'nematodes': '🔹 Organic: Neem cake 100g/sq.m, Paecilomyces lilacinus. 🔹 Chemical: Carbofuran 3% CG 15kg/hectare, Phorate 10% CG 10kg/hectare. Apply before planting.',
-      
+
       // General crop maintenance
       'walnut': 'No disease detected. 🔹 Preventive: Bordeaux mixture 1%, Copper fungicide 3g/L. 🔹 Fertilizer: NPK 10:10:10 at 50g/plant monthly.',
       'tomato': 'No disease detected. 🔹 Preventive spray: Mancozeb 2g/L or Copper oxychloride 3g/L every 15 days. 🔹 Fertilizer: NPK 19:19:19 5g/L weekly.',
@@ -2601,7 +3117,7 @@ function calculateConsensus(results) {
       'banana': 'No disease detected. 🔹 Preventive: Mancozeb 2g/L monthly. 🔹 Pseudostem injection: Carbendazim 1g/L. 🔹 Fertilizer: NPK 19:19:19 10g/L.',
       'rot': '🔹 Soil drench: Metalaxyl 35% WS 1g/L, Fosetyl-Al 3g/L. 🔹 Foliar: Copper oxychloride 3g/L. 🔹 Biocontrol: Trichoderma viride soil application.',
       'canker': '🔹 Spray: Copper oxychloride 50% WP 3g/L, Bordeaux mixture 1%. 🔹 Wound paste: Carbendazim + Copper paste. Prune 15cm below infection.',
-      
+
       // EGGPLANT/BRINJAL DISEASES
       'eggplant fruit rot': '🔹 Organic: Neem oil 5ml/L. 🔹 Chemical: Carbendazim 1g/L + Mancozeb 2g/L. Spray at fruit set and every 10 days.',
       'eggplant phomopsis blight': '🔹 Seed treatment: Thiram 2g/kg. 🔹 Spray: Mancozeb 2g/L + Carbendazim 1g/L. Rotate with Copper oxychloride 3g/L.',
@@ -2615,7 +3131,7 @@ function calculateConsensus(results) {
       'brinjal aphids': '🔹 Organic: Neem oil 5ml/L, soap spray. 🔹 Chemical: Imidacloprid 0.5ml/L, Thiamethoxam 0.3g/L. Spray undersides.',
       'brinjal whitefly': '🔹 Yellow sticky traps. 🔹 Imidacloprid 0.5ml/L, Buprofezin 1g/L, Spiromesifen 0.5ml/L. Spray every 7 days.',
       'brinjal jassids': '🔹 Imidacloprid 0.5ml/L, Thiamethoxam 0.3g/L, Acetamiprid 0.3g/L. Spray at tender leaf stage.',
-      
+
       // WHEAT DISEASES
       'wheat rust': '🔹 Organic: Sulfur 80% WP 2g/L. 🔹 Chemical: Propiconazole (Tilt 25EC) 1ml/L, Tebuconazole (Folicur 250EC) 0.5ml/L, Mancozeb 2g/L. Spray at first sign.',
       'wheat brown rust': '🔹 Propiconazole 1ml/L, Tebuconazole 0.5ml/L, Triadimefon (Bayleton 25WP) 0.5g/L. Spray at tillering and boot stage.',
@@ -2637,7 +3153,7 @@ function calculateConsensus(results) {
       'wheat stem borer': '🔹 Chlorpyrifos 20% EC 2ml/L, Quinalphos 25% EC 2ml/L. Spray at early vegetative stage. Remove and destroy stubbles.',
       'wheat termites': '🔹 Chlorpyrifos 20% EC 4ml/L soil application before sowing. Treat seed with Imidacloprid 2ml/kg seed.',
       'wheat army worm': '🔹 Chlorpyrifos 2ml/L, Quinalphos 2ml/L, Malathion 50% EC 2ml/L. Spray in evening. Mechanical collection in early morning.',
-      
+
       // FRUIT CROPS (100+ diseases)
       'citrus canker': '🔹 Copper oxychloride 3g/L + Streptocycline 0.1g/L. Spray every 15 days. Prune infected branches 30cm below.',
       'citrus greening': '🔹 Control psyllids: Imidacloprid 0.5ml/L. 🔹 Zinc + Manganese spray 5g/L foliar. No cure - remove infected trees.',
@@ -2649,7 +3165,7 @@ function calculateConsensus(results) {
       'banana bunchy top': '🔹 Control aphids: Imidacloprid 0.5ml/L. Remove and destroy infected plants. Use virus-free suckers.',
       'papaya ring spot': '🔹 Control aphids: Imidacloprid 0.5ml/L. Remove infected plants. Reflective mulch. No cure available.',
       'pomegranate bacterial blight': '🔹 Copper oxychloride 3g/L + Streptocycline 0.1g/L every 10 days during monsoon.',
-      
+
       // CEREAL CROPS (80+ diseases)
       'rice blast': '🔹 Tricyclazole (Beam 75WP) 0.6g/L, Isoprothiolane 1.5ml/L. Spray at tillering and panicle initiation.',
       'rice sheath blight': '🔹 Hexaconazole 2ml/L, Validamycin 2ml/L at maximum tillering. Spray lower portion of plant.',
@@ -2668,13 +3184,13 @@ function calculateConsensus(results) {
       'wheat powdery mildew': '🔹 Hexaconazole 1ml/L, Sulfur 2g/L at tillering and boot stage.',
       'maize downy mildew': '🔹 Seed treatment: Metalaxyl 6g/kg. 🔹 Foliar: Metalaxyl 2g/L at 15, 25 days.',
       'maize fall armyworm': '🔹 Chlorantraniliprole 0.3ml/L, Emamectin benzoate 0.4g/L at whorl stage.',
-      
+
       // PULSE CROPS (60+ diseases)
       'chickpea wilt': '🔹 Seed: Carbendazim 2g/kg + Trichoderma 4g/kg. Soil drench: Carbendazim 2g/L. Resistant varieties.',
       'pigeon pea wilt': '🔹 Seed: Carbendazim 2g/kg + Trichoderma. Soil drench 2g/L at 30 days. Deep summer plowing.',
       'soybean rust': '🔹 Tebuconazole 0.5ml/L, Trifloxystrobin + Tebuconazole 0.5ml/L. Repeat after 15 days.',
       'groundnut tikka': '🔹 Mancozeb 2g/L, Chlorothalonil 2g/L at 30, 45, 60 days after sowing.',
-      
+
       // VEGETABLES EXPANDED (120+ diseases)
       'tomato leaf curl': '🔹 Control whiteflies: Imidacloprid 0.5ml/L, Buprofezin 1g/L. Reflective mulch. Remove infected plants.',
       'tomato blossom end rot': '🔹 Calcium nitrate 5g/L foliar at fruit set. Regular irrigation. Avoid excess nitrogen.',
@@ -2693,7 +3209,7 @@ function calculateConsensus(results) {
       'okra yellow vein mosaic': '🔹 Control whiteflies: Imidacloprid 0.5ml/L. Remove infected plants. Resistant varieties.',
       'cabbage diamondback moth': '🔹 Bt 1g/L, Chlorantraniliprole 0.3ml/L, Emamectin benzoate 0.4g/L.',
       'onion purple blotch': '🔹 Mancozeb 2g/L, Hexaconazole 1ml/L every 10 days. Crop rotation.',
-      
+
       // NUTRIENT DEFICIENCIES (40+ conditions)
       'nitrogen deficiency': '🔹 Urea 10g/L foliar or Ammonium sulfate 15g/L. Soil: Urea 100-150kg/hectare. Yellowing of older leaves.',
       'phosphorus deficiency': '🔹 DAP 10g/L foliar, SSP 200kg/hectare soil. Purple/dark green leaves, stunted growth.',
@@ -2703,20 +3219,20 @@ function calculateConsensus(results) {
       'iron deficiency': '🔹 Ferrous sulfate 3g/L + Citric acid 1g/L or Fe-EDTA 2g/L foliar. Young leaf chlorosis.',
       'zinc deficiency': '🔹 Zinc sulfate 5g/L + Lime 2.5g/L foliar. Soil: 25kg/hectare. Little leaf, rosetting.',
       'boron deficiency': '🔹 Borax 1g/L foliar. Soil: 10-15kg/hectare. Hollow stem, flower abortion.',
-      
+
       // ENVIRONMENTAL STRESS (30+ conditions)
       'heat stress': '🔹 Kaolin clay 30g/L for sun protection. Cool water spray. Shade net. Mulching.',
       'cold stress': '🔹 Brassinosteroids 0.1ppm. Cover with plastic. Light irrigation before frost. Potassium 5g/L.',
       'drought stress': '🔹 Salicylic acid 100ppm foliar. Mulching. Anti-transpirant Kaolin 30g/L. Drip irrigation.',
       'salinity stress': '🔹 Gypsum 500kg/hectare. Calcium chloride 5g/L foliar. Leaching. Salicylic acid 100ppm.',
-      
+
       'healthy': '✅ No treatment needed. 🔹 Preventive: NPK 19:19:19 at 5g/L every 15 days. 🔹 Micronutrients: ZnSO4 + FeSO4 + MnSO4 mix 3g/L monthly. 🔹 Bio-stimulant: Seaweed extract 2ml/L monthly.',
       'no detection': 'Unable to detect disease. Ensure proper image quality. If disease visible, consult agricultural expert with leaf sample for proper diagnosis.',
       'default': '⚠️ Consult local agricultural extension. 🔹 General spray: Mancozeb 75% WP 2g/L + Copper oxychloride 50% WP 3g/L. 🔹 Insect control: Imidacloprid 0.5ml/L. Take leaf sample for lab analysis.'
     };
-    
+
     // ==================== CONTEXT-AWARE ANALYSIS ALGORITHMS ====================
-    
+
     // Sensors/context removed - return neutral context
     function analyzeEnvironmentalContext(sensorData) {
       return {
@@ -2733,7 +3249,7 @@ function calculateConsensus(results) {
         }
       };
     }
-    
+
     // Simplified severity assessment (visual-only)
     function assessDiseaseSeverity(diseaseName, confidence, envContext) {
       let severity = 'mild';
@@ -2746,9 +3262,9 @@ function calculateConsensus(results) {
 
       return { severity, treatmentUrgency, spreadRisk, criticalityScore: confidence };
     }
-    
+
     // ==================== ANALYTICS & LOGGING SYSTEM ====================
-    
+
     let analyticsData = {
       logs: [],
       charts: {
@@ -2761,7 +3277,7 @@ function calculateConsensus(results) {
       },
       modelFeedback: {} // Stores feedback for each model: { modelName: { correct: 0, wrong: 0 } }
     };
-    
+
     // Initialize model feedback tracking
     function initializeModelFeedback() {
       MODELS.forEach(model => {
@@ -2770,20 +3286,20 @@ function calculateConsensus(results) {
         }
       });
     }
-    
+
     // Record feedback for a specific model and analysis
     function recordModelFeedback(analysisId, modelName, isCorrect) {
       if (!analyticsData.modelFeedback[modelName]) {
         analyticsData.modelFeedback[modelName] = { correct: 0, wrong: 0, total: 0 };
       }
-      
+
       if (isCorrect) {
         analyticsData.modelFeedback[modelName].correct++;
       } else {
         analyticsData.modelFeedback[modelName].wrong++;
       }
       analyticsData.modelFeedback[modelName].total++;
-      
+
       // Update the specific log entry with feedback
       const logEntry = analyticsData.logs.find(log => log.id === analysisId);
       if (logEntry) {
@@ -2792,29 +3308,29 @@ function calculateConsensus(results) {
         }
         logEntry.modelFeedbacks[modelName] = isCorrect;
       }
-      
+
       saveAnalytics();
-      
+
       // Update chart immediately after recording feedback
       console.log('🔄 Updating chart with new feedback data:', analyticsData.modelFeedback);
       console.log('📊 Total models with feedback:', Object.keys(analyticsData.modelFeedback).length);
       updateModelPrecisionChart();
-      
+
       console.log('Feedback recorded for', modelName, ':', isCorrect ? 'Correct' : 'Wrong');
       console.log('Updated stats:', analyticsData.modelFeedback[modelName]);
     }
-    
+
     // Reset all model feedback data
     function resetModelFeedback() {
       if (!confirm('⚠️ Are you sure you want to reset all model feedback data?\n\nThis will:\n• Clear all precision statistics\n• Remove the chart data\n• Delete feedback from Firebase\n\nThis action cannot be undone.')) {
         return;
       }
-      
+
       console.log('🗑️ Resetting all model feedback data...');
-      
+
       // Clear local data
       analyticsData.modelFeedback = {};
-      
+
       // Clear from Firebase
       if (firebaseReady && firebaseEnabled && db) {
         db.collection('modelFeedback').doc('current').delete().then(() => {
@@ -2825,7 +3341,7 @@ function calculateConsensus(results) {
           alert('⚠️ Feedback cleared locally but Firebase deletion failed: ' + err.message);
         });
       }
-      
+
       // Clear from localStorage
       const stored = localStorage.getItem('diseaseAnalytics');
       if (stored) {
@@ -2838,19 +3354,19 @@ function calculateConsensus(results) {
           console.error('Failed to clear feedback from localStorage:', e);
         }
       }
-      
+
       // Update chart to show empty state
       updateModelPrecisionChart();
-      
+
       console.log('✅ Model feedback reset complete');
     }
-    
+
     // Enhanced log entry with complete data
     function createCompleteLogEntry(results, sensorData, envContext) {
       const timestamp = new Date().toISOString();
       const diseases = [];
       const allModelResults = [];
-      
+
       results.forEach(r => {
         // Store complete model result
         const modelResult = {
@@ -2859,15 +3375,15 @@ function calculateConsensus(results) {
           error: r.error || null,
           rawData: r.data
         };
-        
+
         if (r.error) {
           allModelResults.push(modelResult);
           return;
         }
-        
+
         let disease = 'Healthy';
         let confidence = 0;
-        
+
         if (r.type === 'detection' && r.data.predictions && r.data.predictions.length > 0) {
           const top = r.data.predictions.reduce((a, b) => a.confidence > b.confidence ? a : b);
           disease = top.class;
@@ -2881,9 +3397,9 @@ function calculateConsensus(results) {
           modelResult.detectedClass = disease;
           modelResult.confidence = confidence;
         }
-        
+
         allModelResults.push(modelResult);
-        
+
         if (disease !== 'Healthy' && confidence > 0) {
           const severityAssessment = assessDiseaseSeverity(disease, confidence, envContext);
           diseases.push({
@@ -2898,7 +3414,7 @@ function calculateConsensus(results) {
           });
         }
       });
-      
+
       return {
         id: 'log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
         timestamp,
@@ -2917,7 +3433,7 @@ function calculateConsensus(results) {
         }
       };
     }
-    
+
     // Load analytics from Firebase (primary) with localStorage as fallback cache
     async function loadAnalytics() {
       // Wait for Firebase to be ready
@@ -2928,17 +3444,17 @@ function calculateConsensus(results) {
           console.warn('Firebase authentication failed, using localStorage');
         }
       }
-      
+
       // Try to load from Firebase first
       if (firebaseReady && firebaseEnabled && db) {
         try {
           console.log('📥 Loading all data from Firebase...');
-          
+
           // Load all logs from Firebase
           const logsSnapshot = await db.collection('diseaseAnalytics')
             .orderBy('timestamp', 'desc')
             .get();
-          
+
           const firebaseLogs = [];
           logsSnapshot.forEach(doc => {
             const logData = doc.data();
@@ -2948,16 +3464,16 @@ function calculateConsensus(results) {
             if (logData.imageBase64) delete logData.imageBase64;
             firebaseLogs.push(logData);
           });
-          
+
           analyticsData.logs = firebaseLogs;
           console.log('✅ Loaded', firebaseLogs.length, 'logs from Firebase (images ignored)');
-          
+
           // Load model feedback from Firebase
           console.log('📥 Loading model feedback from Firebase...');
           try {
             const feedbackDoc = await db.collection('modelFeedback').doc('current').get();
             console.log('📄 Feedback document exists:', feedbackDoc.exists);
-            
+
             if (feedbackDoc.exists) {
               const docData = feedbackDoc.data();
               console.log('📦 Document data:', docData);
@@ -2972,15 +3488,15 @@ function calculateConsensus(results) {
           } catch (fbError) {
             console.error('❌ Failed to load model feedback (continuing with logs):', fbError);
           }
-          
+
           // Initialize feedback structure to ensure all models exist
           initializeModelFeedback();
-          
+
           // Update dashboard and charts after loading
           updateAnalyticsDashboard();
           updateHistoryPanel();
           updateModelPrecisionChart(); // Explicitly update chart after Firebase load
-          
+
         } catch (e) {
           console.error('Failed to load from Firebase, using localStorage cache:', e);
           loadFromLocalStorageCache();
@@ -2990,7 +3506,7 @@ function calculateConsensus(results) {
         loadFromLocalStorageCache();
       }
     }
-    
+
     // Fallback: Load from localStorage cache
     function loadFromLocalStorageCache() {
       const stored = localStorage.getItem('diseaseAnalytics');
@@ -3007,10 +3523,10 @@ function calculateConsensus(results) {
             analyticsData.modelFeedback = data.modelFeedback || {};
           }
           console.log('📦 Loaded', analyticsData.logs.length, 'records from localStorage cache');
-          
+
           // Initialize feedback structure
           initializeModelFeedback();
-          
+
           // Update dashboard and charts after loading from cache
           updateAnalyticsDashboard();
           updateHistoryPanel();
@@ -3022,7 +3538,7 @@ function calculateConsensus(results) {
         }
       }
     }
-    
+
     // Save analytics to Firebase (primary) and localStorage (backup cache only)
     function saveAnalytics() {
       // Save to Firebase as primary storage
@@ -3040,20 +3556,20 @@ function calculateConsensus(results) {
             });
           }
         });
-        
+
         // Save model feedback separately (only if there's data)
         const feedbackKeys = Object.keys(analyticsData.modelFeedback);
         if (feedbackKeys.length > 0) {
           console.log('💾 Saving', feedbackKeys.length, 'model feedback entries to Firebase...');
           console.log('📝 Feedback data to save:', JSON.stringify(analyticsData.modelFeedback));
-          
+
           db.collection('modelFeedback').doc('current').set({
             feedback: analyticsData.modelFeedback,
             lastUpdated: new Date().toISOString(),
             userId: auth.currentUser ? auth.currentUser.uid : 'anonymous'
           }, { merge: true }).then(() => {
             console.log('✅ Model feedback saved to Firebase successfully');
-            
+
             // Verify save by reading back
             db.collection('modelFeedback').doc('current').get().then(doc => {
               if (doc.exists) {
@@ -3068,12 +3584,12 @@ function calculateConsensus(results) {
         } else {
           console.log('ℹ️ No model feedback to save yet');
         }
-        
+
         console.log('✅ All logs saved to Firebase');
       } else {
         console.warn('⚠️ Firebase not enabled, using localStorage as fallback');
       }
-      
+
       // Keep minimal cache in localStorage (last 20 records only for offline access)
       try {
         const recentLogs = analyticsData.logs.slice(-20);
@@ -3089,7 +3605,7 @@ function calculateConsensus(results) {
         console.error('Failed to cache to localStorage:', e);
       }
     }
-    
+
     // Utility: Recursively replace undefined values with null (safe for Firestore)
     function sanitizeForFirestore(obj) {
       if (obj === undefined) return null;
@@ -3120,36 +3636,36 @@ function calculateConsensus(results) {
         log.warn('⚠️ Firebase not available, using localStorage only');
         return;
       }
-      
+
       try {
         // Store complete entry without image in Firestore
         const { imageBase64, ...firestoreEntry } = logEntry;
-        
+
         // Sanitize to avoid unsupported 'undefined' values
         const cleanEntry = sanitizeForFirestore(firestoreEntry);
-        
+
         // Add to Firestore without image data
         const docRef = await db.collection('diseaseAnalytics').add({
           ...cleanEntry,
           uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
           userId: auth.currentUser ? auth.currentUser.uid : 'anonymous'
         });
-        
+
         console.log('✅ Saved to Firebase with ID:', docRef.id);
         console.log('ℹ️ Image not stored in Firestore. Logs only.');
-        
+
         return docRef.id;
       } catch (e) {
         console.error('❌ Failed to save to Firebase:', e);
         throw e;
       }
     }
-    
+
     // Convert base64 to blob
     function base64ToBlob(base64, contentType) {
       const byteCharacters = atob(base64);
       const byteArrays = [];
-      
+
       for (let offset = 0; offset < byteCharacters.length; offset += 512) {
         const slice = byteCharacters.slice(offset, offset + 512);
         const byteNumbers = new Array(slice.length);
@@ -3159,30 +3675,30 @@ function calculateConsensus(results) {
         const byteArray = new Uint8Array(byteNumbers);
         byteArrays.push(byteArray);
       }
-      
+
       return new Blob(byteArrays, { type: contentType });
     }
-    
+
     // Log analysis result (enhanced with complete data)
     async function logAnalysis(results, sensorData, envContext, analysisId) {
       const logEntry = createCompleteLogEntry(results, sensorData, envContext);
       logEntry.id = analysisId; // Store the analysis ID
       logEntry.modelFeedbacks = {}; // Initialize empty feedback object
-      
+
       analyticsData.logs.push(logEntry);
       saveAnalytics();
-      
+
       // Save to Firebase asynchronously
       if (firebaseReady && firebaseEnabled) {
         saveToFirebase(logEntry).catch(err => {
           console.error('Firebase save failed, data is in localStorage:', err);
         });
       }
-      
+
       updateAnalyticsDashboard();
       updateHistoryPanel();
     }
-    
+
     // Load from Firebase
     async function loadFromFirebase(showAlert = true) {
       // Wait for Firebase to be ready
@@ -3194,12 +3710,12 @@ function calculateConsensus(results) {
           return;
         }
       }
-      
+
       if (!firebaseReady || !firebaseEnabled || !db) {
         if (showAlert) alert('Firebase not connected. Using local data only.');
         return;
       }
-      
+
       try {
         // Get button element if called from UI (event exists)
         const btn = event?.target;
@@ -3207,37 +3723,37 @@ function calculateConsensus(results) {
           btn.disabled = true;
           btn.textContent = translateText('⏳ Loading...');
         }
-        
+
         const snapshot = await db.collection('diseaseAnalytics')
           .orderBy('timestamp', 'desc')
           .limit(100)
           .get();
-        
+
         const firebaseLogs = [];
         snapshot.forEach(doc => {
           const data = doc.data();
           firebaseLogs.push({ ...data, firebaseId: doc.id });
         });
-        
+
         console.log('✅ Loaded', firebaseLogs.length, 'records from Firebase');
         // Any embedded images in Firebase records are intentionally ignored for privacy and storage policy.
-        
+
         // Merge with local data (remove duplicates by timestamp)
         const merged = [...analyticsData.logs, ...firebaseLogs];
         const unique = merged.filter((log, index, self) =>
           index === self.findIndex(l => l.timestamp === log.timestamp)
         );
-        
-        analyticsData.logs = unique.sort((a, b) => 
+
+        analyticsData.logs = unique.sort((a, b) =>
           new Date(a.timestamp) - new Date(b.timestamp)
         );
-        
+
         saveAnalytics();
         updateAnalyticsDashboard();
         updateHistoryPanel();
-        
+
         if (showAlert) alert('Loaded ' + firebaseLogs.length + ' records from Firebase');
-        
+
         if (btn) {
           btn.disabled = false;
           btn.textContent = translateText('📥 Load');
@@ -3251,9 +3767,9 @@ function calculateConsensus(results) {
         }
       }
     }
-    
+
     // Image loading from Firebase removed — application no longer loads or displays stored images.
-    
+
     // Show transient toast notifications
     function showToast(message, type = 'info', duration = 3500) {
       try {
@@ -3357,7 +3873,7 @@ function calculateConsensus(results) {
         showToast('Sync failed: ' + e.message, 'error', 5000);
       }
     }
-    
+
     // Update analytics dashboard
     function updateAnalyticsDashboard() {
       if (analyticsData.logs.length === 0) {
@@ -3365,24 +3881,24 @@ function calculateConsensus(results) {
         updateCharts();
         return;
       }
-      
+
       // Calculate statistics
       const totalScans = analyticsData.logs.length;
       const diseaseLogs = analyticsData.logs.filter(log => log.primaryDisease !== 'Healthy');
       const diseasesFound = diseaseLogs.length;
-      
+
       const totalConfidence = analyticsData.logs.reduce((sum, log) => sum + log.avgConfidence, 0);
       const avgConfidence = totalScans > 0 ? (totalConfidence / totalScans).toFixed(1) : 0;
-      
+
       // Risk level assessment
       const recentLogs = analyticsData.logs.slice(-10);
       const recentDiseases = recentLogs.filter(log => log.primaryDisease !== 'Healthy').length;
       const riskLevel = recentDiseases >= 7 ? 'High' : recentDiseases >= 4 ? 'Medium' : 'Low';
-      
+
       // Platform analytics stats removed
       updateCharts();
     }
-    
+
     // Update all charts
     function updateCharts() {
       // Disease and confidence charts removed
@@ -3390,7 +3906,7 @@ function calculateConsensus(results) {
       updateTimelineChart();
       updateModelPrecisionChart();
     }
-    
+
     // Model Precision Chart based on user feedback
     function updateModelPrecisionChart() {
       const container = document.getElementById('modelPrecisionChartContainer');
@@ -3398,14 +3914,14 @@ function calculateConsensus(results) {
         console.warn('⚠️ Chart container not found');
         return;
       }
-      
+
       console.log('📊 Updating model precision chart with feedback data:', analyticsData.modelFeedback);
-      
+
       const modelNames = [];
       const precisionData = [];
       const correctData = [];
       const wrongData = [];
-      
+
       // Calculate precision for each model
       for (const modelName in analyticsData.modelFeedback) {
         const feedback = analyticsData.modelFeedback[modelName];
@@ -3417,7 +3933,7 @@ function calculateConsensus(results) {
           wrongData.push(feedback.wrong);
         }
       }
-      
+
       // If no data, show message
       if (modelNames.length === 0) {
         if (analyticsData.charts.modelPrecision) {
@@ -3429,26 +3945,26 @@ function calculateConsensus(results) {
         console.log('ℹ️ No feedback data available for chart');
         return;
       }
-      
-console.log('📊 Chart data - Models:', modelNames.length, '| Correct:', correctData, '| Wrong:', wrongData);
-      
+
+      console.log('📊 Chart data - Models:', modelNames.length, '| Correct:', correctData, '| Wrong:', wrongData);
+
       // Ensure canvas exists (it might have been replaced with message)
       let canvas = document.getElementById('modelPrecisionChart');
-      
+
       if (!canvas) {
         console.log('🔄 Recreating chart canvas...');
         container.innerHTML = '<canvas id="modelPrecisionChart" style="width: 100%; height: 100%;"></canvas>';
         canvas = document.getElementById('modelPrecisionChart');
       }
-      
+
       // Destroy existing chart
       if (analyticsData.charts.modelPrecision) {
         analyticsData.charts.modelPrecision.destroy();
         analyticsData.charts.modelPrecision = null;
       }
-      
+
       console.log('✅ Creating chart with', modelNames.length, 'models');
-      
+
       // Create new chart with larger bars
       analyticsData.charts.modelPrecision = new Chart(canvas, {
         type: 'bar',
@@ -3501,9 +4017,9 @@ console.log('📊 Chart data - Models:', modelNames.length, '| Correct:', correc
                 color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface-variant'),
                 maxRotation: 45,
                 minRotation: 25,
-                font: { 
+                font: {
                   size: window.innerWidth < 600 ? 10 : 12,
-                  weight: '500' 
+                  weight: '500'
                 },
                 autoSkip: true,
                 maxTicksLimit: window.innerWidth < 600 ? 6 : 12
@@ -3526,7 +4042,7 @@ console.log('📊 Chart data - Models:', modelNames.length, '| Correct:', correc
             },
             tooltip: {
               callbacks: {
-                label: function(context) {
+                label: function (context) {
                   const label = context.dataset.label || '';
                   const value = context.parsed.y;
                   const modelName = context.label;
@@ -3553,17 +4069,17 @@ console.log('📊 Chart data - Models:', modelNames.length, '| Correct:', correc
         }
       });
     }
-    
+
     // Disease and confidence chart functions removed
-    
+
     // Sensor-related chart functions removed
-    
-    
+
+
     // Timeline Chart - Shows all analyses over time
     function updateTimelineChart() {
       const ctx = document.getElementById('timelineChart');
       if (!ctx) return;
-      
+
       if (analyticsData.logs.length === 0) {
         if (analyticsData.charts.timeline) {
           analyticsData.charts.timeline.destroy();
@@ -3571,30 +4087,30 @@ console.log('📊 Chart data - Models:', modelNames.length, '| Correct:', correc
         }
         return;
       }
-      
+
       // Prepare data for timeline
-      const sortedLogs = [...analyticsData.logs].sort((a, b) => 
+      const sortedLogs = [...analyticsData.logs].sort((a, b) =>
         new Date(a.timestamp) - new Date(b.timestamp)
       );
-      
+
       const labels = sortedLogs.map(log => {
         const date = new Date(log.timestamp);
         return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       });
-      
+
       const confidenceData = sortedLogs.map(log => log.avgConfidence);
       const severityScores = sortedLogs.map(log => {
         if (!log.environmentalContext) return 0;
         const severityMap = { low: 2, moderate: 4, high: 7, critical: 10 };
         return severityMap[log.environmentalContext.severity] || 0;
       });
-      
+
       const diseaseCount = sortedLogs.map(log => log.diseases ? log.diseases.length : 0);
-      
+
       if (analyticsData.charts.timeline) {
         analyticsData.charts.timeline.destroy();
       }
-      
+
       analyticsData.charts.timeline = new Chart(ctx, {
         type: 'line',
         data: {
@@ -3708,7 +4224,7 @@ console.log('📊 Chart data - Models:', modelNames.length, '| Correct:', correc
             },
             tooltip: {
               callbacks: {
-                afterLabel: function(context) {
+                afterLabel: function (context) {
                   const log = sortedLogs[context.dataIndex];
                   if (log.primaryDisease && log.primaryDisease !== 'Healthy') {
                     return 'Disease: ' + log.primaryDisease;
@@ -3721,12 +4237,12 @@ console.log('📊 Chart data - Models:', modelNames.length, '| Correct:', correc
         }
       });
     }
-    
+
     // History Panel Functions
     function updateHistoryPanel(filter = 'all') {
       const panel = document.getElementById('historyPanel');
       if (!panel) return;
-      
+
       // Update active filter chip visual state
       document.querySelectorAll('.filter-chip').forEach(chip => {
         chip.classList.remove('active');
@@ -3737,7 +4253,7 @@ console.log('📊 Chart data - Models:', modelNames.length, '| Correct:', correc
         panel.innerHTML = '<div style="text-align: center; padding: 48px 20px;"><span class="material-symbols-rounded" style="font-size: 48px; color: var(--outline); margin-bottom: 16px;">history</span><p style="color: var(--on-surface-variant);">No diagnostic history available.<br>Run an analysis to see logs here.</p></div>';
         return;
       }
-      
+
       // Filter logs
       let filteredLogs = [...analyticsData.logs];
       if (filter === 'diseases') {
@@ -3745,27 +4261,27 @@ console.log('📊 Chart data - Models:', modelNames.length, '| Correct:', correc
       } else if (filter === 'healthy') {
         filteredLogs = filteredLogs.filter(log => log.primaryDisease === 'Healthy');
       }
-      
+
       // Sort by timestamp (newest first)
       filteredLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-      
+
       let html = '<div class="timeline-feed">';
-      
+
       filteredLogs.forEach((log, index) => {
         const date = new Date(log.timestamp);
         const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const dateStr = date.toLocaleDateString();
-        
+
         // Determine severity and styling
         let severity = 'low';
         if (log.environmentalContext) severity = log.environmentalContext.severity;
         // Fallback severity based on disease
         if (log.primaryDisease !== 'Healthy' && !log.environmentalContext) severity = 'moderate';
         if (log.primaryDisease === 'Healthy') severity = 'low';
-        
+
         const isHealthy = log.primaryDisease === 'Healthy';
         const icon = isHealthy ? 'check_circle' : 'coronavirus';
-        
+
         // Generate Summary Text
         let summaryText = '';
         if (isHealthy) {
@@ -3831,17 +4347,17 @@ console.log('📊 Chart data - Models:', modelNames.length, '| Correct:', correc
               <div class="log-section-title">AI Model Consensus</div>
               <div class="log-model-list">
                 ${(log.allModelResults || []).map(m => {
-                  const mName = m.modelName.replace(/\(.*\)/, '').trim(); // Clean name
-                  const mRes = m.error ? 'Error' : (m.detectedClass || 'No detection');
-                  const mConf = m.confidence ? `(${m.confidence.toFixed(0)}%)` : '';
-                  const mColor = m.detectedClass && m.detectedClass !== 'Healthy' ? 'var(--error)' : 'var(--on-surface-variant)';
-                  return `
+          const mName = m.modelName.replace(/\(.*\)/, '').trim(); // Clean name
+          const mRes = m.error ? 'Error' : (m.detectedClass || 'No detection');
+          const mConf = m.confidence ? `(${m.confidence.toFixed(0)}%)` : '';
+          const mColor = m.detectedClass && m.detectedClass !== 'Healthy' ? 'var(--error)' : 'var(--on-surface-variant)';
+          return `
                     <div class="log-model-row">
                       <span class="log-model-name">${mName}</span>
                       <span class="log-model-result" style="color: ${mColor}">${mRes} ${mConf}</span>
                     </div>
                   `;
-                }).join('')}
+        }).join('')}
               </div>
               
               <!-- Footer Actions -->
@@ -3852,15 +4368,15 @@ console.log('📊 Chart data - Models:', modelNames.length, '| Correct:', correc
           </div>
         `;
       });
-      
+
       html += '</div>';
       panel.innerHTML = html;
     }
-    
+
     function toggleHistoryDetails(logId) {
       const card = document.getElementById('log_' + logId);
       if (!card) return;
-      
+
       if (card.classList.contains('expanded')) {
         card.classList.remove('expanded');
       } else {
@@ -3871,7 +4387,7 @@ console.log('📊 Chart data - Models:', modelNames.length, '| Correct:', correc
         card.classList.add('expanded');
       }
     }
-    
+
     function filterHistory(filter) {
       updateHistoryPanel(filter);
     }
@@ -3886,7 +4402,7 @@ console.log('📊 Chart data - Models:', modelNames.length, '| Correct:', correc
         const logs = JSON.parse(localStorage.getItem('analysisLogs') || '[]');
         const updatedLogs = logs.filter(log => log.id !== logId);
         localStorage.setItem('analysisLogs', JSON.stringify(updatedLogs));
-        
+
         console.log('✅ Deleted from local storage:', logId);
 
         // Remove from Firebase if connected
@@ -3897,7 +4413,7 @@ console.log('📊 Chart data - Models:', modelNames.length, '| Correct:', correc
               .where('id', '==', logId)
               .limit(1)
               .get();
-            
+
             if (!snapshot.empty) {
               await snapshot.docs[0].ref.delete();
               console.log('✅ Deleted from Firebase:', logId);
@@ -3909,7 +4425,7 @@ console.log('📊 Chart data - Models:', modelNames.length, '| Correct:', correc
 
         // Update UI
         updateHistoryPanel();
-        
+
         // Show success message
         alert('✅ Record deleted successfully!');
       } catch (error) {
@@ -3917,28 +4433,28 @@ console.log('📊 Chart data - Models:', modelNames.length, '| Correct:', correc
         alert('❌ Failed to delete record: ' + error.message);
       }
     }
-    
+
     function getTimeAgo(date) {
       const now = new Date();
       const diffMs = now - date;
       const diffMins = Math.floor(diffMs / 60000);
       const diffHours = Math.floor(diffMs / 3600000);
       const diffDays = Math.floor(diffMs / 86400000);
-      
+
       if (diffMins < 1) return 'just now';
       if (diffMins < 60) return diffMins + ' min ago';
       if (diffHours < 24) return diffHours + ' hour' + (diffHours > 1 ? 's' : '') + ' ago';
       if (diffDays < 7) return diffDays + ' day' + (diffDays > 1 ? 's' : '') + ' ago';
       return date.toLocaleDateString();
     }
-    
+
     // Export analytics data
     function exportAnalyticsData() {
       if (analyticsData.logs.length === 0) {
         alert('No analytics data to export');
         return;
       }
-      
+
       const dataStr = JSON.stringify(analyticsData.logs, null, 2);
       const blob = new Blob([dataStr], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -3948,13 +4464,13 @@ console.log('📊 Chart data - Models:', modelNames.length, '| Correct:', correc
       a.click();
       URL.revokeObjectURL(url);
     }
-    
+
     // Clear analytics data
-async function clearAnalyticsData() {
+    async function clearAnalyticsData() {
       if (!confirm('Are you sure you want to clear the Diagnostic Log? This will permanently delete all analysis history from this device and from Firebase. This action cannot be undone.')) {
         return;
       }
-      
+
       // Clear local data
       analyticsData.logs = [];
       saveAnalytics(); // This will clear localStorage
@@ -3976,9 +4492,9 @@ async function clearAnalyticsData() {
           snapshot.docs.forEach(doc => {
             batch.delete(doc.ref);
           });
-          
+
           await batch.commit();
-          
+
           console.log('✅ Batch of', snapshot.size, 'logs deleted from Firebase.');
 
           // If there might be more logs, recursively call until empty
@@ -3996,7 +4512,7 @@ async function clearAnalyticsData() {
         alert('Diagnostic Log cleared from this device.');
       }
     }
-    
+
     // Disease name aliases and variations for improved matching accuracy
     const DISEASE_ALIASES = {
       'tomato_septoria_leaf_spot': ['septoria', 'septoria leaf spot', 'tomato septoria'],
@@ -4052,23 +4568,23 @@ async function clearAnalyticsData() {
       'potato_black_scurf': ['black scurf', 'rhizoctonia potato', 'stem canker potato'],
       'potato_common_scab': ['common scab potato', 'scab potato', 'streptomyces scab']
     };
-    
+
     // Enhanced matching function with scoring algorithm
     function getRemedy(diseaseName) {
       if (!diseaseName || diseaseName === '-') return 'N/A';
-      
+
       const name = diseaseName.toLowerCase().trim();
-      
+
       // Remove underscores and extra spaces
       const cleanName = name.replace(/_/g, ' ').replace(/\s+/g, ' ');
-      
+
       // First, check for exact matches (highest priority)
       for (const [key, remedy] of Object.entries(REMEDIES)) {
         if (cleanName === key || name === key) {
           return getTranslatedRemedy(remedy);
         }
       }
-      
+
       // Second, check disease aliases
       for (const [aliasKey, aliasList] of Object.entries(DISEASE_ALIASES)) {
         const cleanAliasKey = aliasKey.replace(/_/g, ' ');
@@ -4083,7 +4599,7 @@ async function clearAnalyticsData() {
           }
         }
       }
-      
+
       // Third, check if any alias matches the input
       for (const [aliasKey, aliasList] of Object.entries(DISEASE_ALIASES)) {
         for (const alias of aliasList) {
@@ -4097,47 +4613,47 @@ async function clearAnalyticsData() {
           }
         }
       }
-      
+
       // Fourth, fuzzy matching with scoring
       let bestMatch = null;
       let bestScore = 0;
-      
+
       for (const [key, remedy] of Object.entries(REMEDIES)) {
         let score = 0;
-        
+
         // Calculate match score
         if (cleanName.includes(key)) score += 10;
         if (key.includes(cleanName)) score += 8;
-        
+
         // Word-by-word matching
         const nameWords = cleanName.split(' ');
         const keyWords = key.split(' ');
-        
+
         for (const nWord of nameWords) {
           for (const kWord of keyWords) {
             if (nWord === kWord) score += 5;
             else if (nWord.includes(kWord) || kWord.includes(nWord)) score += 3;
             // Check for common disease terms
-            if (['blight', 'spot', 'rot', 'wilt', 'rust', 'mildew', 'mosaic', 'curl'].includes(nWord) && 
-                ['blight', 'spot', 'rot', 'wilt', 'rust', 'mildew', 'mosaic', 'curl'].includes(kWord)) {
+            if (['blight', 'spot', 'rot', 'wilt', 'rust', 'mildew', 'mosaic', 'curl'].includes(nWord) &&
+              ['blight', 'spot', 'rot', 'wilt', 'rust', 'mildew', 'mosaic', 'curl'].includes(kWord)) {
               score += 2;
             }
           }
         }
-        
+
         // Bonus for plant name matches
-        const plants = ['tomato', 'potato', 'corn', 'maize', 'wheat', 'rice', 'grape', 'apple', 'banana', 
-                        'pepper', 'chili', 'cucumber', 'cabbage', 'onion', 'soybean', 'cotton'];
+        const plants = ['tomato', 'potato', 'corn', 'maize', 'wheat', 'rice', 'grape', 'apple', 'banana',
+          'pepper', 'chili', 'cucumber', 'cabbage', 'onion', 'soybean', 'cotton'];
         for (const plant of plants) {
           if (cleanName.includes(plant) && key.includes(plant)) score += 4;
         }
-        
+
         if (score > bestScore && score >= 5) {
           bestScore = score;
           bestMatch = remedy;
         }
       }
-      
+
       if (bestMatch) return getTranslatedRemedy(bestMatch);
 
       const keywords = {
@@ -4164,16 +4680,16 @@ async function clearAnalyticsData() {
 
       return getTranslatedRemedy(REMEDIES.default);
     }
-    
+
     let BASE_URL = 'http://10.180.248.33';  // Default ESP32 IP
     const api = (path) => BASE_URL + path;
     let streamActive = false;
 
-    
 
-    
 
-    
+
+
+
     // Translate remedy text to Bengali (simple token replacements)
     function translateRemedyText(remedy) {
       const lang = getLang();
@@ -4224,11 +4740,11 @@ async function clearAnalyticsData() {
         alert('Please enter ESP32 IP address');
         return;
       }
-      
+
       const cleanIP = ip.replace('http://', '').replace('https://', '');
       BASE_URL = `http://${cleanIP}`;
       localStorage.setItem('esp32_ip', BASE_URL);
-      
+
       console.log('Connecting to:', BASE_URL);
       const cs = document.getElementById('connStatus');
       if (cs) { cs.textContent = translateText('Connecting...'); cs.className = 'conn-status'; }
@@ -4286,12 +4802,12 @@ async function clearAnalyticsData() {
         }
       })();
     }
-    
+
     function startStream() {
       const streamBtn = document.getElementById('toggleBtn');
       streamBtn.disabled = true; // Disable button during connection attempt
       streamBtn.textContent = translateText('Starting...');
-      
+
       const cs2 = document.getElementById('connStatus');
       if (cs2) { cs2.textContent = translateText('Connecting to stream...'); cs2.className = 'conn-status'; }
       // Show loading state
@@ -4299,7 +4815,7 @@ async function clearAnalyticsData() {
       placeholder.style.display = 'block';
       placeholder.textContent = translateText('Initializing stream...');
       document.getElementById('str').style.display = 'none';
-      
+
       const streamImg = document.getElementById('str');
       // Remove crossOrigin to avoid strict CORS image handling in some browsers
       // (ESP responses already include Access-Control-Allow-Origin).
@@ -4389,7 +4905,7 @@ async function clearAnalyticsData() {
       const streamImg = document.getElementById('str');
       const streamBtn = document.getElementById('toggleBtn');
       const placeholder = document.getElementById('streamPlaceholder');
-      
+
       if (streamActive) {
         // Stop stream
         // Stop the MJPEG connection by setting to blank and removing handlers
@@ -4404,7 +4920,7 @@ async function clearAnalyticsData() {
 
         // stop polling fallback if active
         if (pollIntervalId) { clearInterval(pollIntervalId); pollIntervalId = null; }
-        
+
         // Update status
         // document.getElementById('cs').textContent = 'Camera: Paused';
         document.getElementById('camDot').classList.add('offline');
@@ -4422,12 +4938,12 @@ async function clearAnalyticsData() {
     function handleModelFeedback(analysisId, modelName, isCorrect, feedbackId) {
       // Record the feedback
       recordModelFeedback(analysisId, modelName, isCorrect);
-      
+
       // Update button states
       const correctBtn = document.getElementById('correct_' + feedbackId);
       const wrongBtn = document.getElementById('wrong_' + feedbackId);
       const statusDiv = document.getElementById('feedback_status_' + feedbackId);
-      
+
       if (correctBtn && wrongBtn && statusDiv) {
         if (isCorrect) {
           correctBtn.style.background = '#34A853';
@@ -4447,11 +4963,11 @@ async function clearAnalyticsData() {
           statusDiv.style.color = '#EA4335';
         }
       }
-      
+
       // Show toast notification
       const toast = document.createElement('div');
-      toast.style.cssText = 'position: fixed; top: 80px; right: 20px; background: ' + (isCorrect ? '#34A853' : '#EA4335') + 
-                            '; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 10000; font-size: 14px; font-weight: 500;';
+      toast.style.cssText = 'position: fixed; top: 80px; right: 20px; background: ' + (isCorrect ? '#34A853' : '#EA4335') +
+        '; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 10000; font-size: 14px; font-weight: 500;';
       toast.textContent = translateText('Feedback recorded for') + ' ' + modelName;
       document.body.appendChild(toast);
       setTimeout(() => toast.remove(), 3000);
@@ -4471,12 +4987,12 @@ async function clearAnalyticsData() {
     function displayActiveModels() {
       const modelsList = document.getElementById('modelsList');
       if (!modelsList) return;
-      
+
       let html = '';
       MODELS.forEach((model, index) => {
         const typeIcon = model.type === 'detection' ? '🎯' : '📊';
         const typeBadge = model.type === 'detection' ? translateText('Detection') : translateText('Classification');
-        
+
         html += '<div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: var(--surface); border-radius: 6px; border: 1px solid rgba(26, 115, 232, 0.2);">';
         html += '<div style="display: flex; align-items: center; gap: 10px;">';
         html += '<span style="font-size: 20px;">' + typeIcon + '</span>';
@@ -4488,15 +5004,15 @@ async function clearAnalyticsData() {
         html += '<span style="padding: 4px 8px; background: rgba(26, 115, 232, 0.1); color: var(--primary); border-radius: 4px; font-size: 11px; font-weight: 600;">' + typeBadge + '</span>';
         html += '</div>';
       });
-      
+
       modelsList.innerHTML = html;
     }
-    
+
     // Initialize plant selector
     function initPlantSelector() {
       const selector = document.getElementById('plantSelector');
       if (!selector) return;
-      
+
       let html = '';
       PLANT_TYPES.forEach(plant => {
         const isSelected = selectedPlantType === plant.id;
@@ -4510,14 +5026,14 @@ async function clearAnalyticsData() {
         html += '<div style="font-size: 10px; color: var(--on-surface-variant); margin-top: 2px;">' + plant.models + ' ' + translateText('models') + '</div>';
         html += '</button>';
       });
-      
+
       selector.innerHTML = html;
     }
-    
+
     // Select plant type
     function selectPlant(plantId) {
       selectedPlantType = plantId;
-      
+
       // Update button styles
       PLANT_TYPES.forEach(plant => {
         const btn = document.getElementById('plant_' + plant.id);
@@ -4527,23 +5043,23 @@ async function clearAnalyticsData() {
           btn.style.background = (isSelected ? 'var(--primary-container)' : 'var(--surface)') + ' !important';
         }
       });
-      
+
       // Update info display
       const selectedPlant = PLANT_TYPES.find(p => p.id === plantId);
       if (selectedPlant) {
         document.getElementById('selectedPlantName').textContent = selectedPlant.icon + ' ' + translateText(selectedPlant.name);
         document.getElementById('selectedPlantDesc').textContent = translateText(selectedPlant.description);
       }
-      
+
       console.log('\ud83c\udf31 Plant type selected:', plantId);
     }
-    
+
     // Get filtered models based on selected plant
     function getActiveModels() {
       if (selectedPlantType === 'all') {
         return MODELS; // Return all models
       }
-      
+
       // Filter models: include 'all' models + models specific to selected plant
       return MODELS.filter(model => {
         if (model.forPlants === 'all') return true; // General models always included
@@ -4563,28 +5079,28 @@ async function clearAnalyticsData() {
 
     function showMultiModelResults(results, s, consensusData) {
       const res = document.getElementById('res');
-      
+
       // Generate unique analysis ID FIRST
       const analysisId = 'analysis_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-      
+
       // Context/sensors removed - record visual-only analysis
       const envContext = null;
       // Do not store any images with the log
       logAnalysis(results, null, null, analysisId);
-      
+
       // Build comparison table
       let html = '<div class="rc">';
       html += '<div class="t">' + translateText('Multi-Model Analysis') + '</div>';
-      
 
-      
+
+
       // CONSENSUS DECISION BOX
       if (consensusData && consensusData.note) {
         const isDisease = consensusData.disease && consensusData.disease.toLowerCase() !== 'healthy';
         const boxColor = isDisease ? '#EA4335' : '#34A853';
         const icon = isDisease ? '<span class="material-symbols-rounded" style="color:#EA4335; vertical-align:middle;">warning</span>' : '<span class="material-symbols-rounded" style="color:#34A853; vertical-align:middle;">check_circle</span>';
         const consensusIcon = isDisease ? '<span class="material-symbols-rounded" style="color:#EA4335; vertical-align:middle;">warning</span>' : '<span class="material-symbols-rounded" style="color:#34A853; vertical-align:middle;">check_circle</span>';
-        
+
         html += '<div style="background:' + boxColor + '15; border:2px solid ' + boxColor + '; padding:16px; margin:12px 0; border-radius:8px;">';
         html += '<div style="font-weight:600; margin-bottom:8px; color:' + boxColor + '; font-size:16px;">';
         html += icon + ' ' + translateText('Smart Consensus Decision') + '</div>';
@@ -4595,36 +5111,36 @@ async function clearAnalyticsData() {
         html += '<div style="font-size:13px; color:var(--on-surface-variant); line-height:1.5;">' + consensusData.note + '</div>';
         html += '</div>';
       }
-      
+
       // Environmental Context Alert
       if (envContext && envContext.severity !== 'low') {
         const severityColors = { moderate: '#FBBC04', high: '#FF9800', critical: '#EA4335' };
         const severityColor = severityColors[envContext.severity] || '#5f6368';
-        
+
         html += '<div style="background:' + severityColor + '20; border-left:4px solid ' + severityColor + '; padding:16px; margin:12px 0; border-radius:8px;">';
         html += '<div style="font-weight:600; margin-bottom:8px; color:' + severityColor + '; font-size:15px;">';
         html += '⚠️ Environmental Risk: ' + envContext.severity.toUpperCase() + ' (Score: ' + envContext.severityScore + '/10)</div>';
-        
+
         if (envContext.riskFactors.length > 0) {
           html += '<div style="margin-bottom:10px;"><strong style="color:var(--on-surface);">Risk Factors:</strong><ul style="margin:4px 0; padding-left:20px; font-size:13px; color:var(--on-surface);">';
           envContext.riskFactors.forEach(r => html += '<li>' + r + '</li>');
           html += '</ul></div>';
         }
-        
+
         if (envContext.recommendations.length > 0) {
           html += '<div><strong style="color:var(--on-surface);">Immediate Actions:</strong><ul style="margin:4px 0; padding-left:20px; font-size:13px; color:var(--on-surface);">';
           envContext.recommendations.forEach(r => html += '<li>' + r + '</li>');
           html += '</ul></div>';
         }
-        
+
         html += '</div>';
       }
-      
+
       // Gemini Recommendation (if available)
       if (geminiRecommendation) {
         html += '<div style="background:rgba(26,115,232,0.1); border-left:3px solid var(--primary); padding:16px; margin:12px 0; border-radius:8px;">';
         html += '<div style="font-weight:600; margin-bottom:12px; color:var(--primary); font-size:15px;">🤖 AI Expert Recommendation</div>';
-        
+
         // Check if it's an error object
         if (geminiRecommendation.error) {
           html += '<div style="background:#fef7e0; border:1px solid #f9ab00; padding:12px; border-radius:6px; color:#ea8600; font-size:14px;">';
@@ -4637,32 +5153,32 @@ async function clearAnalyticsData() {
             html += '<div style="margin-bottom:10px;"><strong>📋 ' + gl('diseaseExplanation') + '</strong><br>';
             html += '<span style="font-size:13px; line-height:1.6;">' + geminiRecommendation.disease_explanation + '</span></div>';
           }
-          
+
           if (geminiRecommendation.severity) {
             const severityColors = { mild: '#34a853', moderate: '#fbbc04', severe: '#ea4335' };
             const severityColor = severityColors[geminiRecommendation.severity.toLowerCase()] || '#5f6368';
             html += '<div style="margin-bottom:10px;"><strong>⚠️ ' + gl('severity') + '</strong> ';
             html += '<span style="padding:4px 8px; background:' + severityColor + '20; color:' + severityColor + '; border-radius:4px; font-weight:600; text-transform:uppercase; font-size:12px;">' + geminiRecommendation.severity + '</span></div>';
           }
-          
+
           if (geminiRecommendation.preventive_measures && geminiRecommendation.preventive_measures.length > 0) {
             html += '<div style="margin-bottom:10px;"><strong>🛡️ ' + gl('preventiveMeasures') + '</strong><ul style="margin:4px 0; padding-left:20px; font-size:13px;">';
             geminiRecommendation.preventive_measures.forEach(m => html += '<li>' + m + '</li>');
             html += '</ul></div>';
           }
-          
+
           if (geminiRecommendation.organic_treatment && geminiRecommendation.organic_treatment.length > 0) {
             html += '<div style="margin-bottom:10px;"><strong>🌿 ' + gl('organicTreatment') + '</strong><ul style="margin:4px 0; padding-left:20px; font-size:13px;">';
             geminiRecommendation.organic_treatment.forEach(t => html += '<li>' + t + '</li>');
             html += '</ul></div>';
           }
-          
+
           if (geminiRecommendation.chemical_treatment && geminiRecommendation.chemical_treatment.length > 0) {
             html += '<div style="margin-bottom:10px;"><strong>⚗️ ' + gl('chemicalTreatment') + '</strong><ul style="margin:4px 0; padding-left:20px; font-size:13px;">';
             geminiRecommendation.chemical_treatment.forEach(t => html += '<li>' + t + '</li>');
             html += '</ul></div>';
           }
-          
+
           if (geminiRecommendation.risk_of_crop_loss) {
             html += '<div style="margin-bottom:6px;"><strong>📊 ' + gl('riskOfCropLoss') + '</strong><br>';
             html += '<span style="font-size:13px; line-height:1.6; color:#ea4335;">' + geminiRecommendation.risk_of_crop_loss + '</span></div>';
@@ -4671,13 +5187,13 @@ async function clearAnalyticsData() {
           // Fallback for plain text response
           html += '<div style="white-space:pre-wrap; font-size:13px; line-height:1.6;">' + geminiRecommendation + '</div>';
         }
-        
+
         html += '</div>';
       }
-      
+
       // Start Result List
       html += '<div class="res-list">';
-      
+
       results.forEach((r, index) => {
         let conf = 0;
         let disease = 'No detection';
@@ -4686,7 +5202,7 @@ async function clearAnalyticsData() {
         let isDisease = false;
         let badgeClass = 'low';
         let badgeText = '';
-        
+
         if (r.error) {
           badgeClass = 'high';
           badgeText = translateText('Error');
@@ -4697,7 +5213,7 @@ async function clearAnalyticsData() {
             disease = top.class;
             rawDisease = disease;
             conf = (top.confidence * 100).toFixed(1);
-            
+
             // Handle numeric class IDs or invalid names
             if (!disease || disease === '' || /^\d+$/.test(disease)) {
               console.warn(r.name + ' returned invalid class:', disease, 'Full prediction:', top);
@@ -4730,7 +5246,7 @@ async function clearAnalyticsData() {
             disease = r.data.top || (r.data.predicted_classes && r.data.predicted_classes[0]) || 'Unknown';
             rawDisease = disease;
             conf = ((r.data.confidence || 0) * 100).toFixed(1);
-            
+
             // Check if this is a healthy classification
             if (disease.toLowerCase().trim() === 'healthy' || disease.toLowerCase().trim() === 'no detection') {
               isHealthy = true;
@@ -4751,9 +5267,9 @@ async function clearAnalyticsData() {
             badgeText = translateText('Healthy');
           }
         }
-        
+
         const remedy = getRemedy(rawDisease || disease);
-        
+
         // Calculate context-aware severity
         const severityAssessment = assessDiseaseSeverity(disease, conf, envContext);
         const urgencyColors = {
@@ -4765,12 +5281,12 @@ async function clearAnalyticsData() {
           'routine': '#34A853'
         };
         const urgencyColor = urgencyColors[severityAssessment.treatmentUrgency] || '#5f6368';
-        
+
         const feedbackId = analysisId + '_' + index;
-        
+
         // CARD START
         html += `<div class="res-card">`;
-        
+
         // HEADER
         html += `<div class="res-header">`;
         html += `<div class="res-title-group">`;
@@ -4779,32 +5295,32 @@ async function clearAnalyticsData() {
         html += `</div>`;
         html += `<span class="res-badge ${badgeClass}">${badgeText}</span>`;
         html += `</div>`;
-        
+
         // BODY
         html += `<div class="res-body">`;
-        
+
         // METRICS
         html += `<div class="res-metrics">`;
         html += `<div class="res-metric"><span class="res-metric-label">${translateText('Confidence')}</span><span class="res-metric-value">${conf ? conf + '%' : 'N/A'}</span></div>`;
         if (isDisease) {
-            html += `<div class="res-metric"><span class="res-metric-label">${translateText('Urgency')}</span><span class="res-metric-value" style="color:${urgencyColor}">${translateText(severityAssessment.treatmentUrgency)}</span></div>`;
+          html += `<div class="res-metric"><span class="res-metric-label">${translateText('Urgency')}</span><span class="res-metric-value" style="color:${urgencyColor}">${translateText(severityAssessment.treatmentUrgency)}</span></div>`;
         }
         html += `</div>`;
-        
+
         // REMEDY
         if (remedy && remedy !== 'N/A') {
-            let formattedRemedy = remedy;
-            // Format Organic/Chemical sections if present
-            formattedRemedy = formattedRemedy.replace(/(?:🔹 )?(Organic:)/g, '<div class="remedy-block"><span class="remedy-type">🌿 Organic:</span>');
-            formattedRemedy = formattedRemedy.replace(/(?:🔹 )?(Chemical:)/g, '</div><div class="remedy-block"><span class="remedy-type">⚗️ Chemical:</span>');
-            
-            html += `<div class="res-remedy">`;
-            html += `<div class="res-remedy-header"><span class="material-symbols-rounded" style="font-size:16px;">medical_services</span> ${translateText('Recommended Treatment')}</div>`;
-            html += `<div class="res-remedy-content">${formattedRemedy}</div>`;
-            html += `</div>`;
+          let formattedRemedy = remedy;
+          // Format Organic/Chemical sections if present
+          formattedRemedy = formattedRemedy.replace(/(?:🔹 )?(Organic:)/g, '<div class="remedy-block"><span class="remedy-type">🌿 Organic:</span>');
+          formattedRemedy = formattedRemedy.replace(/(?:🔹 )?(Chemical:)/g, '</div><div class="remedy-block"><span class="remedy-type">⚗️ Chemical:</span>');
+
+          html += `<div class="res-remedy">`;
+          html += `<div class="res-remedy-header"><span class="material-symbols-rounded" style="font-size:16px;">medical_services</span> ${translateText('Recommended Treatment')}</div>`;
+          html += `<div class="res-remedy-content">${formattedRemedy}</div>`;
+          html += `</div>`;
         }
         html += `</div>`; // End Body
-        
+
         // FEEDBACK
         html += `<div class="res-feedback">`;
         html += `<span class="res-feedback-text" id="feedback_status_${feedbackId}">${translateText('Was this correct?')}</span>`;
@@ -4813,13 +5329,13 @@ async function clearAnalyticsData() {
         html += `<button class="res-btn-feedback wrong" id="wrong_${feedbackId}" onclick="handleModelFeedback('${analysisId}', '${r.name}', false, '${feedbackId}')"><span class="material-symbols-rounded" style="font-size:14px;">close</span> ${translateText('Wrong')}</button>`;
         html += `</div>`;
         html += `</div>`;
-        
+
         html += `</div>`; // End Card
       });
-      
+
       html += '</div>'; // End List
       html += '<p style="color: var(--on-surface-variant); font-size: 12px; margin-top: 16px; text-align: center;">⚠️ Remedies are general guidelines. Consult agricultural expert for specific cases.</p>';
-      
+
       res.innerHTML = html;
 
       renderCtx(['Visual-only analysis. Sensors removed.']);
@@ -4835,7 +5351,7 @@ async function clearAnalyticsData() {
       const origText = btn.textContent;
       btn.textContent = translateText('Analyzing...');
       showAnal();
-      
+
       // Pause stream to free ESP32 resources
       const wasStreaming = streamActive;
       if (wasStreaming) {
@@ -4845,7 +5361,7 @@ async function clearAnalyticsData() {
         await new Promise(resolve => setTimeout(resolve, 2000)); // Wait longer for stream to fully stop
         console.log('Stream stopped, ready to capture');
       }
-      
+
       try {
         console.log('Step 1: Triggering capture...');
         console.log('Capture URL:', api('/capture'));
@@ -4854,46 +5370,46 @@ async function clearAnalyticsData() {
         const captureText = await captureResp.text();
         console.log('Capture body:', captureText);
         if (!captureResp.ok) throw Error('Capture failed: ' + captureResp.status + ' ' + captureResp.statusText + ' - ' + captureText);
-        
+
         // Sensors removed; proceed with visual-only capture
         const s = null;
-        
+
         console.log('Step 3: Fetching captured image...');
         console.log('Image URL:', api('/capture.jpg'));
         const imgR = await fetchWithTimeout(api('/capture.jpg'), {}, 20000);
         console.log('Image response:', imgR.status, imgR.statusText);
         if (!imgR.ok) throw Error('Image HTTP ' + imgR.status);
-        
+
         console.log('Step 4: Converting to blob...');
         const blob = await imgR.blob();
         console.log('Blob size:', blob.size, 'bytes');
-        
+
         const reader = new FileReader();
-        reader.onloadend = async function() {
+        reader.onloadend = async function () {
           console.log('Step 5: Converting to base64...');
           const b64 = reader.result.split(',')[1];
           console.log('Base64 length:', b64.length);
-          
+
           // Get filtered models based on selected plant
           const activeModels = getActiveModels();
           console.log('Step 6: Running ' + activeModels.length + ' models for ' + selectedPlantType + '...');
           console.log('Active models:', activeModels.map(m => m.name));
-          
+
           // Run active models simultaneously
           const modelPromises = activeModels.map(model => infer(b64, model));
-          
+
           try {
             const results = await Promise.all(modelPromises);
             console.log('All models completed:', results);
-            
+
             const consensusData = calculateConsensus(results);
-            
+
             // Skip legacy Gemini API call
             geminiRecommendation = null;
-            
+
             // Show results (images are not stored or displayed)
             showMultiModelResults(results, s, consensusData);
-            
+
             // Trigger Firebase AI verification if enabled (pass all model results)
             if (aiAnalysisEnabled && aiEnabled) {
               triggerAIAnalysis(results, b64, s);
@@ -4943,21 +5459,24 @@ async function clearAnalyticsData() {
     }
 
     // Sensors removed — no automatic polling (visual-only mode)
-    
+
     // Load analytics on page load (async from Firebase)
     (async function initializeAnalytics() {
       await loadAnalytics();
       // updateAnalyticsDashboard is now called inside loadAnalytics after data loads
     })();
-    
+
     // Display active models on page load
     displayActiveModels();
-    
+
     // Initialize plant selector on page load
     initPlantSelector();
-    
+
     // Auto-load saved IP or use default, then auto-connect
-    window.addEventListener('DOMContentLoaded', function() {
+    window.addEventListener('DOMContentLoaded', function () {
+      // Load sensor data from Firebase
+      loadSensorData();
+
       // Initialize pump card as disabled (until ESP connects)
       const pumpBtn = document.getElementById('pumpBtn');
       const pumpCard = document.getElementById('pumpCard');
@@ -4971,21 +5490,21 @@ async function clearAnalyticsData() {
       initPumpScheduler();
 
       const savedIP = localStorage.getItem('esp32_ip');
-      
+
       // Auto-migrate old 192.168.1.33 IP to new 10.180.248.33
       // This migration is disabled by default to preserve direct-access AP IPs (e.g. ESP32 default)
       if (ALLOW_AUTO_IP_MIGRATION && savedIP && savedIP.includes('192.168.1.33')) {
         localStorage.setItem('esp32_ip', 'http://10.180.248.33');
         log.info('🔄 Migrated IP from 192.168.1.33 to 10.180.248.33');
       }
-      
+
       const currentIP = localStorage.getItem('esp32_ip') || 'http://10.180.248.33';
       const ipOnly = currentIP.replace('http://', '').replace('https://', '');
       document.getElementById('ipInput').value = ipOnly;
-      
+
       // Ensure BASE_URL is set
       BASE_URL = currentIP;
-      
+
       // Auto-connect after 500ms delay
       setTimeout(() => {
         const ipValue = document.getElementById('ipInput').value;
@@ -4994,7 +5513,7 @@ async function clearAnalyticsData() {
           setIP();
         }
       }, 500);
-      
+
       // Load from Firebase after local data (if Firebase is configured)
       // Wait for Firebase to be ready before trying to load
       if (firebaseReadyPromise) {
@@ -5017,22 +5536,317 @@ async function clearAnalyticsData() {
   <!-- language.js removed (not provided). If you need localization, add language.js back into the web root. -->
   <script>
     // ========== MQTT Configuration ==========
-    const mqtt_broker = 'test.mosquitto.org';
+    const mqtt_broker = 'broker.emqx.io';
     // Use secure websocket (WSS) when page is served over HTTPS to avoid Mixed Content
     const pageIsSecure = location.protocol === 'https:';
-    const mqtt_port = pageIsSecure ? 8081 : 8080; // 8081 => wss, 8080 => ws
+    const mqtt_port = pageIsSecure ? 8084 : 8083; // 8084 => wss, 8083 => ws
     const mqtt_path = '/mqtt';
     const mqtt_use_ssl = pageIsSecure;
     const mqtt_client_id = 'WebAppClient_' + Math.random().toString(16).substr(2, 8);
     const sensor_topic = 'esp32/cam/sensors';
     const command_topic = 'esp32/cam/command';
-    
+
     // Irrigation Control Topics (Device-Side Timer Architecture)
     // Mobile app sends commands → MQTT (retained) → ESP32 executes locally
     // ESP32 continues timer operation even if app is killed or phone is off
     const TOPIC_SCHEDULE = 'irrigation_arnab/pump/schedule';
     const TOPIC_MANUAL = 'irrigation_arnab/pump/manual';
     const TOPIC_STATUS = 'irrigation_arnab/pump/status';
+    const TOPIC_SENSORS = 'irrigation_arnab/sensors/data';
+
+    // ========== Sensor Data Storage ==========
+    let sensorData = {
+      temperature: [],
+      humidity: [],
+      charts: {
+        temperature: null,
+        humidity: null
+      }
+    };
+    let currentSensorFilter = '1d'; // Default filter: 1 day
+
+    // Load sensor data from Firebase on startup
+    async function loadSensorData() {
+      // Wait for Firebase to be ready if it's initializing
+      if (firebaseReadyPromise) {
+        try { await firebaseReadyPromise; } catch (e) { /* ignore */ }
+      }
+
+      if (!firebaseReady || !firebaseEnabled || !db) {
+        console.log('⚠️ Firebase not available for sensor data');
+        return;
+      }
+
+      try {
+        const snapshot = await db.collection('sensorData').orderBy('timestamp', 'asc').get();
+        sensorData.temperature = [];
+        sensorData.humidity = [];
+
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          if (data.temperature !== undefined) {
+            sensorData.temperature.push({
+              value: data.temperature,
+              timestamp: data.timestamp,
+              id: doc.id
+            });
+          }
+          if (data.humidity !== undefined) {
+            sensorData.humidity.push({
+              value: data.humidity,
+              timestamp: data.timestamp,
+              id: doc.id
+            });
+          }
+        });
+
+        console.log(`📊 Loaded ${sensorData.temperature.length} sensor readings from Firebase`);
+        updateSensorCharts();
+      } catch (error) {
+        console.error('Error loading sensor data:', error);
+      }
+    }
+
+    // Save sensor reading to Firebase
+    async function saveSensorReading(temperature, humidity) {
+      if (!firebaseReady || !firebaseEnabled || !db) return;
+
+      try {
+        const timestamp = Date.now();
+        const data = {
+          temperature: temperature,
+          humidity: humidity,
+          timestamp: timestamp,
+          date: new Date(timestamp).toISOString()
+        };
+
+        await db.collection('sensorData').add(data);
+
+        // Add to local array
+        sensorData.temperature.push({ value: temperature, timestamp: timestamp });
+        sensorData.humidity.push({ value: humidity, timestamp: timestamp });
+
+        // Update charts
+        updateSensorCharts();
+      } catch (error) {
+        console.error('Error saving sensor data:', error);
+      }
+    }
+
+    // Filter sensor data based on timeline
+    function filterSensorData(data, filter) {
+      const now = Date.now();
+      let cutoff = 0;
+
+      switch (filter) {
+        case '1d':
+          cutoff = now - (24 * 60 * 60 * 1000); // 1 day
+          break;
+        case '1w':
+          cutoff = now - (7 * 24 * 60 * 60 * 1000); // 1 week
+          break;
+        case '1m':
+          cutoff = now - (30 * 24 * 60 * 60 * 1000); // 1 month
+          break;
+        case '1y':
+          cutoff = now - (365 * 24 * 60 * 60 * 1000); // 1 year
+          break;
+        case 'all':
+        default:
+          return data; // Return all data
+      }
+
+      return data.filter(item => item.timestamp >= cutoff);
+    }
+
+    // Update sensor timeline filter
+    function filterSensorTimeline(filter) {
+      currentSensorFilter = filter;
+
+      // Update active button
+      document.querySelectorAll('[data-filter]').forEach(btn => {
+        if (btn.getAttribute('data-filter') === filter) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      updateSensorCharts();
+    }
+
+    // Update sensor charts
+    function updateSensorCharts() {
+      updateTemperatureChart();
+      updateHumidityChart();
+    }
+
+    // Temperature Chart
+    function updateTemperatureChart() {
+      const canvas = document.getElementById('temperatureChart');
+      if (!canvas) return;
+
+      // Filter data based on current timeline
+      const filteredData = filterSensorData(sensorData.temperature, currentSensorFilter);
+
+      if (filteredData.length === 0) {
+        // Show empty state
+        if (sensorData.charts.temperature) {
+          sensorData.charts.temperature.destroy();
+          sensorData.charts.temperature = null;
+        }
+        return;
+      }
+
+      // Prepare chart data
+      const labels = filteredData.map(item => new Date(item.timestamp).toLocaleString());
+      const values = filteredData.map(item => item.value);
+
+      // Destroy existing chart
+      if (sensorData.charts.temperature) {
+        sensorData.charts.temperature.destroy();
+      }
+
+      // Create new chart
+      sensorData.charts.temperature = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Temperature (°C)',
+            data: values,
+            borderColor: '#EA4335',
+            backgroundColor: 'rgba(234, 67, 53, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 3,
+            pointHoverRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              labels: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface')
+              }
+            },
+            tooltip: {
+              mode: 'index',
+              intersect: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: false,
+              ticks: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface-variant')
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.05)'
+              }
+            },
+            x: {
+              ticks: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface-variant'),
+                maxRotation: 45,
+                minRotation: 45
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.05)'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Humidity Chart
+    function updateHumidityChart() {
+      const canvas = document.getElementById('humidityChart');
+      if (!canvas) return;
+
+      // Filter data based on current timeline
+      const filteredData = filterSensorData(sensorData.humidity, currentSensorFilter);
+
+      if (filteredData.length === 0) {
+        // Show empty state
+        if (sensorData.charts.humidity) {
+          sensorData.charts.humidity.destroy();
+          sensorData.charts.humidity = null;
+        }
+        return;
+      }
+
+      // Prepare chart data
+      const labels = filteredData.map(item => new Date(item.timestamp).toLocaleString());
+      const values = filteredData.map(item => item.value);
+
+      // Destroy existing chart
+      if (sensorData.charts.humidity) {
+        sensorData.charts.humidity.destroy();
+      }
+
+      // Create new chart
+      sensorData.charts.humidity = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Humidity (%)',
+            data: values,
+            borderColor: '#4285F4',
+            backgroundColor: 'rgba(66, 133, 244, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 3,
+            pointHoverRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              labels: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface')
+              }
+            },
+            tooltip: {
+              mode: 'index',
+              intersect: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: false,
+              max: 100,
+              ticks: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface-variant')
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.05)'
+              }
+            },
+            x: {
+              ticks: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface-variant'),
+                maxRotation: 45,
+                minRotation: 45
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.05)'
+              }
+            }
+          }
+        }
+      });
+    }
 
     let pumpOn = false;
     let pendingSchedulePayload = null;
@@ -5087,7 +5901,7 @@ async function clearAnalyticsData() {
 
       client.connect({
         onSuccess: onConnect,
-        onFailure: function(err) {
+        onFailure: function (err) {
           console.error('MQTT connect failed', err);
           // If this was a WSS attempt and fallback is allowed, try a known public WSS broker
           if (useSSL && attemptFallback) {
@@ -5105,15 +5919,17 @@ async function clearAnalyticsData() {
     function onConnect() {
       console.log("Connected to MQTT broker");
       client.subscribe(sensor_topic);
+      // Subscribe to irrigation sensor data topic
+      client.subscribe(TOPIC_SENSORS);
       // Also subscribe to status topic to receive acks from ESP
       client.subscribe('esp32/cam/status');
       // Subscribe to irrigation status (device-side updates)
       client.subscribe(TOPIC_STATUS);
-      console.log('Subscribed to irrigation control topics');
+      console.log('Subscribed to irrigation control topics and sensor data');
       document.getElementById('mqttDot').classList.remove('offline');
       flushPendingIrrigationCommands();
       // document.getElementById('mqttStatus').textContent = 'Online';
-      
+
       // Enable pump controls when MQTT connects (independent of Camera HTTP status)
       const pumpBtn = document.getElementById('pumpBtn');
       const pumpCard = document.getElementById('pumpCard');
@@ -5130,7 +5946,7 @@ async function clearAnalyticsData() {
         const mqttDot = document.getElementById('mqttDot');
         if (mqttDot) mqttDot.classList.add('offline');
         // Maybe try to reconnect here
-        
+
         // Disable pump controls if MQTT is lost
         const pumpBtn = document.getElementById('pumpBtn');
         const pumpCard = document.getElementById('pumpCard');
@@ -5144,7 +5960,44 @@ async function clearAnalyticsData() {
 
     function onMessageArrived(message) {
       const payload = message.payloadString;
-      
+
+      // Handle sensor data from irrigation_arnab/sensors/data
+      if (message.destinationName === TOPIC_SENSORS) {
+        try {
+          const data = JSON.parse(payload);
+          console.log('📊 Sensor Data:', data);
+
+          if (data.temperature !== undefined && data.humidity !== undefined) {
+            showToast(`Sensor Data: ${data.temperature}°C, ${data.humidity}%`, 'success');
+          }
+
+          // Update live display in Monitor tab
+          if (data.temperature !== undefined) {
+            document.getElementById('temperature').innerText = parseFloat(data.temperature).toFixed(1);
+          }
+          if (data.humidity !== undefined) {
+            document.getElementById('humidity').innerText = parseFloat(data.humidity).toFixed(1);
+          }
+
+          // Save to Firebase and update charts
+          if (data.temperature !== undefined && data.humidity !== undefined) {
+            saveSensorReading(data.temperature, data.humidity);
+          }
+
+          // Update Arduino status dot
+          const arduinoDot = document.getElementById('arduinoDot');
+          const arduinoStatus = document.getElementById('arduinoStatus');
+          if (arduinoDot && arduinoStatus) {
+            arduinoDot.classList.remove('offline');
+            arduinoStatus.innerText = translateText('Connected');
+          }
+
+          return;
+        } catch (e) {
+          console.error('Failed to parse sensor data:', e);
+        }
+      }
+
       // Handle irrigation status updates from ESP32
       if (message.destinationName === TOPIC_STATUS) {
         try {
@@ -5156,8 +6009,8 @@ async function clearAnalyticsData() {
           console.error('Failed to parse pump status:', e);
         }
       }
-      
-      // Try JSON sensor update
+
+      // Try JSON sensor update (legacy format)
       if (payload && payload[0] === '{') {
         try {
           const data = JSON.parse(payload);
@@ -5192,7 +6045,7 @@ async function clearAnalyticsData() {
     let activePumpTimer = null;
     let countdownInterval = null;
     let lastScheduleSignature = null;
-    
+
     // Update UI based on ESP32 device-side status
     function updatePumpStatus(status) {
       const btn = document.getElementById('pumpBtn');
@@ -5200,36 +6053,36 @@ async function clearAnalyticsData() {
       const statusText = document.getElementById('pumpStatusText');
       const statusDot = document.getElementById('pumpStatusDot');
       const icon = document.getElementById('pumpIcon');
-      
+
       const isOn = status.pump === 'ON';
       pumpOn = isOn;
-      
+
       if (isOn) {
-        if(btn) {
+        if (btn) {
           btn.innerHTML = '<span class="material-symbols-rounded">stop_circle</span> <span class="translatable">' + translateText('Deactivate Pump') + '</span>';
           btn.className = 'btn err';
         }
-        if(card) card.style.borderLeftColor = 'var(--primary)';
-        if(statusText) statusText.textContent = translateText('ON');
-        if(statusDot) {
+        if (card) card.style.borderLeftColor = 'var(--primary)';
+        if (statusText) statusText.textContent = translateText('ON');
+        if (statusDot) {
           statusDot.style.background = 'var(--success)';
           statusDot.style.boxShadow = '0 0 8px var(--success)';
         }
-        if(icon) icon.style.color = 'var(--primary)';
+        if (icon) icon.style.color = 'var(--primary)';
       } else {
-        if(btn) {
+        if (btn) {
           btn.innerHTML = '<span class="material-symbols-rounded">power_settings_new</span> <span class="translatable">' + translateText('Activate Pump') + '</span>';
           btn.className = 'btn pri';
         }
-        if(card) card.style.borderLeftColor = 'var(--outline-variant)';
-        if(statusText) statusText.textContent = translateText('OFF');
-        if(statusDot) {
+        if (card) card.style.borderLeftColor = 'var(--outline-variant)';
+        if (statusText) statusText.textContent = translateText('OFF');
+        if (statusDot) {
           statusDot.style.background = 'var(--on-surface-variant)';
           statusDot.style.boxShadow = 'none';
         }
-        if(icon) icon.style.color = 'var(--on-surface-variant)';
+        if (icon) icon.style.color = 'var(--on-surface-variant)';
       }
-      
+
       // Show mode and remaining time
       if (status.mode && status.mode !== 'OFF') {
         let timeInfo = '';
@@ -5240,7 +6093,7 @@ async function clearAnalyticsData() {
         } else if (status.on_delay_remaining) {
           timeInfo = 'Starting in ' + status.on_delay_remaining + 's';
         }
-        
+
         if (timeInfo) {
           const cdDisplay = document.getElementById('timerCountdown');
           if (cdDisplay) {
@@ -5286,7 +6139,7 @@ async function clearAnalyticsData() {
           try {
             const last = JSON.parse(lastScheduleSignature);
             if (last.en) showToast('✅ ESP32 Confirmed: Schedule Disabled', 'info');
-          } catch(e) {}
+          } catch (e) { }
         }
       }
       lastScheduleSignature = currentSig;
@@ -5303,24 +6156,24 @@ async function clearAnalyticsData() {
           clearInterval(countdownInterval);
           countdownInterval = null;
           const cd = document.getElementById('timerCountdown');
-          if(cd) cd.style.display = 'none';
+          if (cd) cd.style.display = 'none';
         }
       }
 
       const newState = pumpOn ? 'OFF' : 'ON';
-      
+
       // Send manual override to ESP32 (device-side control)
       const payload = JSON.stringify({
         type: 'MANUAL',
         state: newState
       });
-      
+
       const message = new Paho.MQTT.Message(payload);
       message.destinationName = TOPIC_MANUAL;
       message.retained = true;  // CRITICAL: Retained message for persistence
       console.log('📤 Publishing manual override:', payload, 'to', TOPIC_MANUAL);
       client.send(message);
-      
+
       showToast('Manual ' + newState + ' command sent to ESP32', 'info');
 
       // UI will be updated by ESP32 status messages (device-side control)
@@ -5334,7 +6187,7 @@ async function clearAnalyticsData() {
       // Always load from local storage first as baseline/fallback
       const saved = localStorage.getItem('pumpSchedules');
       if (saved) {
-        try { 
+        try {
           const parsed = JSON.parse(saved);
           // Handle migration from old single object to array
           if (!Array.isArray(parsed) && parsed.time) {
@@ -5342,10 +6195,10 @@ async function clearAnalyticsData() {
           } else {
             pumpSchedules = parsed || [];
           }
-          renderSchedules(); 
-        } catch(e){}
+          renderSchedules();
+        } catch (e) { }
       }
-      
+
       // Check schedule every 10 seconds
       // setInterval(checkPumpSchedule, 10000); // Client-side scheduler disabled to rely on ESP32
     }
@@ -5354,7 +6207,7 @@ async function clearAnalyticsData() {
       const list = document.getElementById('scheduleList');
       if (!list) return;
       list.innerHTML = '';
-      
+
       if (pumpSchedules.length === 0) {
         list.innerHTML = '<div style="font-size:12px; color:var(--on-surface-variant); text-align:center; padding:8px;">No schedules set</div>';
         return;
@@ -5405,16 +6258,16 @@ async function clearAnalyticsData() {
     function setDelayTimer(mode) {
       const mins = parseInt(document.getElementById('delayMinutes').value) || 0;
       if (mins <= 0) return showToast('Invalid duration', 'error');
-      
+
       const cdDisplay = document.getElementById('timerCountdown');
-      
+
       // Helper to start visual countdown
       const startVisualCountdown = (label) => {
-        if(countdownInterval) clearInterval(countdownInterval);
-        if(cdDisplay) {
+        if (countdownInterval) clearInterval(countdownInterval);
+        if (cdDisplay) {
           cdDisplay.style.display = 'block';
           let seconds = mins * 60;
-          
+
           const update = () => {
             const m = Math.floor(seconds / 60);
             const s = seconds % 60;
@@ -5423,9 +6276,9 @@ async function clearAnalyticsData() {
                 <span>⏳ <span class="translatable">${label}</span>: ${m}m ${s}s</span>
                 <button onclick="cancelTimer()" style="background: rgba(0,0,0,0.1); border: 1px solid currentColor; color: inherit; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 4px;"><span class="material-symbols-rounded" style="font-size: 14px;">close</span> Cancel</button>
               </div>`;
-            if(seconds <= 0) {
-               clearInterval(countdownInterval);
-               cdDisplay.style.display = 'none';
+            if (seconds <= 0) {
+              clearInterval(countdownInterval);
+              cdDisplay.style.display = 'none';
             }
             seconds--;
           };
@@ -5435,11 +6288,11 @@ async function clearAnalyticsData() {
       };
 
       console.log(`[Timer] Setting quick timer: Mode=${mode}, Duration=${mins} mins`);
-      
+
       // Send QUICK_TIMER message to ESP32 (device-side execution)
       let onDelaySec = 0;
       let offDelayMin = mins;
-      
+
       let toastMsg = '';
       let toastType = 'info';
       let countdownLabel = '';
@@ -5466,7 +6319,7 @@ async function clearAnalyticsData() {
         toastType = 'info';
         countdownLabel = 'Stopping in';
       }
-      
+
       const payload = JSON.stringify({
         type: 'QUICK_TIMER',
         on_delay_sec: onDelaySec,
@@ -5480,7 +6333,7 @@ async function clearAnalyticsData() {
       console.log('📤 Publishing quick timer:', payload);
       showToast(toastMsg, toastType);
       startVisualCountdown(countdownLabel);
-      
+
       // Note: Timer runs on ESP32 - no local countdown needed
       // ESP32 will send status updates via TOPIC_STATUS
     }
@@ -5495,8 +6348,8 @@ async function clearAnalyticsData() {
         countdownInterval = null;
       }
       const cd = document.getElementById('timerCountdown');
-      if(cd) cd.style.display = 'none';
-      
+      if (cd) cd.style.display = 'none';
+
       // Send command to cancel device timer (Force OFF)
       if (client && client.isConnected()) {
         const payload = JSON.stringify({ type: 'MANUAL', state: 'OFF' });
@@ -5505,36 +6358,36 @@ async function clearAnalyticsData() {
         message.retained = true;
         client.send(message);
       }
-      
+
       showToast('Timer cancelled', 'info');
     }
 
     function savePumpSchedules() {
       localStorage.setItem('pumpSchedules', JSON.stringify(pumpSchedules));
-      
+
       // Send first enabled schedule to ESP32 (device-side execution)
       const enabledSchedule = pumpSchedules.find(s => s.enabled);
-      
+
       if (!enabledSchedule) {
         // No enabled schedules - send disable message to ESP32
         const payload = JSON.stringify({
           type: 'SCHEDULE',
           enabled: false
         });
-        
+
         if (!publishIrrigationMessage(TOPIC_SCHEDULE, payload, { retained: true, qos: 1, queueKey: 'schedule' })) {
           return;
         }
-        
+
         showToast('All schedules disabled', 'info');
         console.log('📡 Disabled schedule on ESP32');
         return;
       }
-      
+
       // Ensure time is strictly HH:MM (5 chars) for ESP32 parser
       let timeStr = enabledSchedule.time || '08:00';
       if (timeStr.length === 4) timeStr = '0' + timeStr; // Fix 8:00 -> 08:00
-      
+
       // Ensure duration is a valid integer
       const duration = parseInt(enabledSchedule.duration) || 5;
 
@@ -5549,7 +6402,7 @@ async function clearAnalyticsData() {
       if (!publishIrrigationMessage(TOPIC_SCHEDULE, payload, { retained: true, qos: 1, queueKey: 'schedule' })) {
         return;
       }
-      
+
       showToast(`Schedule set: ${timeStr} for ${duration}m`, 'success');
       console.log('📡 Sent schedule to ESP32:', payload);
     }
@@ -5560,25 +6413,25 @@ async function clearAnalyticsData() {
         // console.log('🕒 Scheduler: No schedules active');
         return;
       }
-      
+
       const now = new Date();
       const currentTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
       const todayDate = now.toDateString();
 
       console.log(`🕒 Scheduler Check: Current Time=${currentTime}, Active Schedules=${pumpSchedules.length}`);
-      
+
       pumpSchedules.forEach(sch => {
         if (!sch.enabled) return;
-        
+
         // Trigger only once per day at the specific time
         if (sch.time === currentTime && sch.lastTriggered !== todayDate) {
           sch.lastTriggered = todayDate;
-          
+
           if (!pumpOn) {
             console.log('✅ ⏰ Schedule MATCHED for time:', sch.time, '| Duration:', sch.duration);
             togglePump('auto'); // Turn ON
             showToast('Scheduled watering started (' + sch.duration + ' min)', 'info');
-            
+
             // Auto-off timer
             if (activePumpTimer) clearTimeout(activePumpTimer);
             activePumpTimer = setTimeout(() => {

@@ -24,13 +24,14 @@
 // ========== WIFI & MQTT CONFIGURATION ==========
 const char* ssid = "Arnabmandal";
 const char* password = "hm403496";
-const char* mqtt_server = "test.mosquitto.org";
+const char* mqtt_server = "broker.emqx.io";
 const int mqtt_port = 1883;
 
 // MQTT Topics (using retained messages for persistence)
 const char* TOPIC_SCHEDULE = "irrigation_arnab/pump/schedule";
 const char* TOPIC_MANUAL = "irrigation_arnab/pump/manual";
 const char* TOPIC_STATUS = "irrigation_arnab/pump/status";
+const char* TOPIC_SENSORS = "irrigation_arnab/sensors/data";
 
 // NTP Configuration
 const char* ntpServer = "pool.ntp.org";
@@ -49,9 +50,9 @@ volatile uint32_t g_streamOwner = 0;
 volatile uint32_t g_streamRequested = 0;
 static const bool SERIAL_DEBUG = false;
 
-// Logging helpers - Use Serial1 for debug to keep Serial clean for Arduino
-#define LOG_INFO(fmt, ...) do { Serial1.printf((fmt), ##__VA_ARGS__); } while(0)
-#define LOG_DBG(fmt, ...) if (SERIAL_DEBUG) Serial1.printf((fmt), ##__VA_ARGS__)
+// Logging helpers - Use Serial (USB) for debug
+#define LOG_INFO(fmt, ...) do { Serial.printf((fmt), ##__VA_ARGS__); } while(0)
+#define LOG_DBG(fmt, ...) if (SERIAL_DEBUG) Serial.printf((fmt), ##__VA_ARGS__)
 
 // ========== PIN DEFINITIONS ==========
 #define RELAY_PIN         12  // Active-LOW relay (LOW = ON, HIGH = OFF)
@@ -116,6 +117,12 @@ unsigned long lastMqttReconnect = 0;
 unsigned long lastStatusPublish = 0;
 bool quickTimerRestored = false;
 
+// Sensor data from Arduino
+float currentTemperature = 0.0;
+float currentHumidity = 0.0;
+bool sensorDataValid = false;
+unsigned long lastSensorPublish = 0;
+
 // ========== FUNCTION DECLARATIONS ==========
 bool initCamera();
 void setupWiFi();
@@ -133,12 +140,18 @@ static uint32_t clientId(const WiFiClient &c);
 void restoreQuickTimerFromPrefs();
 void clearQuickTimerPrefs();
 void restoreScheduleFromPrefs();
+void readArduinoSerial();
+void publishSensorData();
 
 // ============ SETUP ============
 void setup() {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
-  Serial.begin(115200);   // Clean channel for Arduino commands
-  Serial1.begin(115200);  // Debug output on GPIO2 (U0TXD alternate)
+  Serial.begin(115200);   // USB Serial Monitor (Debug)
+  // Serial1.begin(115200);  // Debug output on GPIO2 (U0TXD alternate) - REMOVED to free pins if needed
+  
+  // Initialize Serial2 for Arduino Communication
+  // RX = GPIO 14, TX = GPIO 15
+  Serial2.begin(9600, SERIAL_8N1, 14, 15);
   
   LOG_INFO("\n\n========================================\n");
   LOG_INFO("ESP32-CAM Irrigation System Starting\n");
@@ -148,7 +161,7 @@ void setup() {
   pinMode(RELAY_PIN, OUTPUT);
   digitalWrite(RELAY_PIN, HIGH);  // Ensure pump is OFF at boot
   pumpPhysicalState = false;
-  Serial.println("PUMP_OFF");  // Send initial OFF command to Arduino
+  Serial2.println("PUMP_OFF");  // Send initial OFF command to Arduino
   delay(100);  // Give Arduino time to process
   LOG_INFO("Relay initialized (OFF)\n");
 
@@ -187,13 +200,16 @@ void setup() {
   server.begin();
   LOG_INFO("HTTP server started\n");
   LOG_INFO("System ready!\n");
-  Serial.println("SYSTEM_READY");  // Send status to Serial
+  Serial2.println("SYSTEM_READY");  // Send status to Serial2
 }
 
 // ============ MAIN LOOP ============
 void loop() {
   // Handle HTTP requests (non-blocking)
   server.handleClient();
+
+  // Read sensor data from Arduino via Serial2 (Pins 14/15)
+  readArduinoSerial();
 
   // Maintain MQTT connection
   if (WiFi.status() == WL_CONNECTED) {
@@ -222,10 +238,16 @@ void loop() {
   // This ensures pump control continues even without MQTT messages
   processTimerLogic();
 
-  // Publish status periodically (every 10 seconds)
-  if (millis() - lastStatusPublish > 10000) {
+  // Publish status periodically (every 60 seconds)
+  if (millis() - lastStatusPublish > 60000) {
     publishStatus();
     lastStatusPublish = millis();
+  }
+
+  // Publish sensor data periodically (every 60 seconds)
+  if (sensorDataValid && millis() - lastSensorPublish > 60000) {
+    publishSensorData();
+    lastSensorPublish = millis();
   }
 
   yield();  // Let ESP32 background tasks run
@@ -246,12 +268,12 @@ void setupWiFi() {
   
   if (WiFi.status() == WL_CONNECTED) {
     LOG_INFO("\nWiFi connected! IP: %s\n", WiFi.localIP().toString().c_str());
-    // Send status to Serial so Arduino can see it
-    Serial.print("WIFI_OK:");
-    Serial.println(WiFi.localIP().toString());
+    // Send status to Serial2 so Arduino can see it
+    Serial2.print("WIFI_OK:");
+    Serial2.println(WiFi.localIP().toString());
   } else {
     LOG_INFO("\nWiFi connection failed!\n");
-    Serial.println("WIFI_FAILED");
+    Serial2.println("WIFI_FAILED");
   }
 }
 
@@ -399,10 +421,11 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 // ========== MQTT RECONNECT (NON-BLOCKING) ==========
 void mqttReconnect() {
   LOG_INFO("Attempting MQTT connection...\n");
+  Serial.println("MQTT_CONNECTING...");  // Debug: show attempt
   
   if (mqttClient.connect("ESP32-CAM-Irrigation")) {
     LOG_INFO("MQTT connected!\n");
-    Serial.println("MQTT_OK");  // Send status to Serial
+    Serial2.println("MQTT_OK");  // Send status to Serial2
     
     // Subscribe to control topics
     mqttClient.subscribe(TOPIC_SCHEDULE, 1);  // QoS 1 for reliability
@@ -414,6 +437,8 @@ void mqttReconnect() {
     publishStatus();
   } else {
     LOG_INFO("MQTT connect failed, state=%d\n", mqttClient.state());
+    Serial2.print("MQTT_FAILED:");
+    Serial2.println(mqttClient.state());  // Debug: show error code
   }
 }
 
@@ -508,11 +533,11 @@ void setPumpState(bool state, const char* reason) {
   pumpPhysicalState = state;
   
   if (state) {
-    Serial.println("PUMP_ON");      // Send command to Arduino
+    Serial2.println("PUMP_ON");      // Send command to Arduino
     digitalWrite(RELAY_PIN, LOW);   // Turn ON (Active-LOW backup)
     LOG_INFO("PUMP ON (%s)\n", reason);
   } else {
-    Serial.println("PUMP_OFF");     // Send command to Arduino
+    Serial2.println("PUMP_OFF");     // Send command to Arduino
     digitalWrite(RELAY_PIN, HIGH);  // Turn OFF (backup)
     LOG_INFO("PUMP OFF (%s)\n", reason);
   }
@@ -645,6 +670,84 @@ void restoreQuickTimerFromPrefs() {
 
   LOG_INFO("Quick Timer restored: ON in %u sec, OFF after %u min (elapsed %u sec)\n",
            quickTimer.onDelaySec, quickTimer.offDelayMin, elapsed);
+}
+
+// ========== READ SENSOR DATA FROM ARDUINO ==========
+void readArduinoSerial() {
+  static char buffer[64];
+  static uint8_t bufferIndex = 0;
+  
+  while (Serial2.available()) {
+    char c = Serial2.read();
+    
+    // ECHO to USB Serial for debugging
+    // This allows the user to see exactly what the Arduino is sending
+    Serial.print(c); 
+    
+    // Skip carriage return
+    if (c == '\r') continue;
+    
+    if (c == '\n') {
+      buffer[bufferIndex] = '\0';
+      
+      // Parse sensor data: SENSOR:temp,humidity
+      if (strncmp(buffer, "SENSOR:", 7) == 0) {
+        if (strcmp(buffer + 7, "ERROR") == 0) {
+          sensorDataValid = false;
+          LOG_INFO("\nSensor read error\n");
+        } else {
+          // Parse temperature and humidity
+          char* token = strtok(buffer + 7, ",");
+          if (token != NULL) {
+            currentTemperature = atof(token);
+            token = strtok(NULL, ",");
+            if (token != NULL) {
+              currentHumidity = atof(token);
+              sensorDataValid = true;
+              LOG_INFO("\nSensor: Temp=%.1fC, Humidity=%.1f%%\n", 
+                       currentTemperature, currentHumidity);
+              // Send to Serial for debugging / plotting support
+              Serial.print("SENSOR_PARSED:");
+              Serial.print(currentTemperature, 1);
+              Serial.print(",");
+              Serial.println(currentHumidity, 1);
+            }
+          }
+        }
+      }
+      
+      bufferIndex = 0;
+    } else if (bufferIndex < sizeof(buffer) - 1) {
+      buffer[bufferIndex++] = c;
+    } else {
+      // Buffer overflow, reset
+      bufferIndex = 0;
+    }
+  }
+}
+
+// ========== PUBLISH SENSOR DATA TO MQTT ==========
+void publishSensorData() {
+  if (!mqttClient.connected() || !sensorDataValid) return;
+  
+  StaticJsonDocument<128> doc;
+  doc["temperature"] = currentTemperature;
+  doc["humidity"] = currentHumidity;
+  
+  // Add timestamp if NTP is synced
+  if (ntpSynced) {
+    time_t now;
+    time(&now);
+    doc["timestamp"] = now;
+  }
+  
+  char buffer[128];
+  serializeJson(doc, buffer);
+  mqttClient.publish(TOPIC_SENSORS, buffer, false);
+  
+  LOG_INFO("Published sensor data: %.1fC, %.1f%%\n", 
+           currentTemperature, currentHumidity);
+  Serial.println("SENSOR_PUBLISHED");  // Debug: confirm MQTT publish
 }
 
 // ============ CAMERA INIT ============

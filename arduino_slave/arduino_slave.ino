@@ -1,16 +1,30 @@
-// Communication with ESP32 will be over the main hardware serial port (TX/RX pins 0, 1)
+// Communication with ESP32 will be over SoftwareSerial (Pins 8, 9)
+// Hardware Serial (Pins 0, 1) will be used for Debugging
 #include <Arduino.h>
 #include <string.h>
+#include <DHT.h>
+#include <SoftwareSerial.h>
 
-// SoftwareSerial espSerial(rxPin, txPin); // RX, TX
+// RX=8, TX=9
+SoftwareSerial espSerial(8, 9);
+
+// DHT22 Sensor
+#define DHTPIN 4          // DHT22 connected to pin 4
+#define DHTTYPE DHT22     // DHT22 (AM2302)
+DHT dht(DHTPIN, DHTTYPE);
 
 // Actuator pin
 const int pumpPin = 10; // Water pump connected to pin 10
 
 void setup() {
-  // Start the hardware serial for communication with ESP32
-  // Match baud with ESP32 firmware (115200)
+  // Start the hardware serial for debugging
   Serial.begin(115200);
+
+  // Start SoftwareSerial for ESP32 communication at 9600 baud (More reliable for SoftSerial)
+  espSerial.begin(9600);
+
+  // Initialize DHT22 sensor
+  dht.begin();
 
   // Debug startup message
   Serial.println("ARDUINO: started, awaiting commands");
@@ -22,7 +36,9 @@ void setup() {
 
 // Small, heap-free serial command parser
 const unsigned long ALIVE_INTERVAL_MS = 5000;
+const unsigned long SENSOR_INTERVAL_MS = 60000; // Read sensor every 60 seconds
 static unsigned long lastAliveMillis = 0;
+static unsigned long lastSensorMillis = 0;
 char cmdBuf[64];
 size_t cmdLen = 0;
 
@@ -41,7 +57,7 @@ void handleCommand(const char *cmd) {
   memcpy(t, s, copyLen);
   t[copyLen] = '\0';
 
-  Serial.print("CMD RX: "); Serial.println(t);
+  Serial.print("CMD RX: "); Serial.println(t); // Debug to PC
 
   if (strcmp(t, "PUMP_ON") == 0) {
     digitalWrite(pumpPin, HIGH);
@@ -63,8 +79,8 @@ void handleCommand(const char *cmd) {
 
 void loop() {
   // Non-blocking read of serial data into cmdBuf
-  while (Serial.available()) {
-    int c = Serial.read();
+  while (espSerial.available()) {
+    int c = espSerial.read();
     if (c < 0) break;
     if (c == '\r') continue; // ignore CR
     if (c == '\n') {
@@ -81,10 +97,29 @@ void loop() {
     }
   }
 
-  // Periodic presence ping (rate-limited)
+  // Read and send sensor data every 60 seconds
   unsigned long now = millis();
-  if (now - lastAliveMillis >= ALIVE_INTERVAL_MS) {
-    Serial.println("ARDUINO_ALIVE");
-    lastAliveMillis = now;
+  if (now - lastSensorMillis >= SENSOR_INTERVAL_MS) {
+    float humidity = dht.readHumidity();
+    float temperature = dht.readTemperature();
+
+    // Check if readings are valid
+    if (!isnan(humidity) && !isnan(temperature)) {
+      // Send sensor data in format: SENSOR:temp,humidity
+      espSerial.print("SENSOR:");
+      espSerial.print(temperature, 1);
+      espSerial.print(",");
+      espSerial.println(humidity, 1);
+      
+      // Duplicate to USB for debugging
+      Serial.print("DEBUG TX: SENSOR:");
+      Serial.print(temperature, 1);
+      Serial.print(",");
+      Serial.println(humidity, 1);
+    } else {
+      espSerial.println("SENSOR:ERROR");
+      Serial.println("DEBUG: Sensor read error");
+    }
+    lastSensorMillis = now;
   }
 }
