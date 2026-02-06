@@ -1994,6 +1994,11 @@
             <div class="v" id="soilMoisture">--</div>
             <div class="u"></div>
           </div>
+          <div class="sc">
+            <div class="l translatable">Soil Temperature</div>
+            <div class="v" id="soilTemperature">--</div>
+            <div class="u">°C</div>
+          </div>
         </div>
       </article>
     </div>
@@ -2048,6 +2053,18 @@
           </h3>
           <div style="position: relative; height: 300px; width: 100%;">
             <canvas id="moistureChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Soil Temperature Chart -->
+        <div class="card" style="padding: 20px; margin-bottom: 16px;">
+          <h3
+            style="font-size: 16px; margin: 0 0 16px 0; color: var(--primary); font-weight: 600; display: flex; align-items: center; gap: 8px;">
+            <span class="material-symbols-rounded">device_thermostat</span>
+            <span class="translatable">Soil Temperature History</span>
+          </h3>
+          <div style="position: relative; height: 300px; width: 100%;">
+            <canvas id="soilTemperatureChart"></canvas>
           </div>
         </div>
       </article>
@@ -5646,10 +5663,12 @@
       temperature: [],
       humidity: [],
       moisture: [],
+      soilTemperature: [],
       charts: {
         temperature: null,
         humidity: null,
-        moisture: null
+        moisture: null,
+        soilTemperature: null
       }
     };
     let currentSensorFilter = '1d'; // Default filter: 1 day
@@ -5670,6 +5689,8 @@
         const snapshot = await db.collection('sensorData').orderBy('timestamp', 'asc').get();
         sensorData.temperature = [];
         sensorData.humidity = [];
+        sensorData.moisture = [];
+        sensorData.soilTemperature = [];
 
         snapshot.forEach(doc => {
           const data = doc.data();
@@ -5694,6 +5715,13 @@
               id: doc.id
             });
           }
+          if (data.soilTemperature !== undefined) {
+            sensorData.soilTemperature.push({
+              value: data.soilTemperature,
+              timestamp: data.timestamp,
+              id: doc.id
+            });
+          }
         });
 
         console.log(`📊 Loaded ${sensorData.temperature.length} sensor readings from Firebase`);
@@ -5704,34 +5732,39 @@
     }
 
     // Save sensor reading to Firebase
-    async function saveSensorReading(temperature, humidity, moisture) {
-      if (!firebaseReady || !firebaseEnabled || !db) return;
+    // Save sensor reading (Local + Firebase)
+    async function saveSensorReading(temperature, humidity, moisture, soilTemperature) {
+      const timestamp = Date.now();
 
+      // 1. Update local arrays (always)
+      if (temperature !== undefined) sensorData.temperature.push({ value: temperature, timestamp: timestamp });
+      if (humidity !== undefined) sensorData.humidity.push({ value: humidity, timestamp: timestamp });
+      if (moisture !== undefined) sensorData.moisture.push({ value: moisture, timestamp: timestamp });
+      if (soilTemperature !== undefined) sensorData.soilTemperature.push({ value: soilTemperature, timestamp: timestamp });
+
+      // 2. Update charts immediately
       try {
-        const timestamp = Date.now();
-        const data = {
-          temperature: temperature,
-          humidity: humidity,
-          timestamp: timestamp,
-          date: new Date(timestamp).toISOString()
-        };
-        if (moisture !== undefined) {
-          data.moisture = moisture;
-        }
-
-        await db.collection('sensorData').add(data);
-
-        // Add to local array
-        sensorData.temperature.push({ value: temperature, timestamp: timestamp });
-        sensorData.humidity.push({ value: humidity, timestamp: timestamp });
-        if (moisture !== undefined) {
-          sensorData.moisture.push({ value: moisture, timestamp: timestamp });
-        }
-
-        // Update charts
         updateSensorCharts();
-      } catch (error) {
-        console.error('Error saving sensor data:', error);
+      } catch (e) {
+        console.error('Error updating charts:', e);
+      }
+
+      // 3. Save to Firebase (if available)
+      if (firebaseReady && firebaseEnabled && db) {
+        try {
+          const data = {
+            temperature: temperature,
+            humidity: humidity,
+            timestamp: timestamp,
+            date: new Date(timestamp).toISOString()
+          };
+          if (moisture !== undefined) data.moisture = moisture;
+          if (soilTemperature !== undefined) data.soilTemperature = soilTemperature;
+
+          await db.collection('sensorData').add(data);
+        } catch (error) {
+          console.error('Error saving sensor data to Firebase:', error);
+        }
       }
     }
 
@@ -5794,6 +5827,7 @@
       updateTemperatureChart();
       updateHumidityChart();
       updateMoistureChart();
+      updateSoilTemperatureChart();
     }
 
     // Load sensor data from Firebase (History)
@@ -5811,18 +5845,23 @@
 
         if (readings.length > 0) {
           readings.forEach(data => {
-            if (data.temperature) sensorData.temperature.push({ value: data.temperature, timestamp: data.timestamp });
-            if (data.humidity) sensorData.humidity.push({ value: data.humidity, timestamp: data.timestamp });
-            if (data.moisture) sensorData.moisture.push({ value: data.moisture, timestamp: data.timestamp });
+            if (data.temperature !== undefined) sensorData.temperature.push({ value: data.temperature, timestamp: data.timestamp });
+            if (data.humidity !== undefined) sensorData.humidity.push({ value: data.humidity, timestamp: data.timestamp });
+            if (data.moisture !== undefined) sensorData.moisture.push({ value: data.moisture, timestamp: data.timestamp });
+            if (data.soilTemperature !== undefined) sensorData.soilTemperature.push({ value: data.soilTemperature, timestamp: data.timestamp });
           });
 
           const latest = readings[readings.length - 1];
-          if (latest.temperature) document.getElementById('temperature').innerText = latest.temperature.toFixed(1);
-          if (latest.humidity) document.getElementById('humidity').innerText = latest.humidity.toFixed(1);
-          if (latest.moisture) {
+          if (latest.temperature !== undefined) document.getElementById('temperature').innerText = latest.temperature.toFixed(1);
+          if (latest.humidity !== undefined) document.getElementById('humidity').innerText = latest.humidity.toFixed(1);
+          if (latest.moisture !== undefined) {
             let mEl = document.getElementById('soilMoisture');
             if (!mEl) mEl = document.getElementById('moisture');
             if (mEl) mEl.innerText = latest.moisture + '%';
+          }
+          if (latest.soilTemperature !== undefined) {
+            const stEl = document.getElementById('soilTemperature');
+            if (stEl) stEl.innerText = latest.soilTemperature.toFixed(1);
           }
 
           updateSensorCharts();
@@ -6111,6 +6150,89 @@
       });
     }
 
+    // Soil Temperature Chart
+    function updateSoilTemperatureChart() {
+      const canvas = document.getElementById('soilTemperatureChart');
+      if (!canvas) return;
+
+      // Filter data based on current timeline
+      const filteredData = filterSensorData(sensorData.soilTemperature, currentSensorFilter);
+
+      if (filteredData.length === 0) {
+        // Show empty state
+        if (sensorData.charts.soilTemperature) {
+          sensorData.charts.soilTemperature.destroy();
+          sensorData.charts.soilTemperature = null;
+        }
+        return;
+      }
+
+      // Prepare chart data
+      const labels = filteredData.map(item => new Date(item.timestamp).toLocaleString());
+      const values = filteredData.map(item => item.value);
+
+      // Destroy existing chart
+      if (sensorData.charts.soilTemperature) {
+        sensorData.charts.soilTemperature.destroy();
+      }
+
+      // Create new chart
+      sensorData.charts.soilTemperature = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Soil Temperature (°C)',
+            data: values,
+            borderColor: '#8D6E63', // Earthy brown
+            backgroundColor: 'rgba(141, 110, 99, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 3,
+            pointHoverRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              labels: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface')
+              }
+            },
+            tooltip: {
+              mode: 'index',
+              intersect: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: false,
+              ticks: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface-variant')
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.05)'
+              }
+            },
+            x: {
+              ticks: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface-variant'),
+                maxRotation: 45,
+                minRotation: 45
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.05)'
+              }
+            }
+          }
+        }
+      });
+    }
+
     let pumpOn = false;
     let autoModeEnabled = false;
     const TOPIC_AUTO = 'irrigation_arnab/pump/auto';
@@ -6246,6 +6368,7 @@
           if (data.temperature !== undefined && data.humidity !== undefined) {
             let msg = `Sensor Data: ${data.temperature}°C, ${data.humidity}%`;
             if (data.moisture !== undefined) msg += `, ${data.moisture}%`;
+            if (data.soilTemperature !== undefined) msg += `, Soil: ${data.soilTemperature}°C`;
             showToast(msg, 'success');
           }
 
@@ -6263,11 +6386,15 @@
 
             if (mEl) mEl.innerText = data.moisture + '%';
           }
+          if (data.soilTemperature !== undefined) {
+            const stEl = document.getElementById('soilTemperature');
+            if (stEl) stEl.innerText = parseFloat(data.soilTemperature).toFixed(1);
+          }
 
           // Save to Firebase and update charts
           if (data.temperature !== undefined && data.humidity !== undefined) {
             try {
-              saveSensorReading(data.temperature, data.humidity, data.moisture);
+              saveSensorReading(data.temperature, data.humidity, data.moisture, data.soilTemperature);
             } catch (e) {
               console.error('❌ saveSensorReading error:', e);
             }
@@ -6311,6 +6438,15 @@
           if (data.temperature !== undefined) document.getElementById('temperature').innerText = parseFloat(data.temperature).toFixed(1);
           if (data.humidity !== undefined) document.getElementById('humidity').innerText = parseFloat(data.humidity).toFixed(1);
           if (data.soilMoisture !== undefined) document.getElementById('soilMoisture').innerText = data.soilMoisture + '%';
+          if (data.soilTemperature !== undefined) {
+            const soilTempEl = document.getElementById('soilTemperature');
+            if (soilTempEl) soilTempEl.innerText = parseFloat(data.soilTemperature).toFixed(1);
+          }
+
+          // Save to Firebase
+          if (data.temperature !== undefined && data.humidity !== undefined) {
+            saveSensorReading(data.temperature, data.humidity, data.soilMoisture, data.soilTemperature);
+          }
 
           const arduinoDot = document.getElementById('arduinoDot');
           const arduinoStatus = document.getElementById('arduinoStatus');
@@ -6341,7 +6477,7 @@
     let lastScheduleSignature = null;
 
     // Save sensor reading to Firebase and update local charts
-    function saveSensorReading(temp, hum, moist) {
+    function saveSensorReading(temp, hum, moist, soilTemp) {
       const now = Date.now();
       const timestamp = new Date().toISOString();
 
@@ -6363,12 +6499,16 @@
       // Current frequency is 60s. Saving every reading is fine for this scale.
       if (firebaseEnabled && auth.currentUser) {
         const db = firebase.firestore();
-        db.collection("sensors").add({
-          temperature: parseFloat(temp),
-          humidity: parseFloat(hum),
-          moisture: parseFloat(moist || 0),
+        const sensorDoc = {
+          temperature: temp !== undefined ? parseFloat(temp) : null,
+          humidity: hum !== undefined ? parseFloat(hum) : null,
+          moisture: moist !== undefined ? parseFloat(moist) : null,
+          soilTemperature: soilTemp !== undefined ? parseFloat(soilTemp) : null,
           timestamp: timestamp
-        }).catch(e => console.error("Error saving to DB:", e));
+        };
+        db.collection("sensors").add(sensorDoc)
+          .then(() => console.log("✅ Saved sensor data to Firebase:", sensorDoc))
+          .catch(e => console.error("❌ Error saving to Firebase:", e));
       }
     }
 

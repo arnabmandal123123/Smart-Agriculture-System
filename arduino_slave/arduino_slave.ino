@@ -4,6 +4,8 @@
 #include <string.h>
 #include <DHT.h>
 #include <SoftwareSerial.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
 
 // RX=8, TX=9
 SoftwareSerial espSerial(8, 9);
@@ -12,6 +14,11 @@ SoftwareSerial espSerial(8, 9);
 #define DHTPIN 4          // DHT22 connected to pin 4
 #define DHTTYPE DHT22     // DHT22 (AM2302)
 DHT dht(DHTPIN, DHTTYPE);
+
+// DS18B20 Soil Temperature Sensor
+#define ONE_WIRE_BUS 3
+OneWire oneWire(ONE_WIRE_BUS);
+DallasTemperature sensors(&oneWire);
 
 // Moisture Sensor
 const int MOISTURE_PIN = A3;
@@ -32,6 +39,9 @@ void setup() {
 
   // Initialize DHT22 sensor
   dht.begin();
+
+  // Initialize DS18B20 sensor
+  sensors.begin();
 
   // Debug startup message
   Serial.println("ARDUINO: started, awaiting commands");
@@ -110,6 +120,10 @@ void loop() {
     float humidity = dht.readHumidity();
     float temperature = dht.readTemperature();
     
+    // Read Soil Temperature
+    sensors.requestTemperatures(); 
+    float soilTemp = sensors.getTempCByIndex(0);
+    
     // Read Moisture
     int moistureRaw = analogRead(MOISTURE_PIN);
     int moisturePercent = map(moistureRaw, AIR_VALUE, WATER_VALUE, 0, 100);
@@ -117,7 +131,7 @@ void loop() {
 
     // Check if readings are valid
     if (!isnan(humidity) && !isnan(temperature)) {
-      // Send sensor data in format: SENSOR:temp,humidity,moisture
+      // Send sensor data in format: SENSOR:temp,humidity,moisture,rawMoisture,soilTemp
       espSerial.print("SENSOR:");
       espSerial.print(temperature, 1);
       espSerial.print(",");
@@ -125,7 +139,9 @@ void loop() {
       espSerial.print(",");
       espSerial.print(moisturePercent);
       espSerial.print(",");
-      espSerial.println(moistureRaw);
+      espSerial.print(moistureRaw);
+      espSerial.print(",");
+      espSerial.println(soilTemp, 1);
       
       // Duplicate to USB for debugging
       Serial.print("DEBUG TX: SENSOR:");
@@ -135,7 +151,9 @@ void loop() {
       Serial.print(",");
       Serial.print(moisturePercent);
       Serial.print(",");
-      Serial.println(moistureRaw);
+      Serial.print(moistureRaw);
+      Serial.print(",");
+      Serial.println(soilTemp, 1);
     } else {
       espSerial.println("SENSOR:ERROR");
       Serial.println("DEBUG: Sensor read error");

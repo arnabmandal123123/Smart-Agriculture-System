@@ -130,6 +130,7 @@ float currentTemperature = 0.0;
 float currentHumidity = 0.0;
 int currentMoisture = 0;
 int currentMoistureRaw = 0;
+float currentSoilTemperature = 0.0;
 bool sensorDataValid = false;
 unsigned long lastSensorPublish = 0;
 
@@ -799,17 +800,27 @@ void readArduinoSerial() {
                 token = strtok(NULL, ",");
                 if (token != NULL) {
                   currentMoistureRaw = atoi(token);
+                  
+                  // Parse Soil Temperature
+                  token = strtok(NULL, ",");
+                  if (token != NULL) {
+                    currentSoilTemperature = atof(token);
+                  } else {
+                    currentSoilTemperature = 0.0;
+                  }
                 } else {
                   currentMoistureRaw = 0;
+                  currentSoilTemperature = 0.0;
                 }
               } else {
                 currentMoisture = 0;
                 currentMoistureRaw = 0;
+                currentSoilTemperature = 0.0;
               }
 
               sensorDataValid = true;
-              LOG_INFO("\nSensor: Temp=%.1fC, Humidity=%.1f%%, Moisture=%d%%, Raw=%d\n", 
-                       currentTemperature, currentHumidity, currentMoisture, currentMoistureRaw);
+              LOG_INFO("\nSensor: Temp=%.1fC, Humidity=%.1f%%, Moisture=%d%%, Raw=%d, SoilTemp=%.1fC\n", 
+                       currentTemperature, currentHumidity, currentMoisture, currentMoistureRaw, currentSoilTemperature);
               
               // Send to Serial for debugging / plotting support
               Serial.print("SENSOR_PARSED:");
@@ -817,7 +828,9 @@ void readArduinoSerial() {
               Serial.print(",");
               Serial.print(currentHumidity, 1);
               Serial.print(",");
-              Serial.println(currentMoisture);
+              Serial.print(currentMoisture);
+              Serial.print(",");
+              Serial.println(currentSoilTemperature, 1);
             }
           }
         }
@@ -841,6 +854,7 @@ void publishSensorData() {
   doc["temperature"] = currentTemperature;
   doc["humidity"] = currentHumidity;
   doc["moisture"] = currentMoisture;
+  doc["soilTemperature"] = currentSoilTemperature;
   
   // Add timestamp if NTP is synced
   if (ntpSynced) {
@@ -853,8 +867,8 @@ void publishSensorData() {
   serializeJson(doc, buffer);
   mqttClient.publish(TOPIC_SENSORS, buffer, false);
   
-  LOG_INFO("Published sensor data: %.1fC, %.1f%%, %d%%\n", 
-           currentTemperature, currentHumidity, currentMoisture);
+  LOG_INFO("Published sensor data: %.1fC, %.1f%%, %d%%, Soil: %.1fC\n", 
+           currentTemperature, currentHumidity, currentMoisture, currentSoilTemperature);
   Serial.println("SENSOR_PUBLISHED");  // Debug: confirm MQTT publish
 }
 
