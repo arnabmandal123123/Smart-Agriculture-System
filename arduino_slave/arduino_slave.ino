@@ -13,6 +13,13 @@ SoftwareSerial espSerial(8, 9);
 #define DHTTYPE DHT22     // DHT22 (AM2302)
 DHT dht(DHTPIN, DHTTYPE);
 
+// Moisture Sensor
+const int MOISTURE_PIN = A3;
+// Calibration: Measure raw value in air (dry) and in water/wet soil
+// Your sensor reads ~1023 in dry air, typical capacitive sensors read ~400-500 in wet soil
+const int AIR_VALUE = 1023;   // Calibration value for dry air (raw analog reading)
+const int WATER_VALUE = 400;  // Calibration value for wet soil (adjust based on your soil)
+
 // Actuator pin
 const int pumpPin = 10; // Water pump connected to pin 10
 
@@ -102,20 +109,33 @@ void loop() {
   if (now - lastSensorMillis >= SENSOR_INTERVAL_MS) {
     float humidity = dht.readHumidity();
     float temperature = dht.readTemperature();
+    
+    // Read Moisture
+    int moistureRaw = analogRead(MOISTURE_PIN);
+    int moisturePercent = map(moistureRaw, AIR_VALUE, WATER_VALUE, 0, 100);
+    moisturePercent = constrain(moisturePercent, 0, 100);
 
     // Check if readings are valid
     if (!isnan(humidity) && !isnan(temperature)) {
-      // Send sensor data in format: SENSOR:temp,humidity
+      // Send sensor data in format: SENSOR:temp,humidity,moisture
       espSerial.print("SENSOR:");
       espSerial.print(temperature, 1);
       espSerial.print(",");
-      espSerial.println(humidity, 1);
+      espSerial.print(humidity, 1);
+      espSerial.print(",");
+      espSerial.print(moisturePercent);
+      espSerial.print(",");
+      espSerial.println(moistureRaw);
       
       // Duplicate to USB for debugging
       Serial.print("DEBUG TX: SENSOR:");
       Serial.print(temperature, 1);
       Serial.print(",");
-      Serial.println(humidity, 1);
+      Serial.print(humidity, 1);
+      Serial.print(",");
+      Serial.print(moisturePercent);
+      Serial.print(",");
+      Serial.println(moistureRaw);
     } else {
       espSerial.println("SENSOR:ERROR");
       Serial.println("DEBUG: Sensor read error");

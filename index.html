@@ -1639,6 +1639,63 @@
       border-left: 4px solid var(--outline-variant);
       transition: border-color 0.3s ease;
     }
+
+    /* Toggle Switch */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--outline-variant);
+      transition: .4s;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    input:checked+.slider {
+      background-color: var(--primary);
+    }
+
+    input:focus+.slider {
+      box-shadow: 0 0 1px var(--primary);
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(24px);
+    }
+
+    .slider.round {
+      border-radius: 34px;
+    }
+
+    .slider.round:before {
+      border-radius: 50%;
+    }
   </style>
 </head>
 
@@ -1726,6 +1783,21 @@
               <div style="font-size: 13px; color: var(--on-surface-variant);" class="translatable">Manual override
                 control</div>
             </div>
+          </div>
+
+          <!-- Auto Mode Toggle -->
+          <div
+            style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--surface-container); border-radius: 12px; margin-top: 4px;">
+            <div>
+              <div style="font-weight: 600; font-size: 14px; color: var(--on-surface);" class="translatable">Auto Mode
+              </div>
+              <div style="font-size: 12px; color: var(--on-surface-variant);" class="translatable">Pump based on
+                moisture</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="autoModeToggle" onchange="toggleAutoMode()">
+              <span class="slider round"></span>
+            </label>
           </div>
 
           <button id="pumpBtn" class="btn pri" onclick="togglePump()"
@@ -1964,6 +2036,18 @@
           </h3>
           <div style="position: relative; height: 300px; width: 100%;">
             <canvas id="humidityChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Soil Moisture Chart -->
+        <div class="card" style="padding: 20px; margin-bottom: 16px;">
+          <h3
+            style="font-size: 16px; margin: 0 0 16px 0; color: var(--primary); font-weight: 600; display: flex; align-items: center; gap: 8px;">
+            <span class="material-symbols-rounded">grass</span>
+            <span class="translatable">Soil Moisture History</span>
+          </h3>
+          <div style="position: relative; height: 300px; width: 100%;">
+            <canvas id="moistureChart"></canvas>
           </div>
         </div>
       </article>
@@ -2961,6 +3045,10 @@
             aiEnabled = true; // Enable AI features
             updateFirebaseStatus(true);
             console.log('🤖 Firebase AI features enabled');
+
+            // Load history only after auth
+            loadSensorData();
+
             resolve();
           })
           .catch(err => {
@@ -5474,8 +5562,7 @@
 
     // Auto-load saved IP or use default, then auto-connect
     window.addEventListener('DOMContentLoaded', function () {
-      // Load sensor data from Firebase
-      loadSensorData();
+
 
       // Initialize pump card as disabled (until ESP connects)
       const pumpBtn = document.getElementById('pumpBtn');
@@ -5558,9 +5645,11 @@
     let sensorData = {
       temperature: [],
       humidity: [],
+      moisture: [],
       charts: {
         temperature: null,
-        humidity: null
+        humidity: null,
+        moisture: null
       }
     };
     let currentSensorFilter = '1d'; // Default filter: 1 day
@@ -5598,6 +5687,13 @@
               id: doc.id
             });
           }
+          if (data.moisture !== undefined) {
+            sensorData.moisture.push({
+              value: data.moisture,
+              timestamp: data.timestamp,
+              id: doc.id
+            });
+          }
         });
 
         console.log(`📊 Loaded ${sensorData.temperature.length} sensor readings from Firebase`);
@@ -5608,7 +5704,7 @@
     }
 
     // Save sensor reading to Firebase
-    async function saveSensorReading(temperature, humidity) {
+    async function saveSensorReading(temperature, humidity, moisture) {
       if (!firebaseReady || !firebaseEnabled || !db) return;
 
       try {
@@ -5619,12 +5715,18 @@
           timestamp: timestamp,
           date: new Date(timestamp).toISOString()
         };
+        if (moisture !== undefined) {
+          data.moisture = moisture;
+        }
 
         await db.collection('sensorData').add(data);
 
         // Add to local array
         sensorData.temperature.push({ value: temperature, timestamp: timestamp });
         sensorData.humidity.push({ value: humidity, timestamp: timestamp });
+        if (moisture !== undefined) {
+          sensorData.moisture.push({ value: moisture, timestamp: timestamp });
+        }
 
         // Update charts
         updateSensorCharts();
@@ -5656,7 +5758,19 @@
           return data; // Return all data
       }
 
-      return data.filter(item => item.timestamp >= cutoff);
+      // Convert item timestamp to milliseconds for comparison
+      return data.filter(item => {
+        let ts = item.timestamp;
+        // Handle ISO string timestamps
+        if (typeof ts === 'string') {
+          ts = new Date(ts).getTime();
+        }
+        // Handle Firestore Timestamp objects
+        if (ts && typeof ts.toMillis === 'function') {
+          ts = ts.toMillis();
+        }
+        return ts >= cutoff;
+      });
     }
 
     // Update sensor timeline filter
@@ -5679,6 +5793,69 @@
     function updateSensorCharts() {
       updateTemperatureChart();
       updateHumidityChart();
+      updateMoistureChart();
+    }
+
+    // Load sensor data from Firebase (History)
+    // Tries 'sensors' first, falls back to 'sensorData' for legacy support
+    function loadSensorData() {
+      const db = firebase.firestore();
+
+      // Helper function to process readings
+      function processReadings(querySnapshot, collectionName) {
+        console.log(`📊 Firebase '${collectionName}' returned:`, querySnapshot.size, "documents");
+        const readings = [];
+        querySnapshot.forEach((doc) => {
+          readings.unshift(doc.data());
+        });
+
+        if (readings.length > 0) {
+          readings.forEach(data => {
+            if (data.temperature) sensorData.temperature.push({ value: data.temperature, timestamp: data.timestamp });
+            if (data.humidity) sensorData.humidity.push({ value: data.humidity, timestamp: data.timestamp });
+            if (data.moisture) sensorData.moisture.push({ value: data.moisture, timestamp: data.timestamp });
+          });
+
+          const latest = readings[readings.length - 1];
+          if (latest.temperature) document.getElementById('temperature').innerText = latest.temperature.toFixed(1);
+          if (latest.humidity) document.getElementById('humidity').innerText = latest.humidity.toFixed(1);
+          if (latest.moisture) {
+            let mEl = document.getElementById('soilMoisture');
+            if (!mEl) mEl = document.getElementById('moisture');
+            if (mEl) mEl.innerText = latest.moisture + '%';
+          }
+
+          updateSensorCharts();
+          console.log("✅ Loaded " + readings.length + " readings from '" + collectionName + "'");
+          return true;
+        }
+        return false;
+      }
+
+      // Try 'sensors' collection first
+      db.collection("sensors")
+        .orderBy("timestamp", "desc")
+        .limit(500)
+        .get()
+        .then((querySnapshot) => {
+          if (!processReadings(querySnapshot, "sensors")) {
+            // Fallback to 'sensorData' if 'sensors' was empty
+            console.log("⚠️ 'sensors' empty, trying 'sensorData'...");
+            db.collection("sensorData")
+              .orderBy("timestamp", "desc")
+              .limit(500)
+              .get()
+              .then((qs2) => processReadings(qs2, "sensorData"))
+              .catch(e => console.log("sensorData fallback failed:", e.message));
+          }
+        })
+        .catch((error) => {
+          if (error.code === 'permission-denied') {
+            console.log("ℹ️ History requires login");
+          } else {
+            console.error("Error loading sensor data:", error);
+          }
+        });
     }
 
     // Temperature Chart
@@ -5848,7 +6025,106 @@
       });
     }
 
+    // Moisture Chart
+    function updateMoistureChart() {
+      const canvas = document.getElementById('moistureChart');
+      if (!canvas) return;
+
+      // Filter data based on current timeline
+      const filteredData = filterSensorData(sensorData.moisture, currentSensorFilter);
+
+      if (filteredData.length === 0) {
+        console.log(`⚠️ Moisture chart: No data after filtering (filter=${currentSensorFilter}, raw length=${sensorData.moisture.length})`);
+        // Show empty state
+        if (sensorData.charts.moisture) {
+          sensorData.charts.moisture.destroy();
+          sensorData.charts.moisture = null;
+        }
+        return;
+      }
+      console.log(`✅ Moisture chart updating with ${filteredData.length} points, last value: ${filteredData[filteredData.length - 1]?.value}`);
+
+      // Prepare chart data
+      const labels = filteredData.map(item => new Date(item.timestamp).toLocaleString());
+      const values = filteredData.map(item => item.value);
+
+      // Destroy existing chart
+      if (sensorData.charts.moisture) {
+        sensorData.charts.moisture.destroy();
+      }
+
+      // Create new chart
+      sensorData.charts.moisture = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Moisture (%)',
+            data: values,
+            borderColor: '#34A853',
+            backgroundColor: 'rgba(52, 168, 83, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 3,
+            pointHoverRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              labels: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface')
+              }
+            },
+            tooltip: {
+              mode: 'index',
+              intersect: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              ticks: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface-variant')
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.05)'
+              }
+            },
+            x: {
+              ticks: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface-variant'),
+                maxRotation: 45,
+                minRotation: 45
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.05)'
+              }
+            }
+          }
+        }
+      });
+    }
+
     let pumpOn = false;
+    let autoModeEnabled = false;
+    const TOPIC_AUTO = 'irrigation_arnab/pump/auto';
+
+    function toggleAutoMode() {
+      const toggle = document.getElementById('autoModeToggle');
+      const newState = toggle.checked;
+
+      const payload = JSON.stringify({ type: "AUTO", enabled: newState });
+      publishIrrigationMessage(TOPIC_AUTO, payload, { retained: true });
+
+      autoModeEnabled = newState;
+    }
+
     let pendingSchedulePayload = null;
     let pendingQuickTimerPayload = null;
 
@@ -5968,7 +6244,9 @@
           console.log('📊 Sensor Data:', data);
 
           if (data.temperature !== undefined && data.humidity !== undefined) {
-            showToast(`Sensor Data: ${data.temperature}°C, ${data.humidity}%`, 'success');
+            let msg = `Sensor Data: ${data.temperature}°C, ${data.humidity}%`;
+            if (data.moisture !== undefined) msg += `, ${data.moisture}%`;
+            showToast(msg, 'success');
           }
 
           // Update live display in Monitor tab
@@ -5978,13 +6256,26 @@
           if (data.humidity !== undefined) {
             document.getElementById('humidity').innerText = parseFloat(data.humidity).toFixed(1);
           }
+          if (data.moisture !== undefined) {
+            // Try both IDs just in case
+            let mEl = document.getElementById('soilMoisture');
+            if (!mEl) mEl = document.getElementById('moisture');
+
+            if (mEl) mEl.innerText = data.moisture + '%';
+          }
 
           // Save to Firebase and update charts
           if (data.temperature !== undefined && data.humidity !== undefined) {
-            saveSensorReading(data.temperature, data.humidity);
+            try {
+              saveSensorReading(data.temperature, data.humidity, data.moisture);
+            } catch (e) {
+              console.error('❌ saveSensorReading error:', e);
+            }
           }
 
-          // Update Arduino status dot
+          // Update Arduino status dot (Logic reused from cleanups)
+          // We removed the dots, but if we ever decide to re-add logic, it goes here.
+          // For now, these ID checks will safely fail if elements are gone.
           const arduinoDot = document.getElementById('arduinoDot');
           const arduinoStatus = document.getElementById('arduinoStatus');
           if (arduinoDot && arduinoStatus) {
@@ -6003,6 +6294,9 @@
         try {
           const status = JSON.parse(payload);
           console.log('📊 Pump Status Update:', status);
+          if (status.mode === 'AUTO') {
+            console.log(`💧 Auto Mode Active: Pump ${status.pump} | Moisture: ${document.getElementById('soilMoisture') ? document.getElementById('soilMoisture').innerText : 'Unknown'}%`);
+          }
           updatePumpStatus(status);
           return;
         } catch (e) {
@@ -6016,7 +6310,7 @@
           const data = JSON.parse(payload);
           if (data.temperature !== undefined) document.getElementById('temperature').innerText = parseFloat(data.temperature).toFixed(1);
           if (data.humidity !== undefined) document.getElementById('humidity').innerText = parseFloat(data.humidity).toFixed(1);
-          if (data.soilMoisture !== undefined) document.getElementById('soilMoisture').innerText = data.soilMoisture;
+          if (data.soilMoisture !== undefined) document.getElementById('soilMoisture').innerText = data.soilMoisture + '%';
 
           const arduinoDot = document.getElementById('arduinoDot');
           const arduinoStatus = document.getElementById('arduinoStatus');
@@ -6045,6 +6339,38 @@
     let activePumpTimer = null;
     let countdownInterval = null;
     let lastScheduleSignature = null;
+
+    // Save sensor reading to Firebase and update local charts
+    function saveSensorReading(temp, hum, moist) {
+      const now = Date.now();
+      const timestamp = new Date().toISOString();
+
+      // 1. Update Local Data (Immediate UI Update)
+      if (temp !== undefined) sensorData.temperature.push({ value: temp, timestamp: timestamp });
+      if (hum !== undefined) sensorData.humidity.push({ value: hum, timestamp: timestamp });
+      if (moist !== undefined) sensorData.moisture.push({ value: moist, timestamp: timestamp }); // 0% is valid for dry soil
+
+      // Limit local array size to avoid memory issues (keep last 500)
+      if (sensorData.temperature.length > 500) sensorData.temperature.shift();
+      if (sensorData.humidity.length > 500) sensorData.humidity.shift();
+      if (sensorData.moisture.length > 500) sensorData.moisture.shift();
+
+      // Update Charts
+      console.log(`📈 Updating charts with new data: T=${temp}, H=${hum}, M=${moist} | Moisture array length: ${sensorData.moisture.length}`);
+      updateSensorCharts();
+
+      // 2. Save to Firebase (Throttled: every 5 mins or so? Or every reading?)
+      // Current frequency is 60s. Saving every reading is fine for this scale.
+      if (firebaseEnabled && auth.currentUser) {
+        const db = firebase.firestore();
+        db.collection("sensors").add({
+          temperature: parseFloat(temp),
+          humidity: parseFloat(hum),
+          moisture: parseFloat(moist || 0),
+          timestamp: timestamp
+        }).catch(e => console.error("Error saving to DB:", e));
+      }
+    }
 
     // Update UI based on ESP32 device-side status
     function updatePumpStatus(status) {
@@ -6081,6 +6407,13 @@
           statusDot.style.boxShadow = 'none';
         }
         if (icon) icon.style.color = 'var(--on-surface-variant)';
+      }
+
+      // Update Auto Mode Toggle
+      if (status.auto_enabled !== undefined) {
+        const toggle = document.getElementById('autoModeToggle');
+        if (toggle) toggle.checked = status.auto_enabled;
+        autoModeEnabled = status.auto_enabled;
       }
 
       // Show mode and remaining time

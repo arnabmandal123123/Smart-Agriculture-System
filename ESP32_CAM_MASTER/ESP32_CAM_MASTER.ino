@@ -32,6 +32,7 @@ const char* TOPIC_SCHEDULE = "irrigation_arnab/pump/schedule";
 const char* TOPIC_MANUAL = "irrigation_arnab/pump/manual";
 const char* TOPIC_STATUS = "irrigation_arnab/pump/status";
 const char* TOPIC_SENSORS = "irrigation_arnab/sensors/data";
+const char* TOPIC_AUTO = "irrigation_arnab/pump/auto";
 
 // NTP Configuration
 const char* ntpServer = "pool.ntp.org";
@@ -79,8 +80,14 @@ static const bool SERIAL_DEBUG = false;
 enum PumpMode {
   MODE_OFF,           // Default state
   MODE_MANUAL,        // Manual override active
+  MODE_AUTO,          // Auto-irrigation based on sensor
   MODE_QUICK_TIMER,   // Quick timer active
   MODE_SCHEDULE       // Scheduled run active
+};
+
+struct AutoMode {
+  bool enabled;
+  int dryThreshold; // Default 800
 };
 
 struct QuickTimer {
@@ -110,6 +117,7 @@ PumpMode currentMode = MODE_OFF;
 ManualOverride manualState = {false, false};
 QuickTimer quickTimer = {false, 0, 0, 0, false};
 Schedule schedule = {false, 0, 0, 0, false, 0};
+AutoMode autoMode = {false, 800}; // Default disabled, 800 threshold
 bool pumpPhysicalState = false;  // Current relay state (true = ON)
 bool ntpSynced = false;
 unsigned long lastNtpSync = 0;
@@ -120,6 +128,8 @@ bool quickTimerRestored = false;
 // Sensor data from Arduino
 float currentTemperature = 0.0;
 float currentHumidity = 0.0;
+int currentMoisture = 0;
+int currentMoistureRaw = 0;
 bool sensorDataValid = false;
 unsigned long lastSensorPublish = 0;
 
@@ -387,6 +397,28 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
     }
   }
   
+  // ========== AUTO MODE TOPIC ==========
+  else if (topicStr == TOPIC_AUTO) {
+    const char* type = doc["type"];
+    
+    if (strcmp(type, "AUTO") == 0) {
+      // Parse: {"type":"AUTO","enabled":true}
+      autoMode.enabled = doc["enabled"];
+      
+      // Optional: Update threshold if provided
+      if (doc.containsKey("threshold")) {
+        autoMode.dryThreshold = doc["threshold"];
+      }
+      
+      LOG_INFO("Auto Mode updated: %s (Threshold: %d)\n", 
+               autoMode.enabled ? "ENABLED" : "DISABLED", autoMode.dryThreshold);
+               
+      // Persist
+      prefs.putBool("auto_en", autoMode.enabled);
+      prefs.putInt("auto_thr", autoMode.dryThreshold);
+    }
+  }
+  
   // ========== MANUAL OVERRIDE TOPIC ==========
   else if (topicStr == TOPIC_MANUAL) {
     const char* type = doc["type"];
@@ -430,6 +462,7 @@ void mqttReconnect() {
     // Subscribe to control topics
     mqttClient.subscribe(TOPIC_SCHEDULE, 1);  // QoS 1 for reliability
     mqttClient.subscribe(TOPIC_MANUAL, 1);
+    mqttClient.subscribe(TOPIC_AUTO, 1);
     
     // Restore state from preferences (in case ESP rebooted)
     restoreScheduleFromPrefs();
@@ -453,7 +486,48 @@ void processTimerLogic() {
     desiredPumpState = manualState.desiredState;
     newMode = MODE_MANUAL;
   }
-  // ========== PRIORITY 2: QUICK TIMER ==========
+  // ========== PRIORITY 2: AUTO MODE ==========
+  else if (autoMode.enabled) {
+     // Trigger if Dry (Raw > Threshold)
+     // Hysteresis: Turn ON if > Threshold, Turn OFF if < (Threshold - 50)
+     // This prevents rapid toggling
+     int onThreshold = autoMode.dryThreshold;
+     int offThreshold = autoMode.dryThreshold - 50;
+
+      // Debug Logic - Log every 5 seconds to Serial
+      static unsigned long lastDebugTime = 0;
+      if (millis() - lastDebugTime > 5000) {
+        LOG_INFO("Auto Mode Check: Moisture=%d (On>%d, Off<%d)\n", currentMoistureRaw, onThreshold, offThreshold);
+        lastDebugTime = millis();
+      }
+
+     if (currentMoistureRaw > onThreshold) {
+       if (!desiredPumpState) LOG_INFO("Auto Mode Trigger: Dry Soil detected (%d > %d) -> Pump ON\n", currentMoistureRaw, onThreshold);
+       desiredPumpState = true; 
+       newMode = MODE_AUTO;
+     } else if (currentMoistureRaw < offThreshold) {
+       if (desiredPumpState) LOG_INFO("Auto Mode Trigger: Wet Soil detected (%d < %d) -> Pump OFF\n", currentMoistureRaw, offThreshold);
+       desiredPumpState = false;
+       // We don't set newMode = MODE_AUTO here because if it's OFF, 
+       // it's just "OFF" unless we want to explicitly show "AUTO (OFF)"
+       // But for simplicity, let's say:
+       // If Auto Mode says OFF, we check lower priorities? 
+       // No, typically Auto Mode should be authoritative if enabled.
+       // "Auto Mode will take precedence over Scheduled Timers"
+       newMode = MODE_AUTO; 
+     } else {
+       // In the hysteresis deadband, keep previous state if it was AUTO
+       if (currentMode == MODE_AUTO) {
+         desiredPumpState = pumpPhysicalState;
+         newMode = MODE_AUTO;
+       } else {
+         // Default to off if we just entered this band?
+         desiredPumpState = false;
+         newMode = MODE_AUTO;
+       }
+     }
+  }
+  // ========== PRIORITY 3: QUICK TIMER ==========
   else if (quickTimer.active) {
     unsigned long elapsed = (millis() - quickTimer.startMillis) / 1000;  // seconds
     
@@ -517,7 +591,7 @@ void processTimerLogic() {
   // Update mode if changed
   if (newMode != currentMode) {
     currentMode = newMode;
-    const char* modeNames[] = {"OFF", "MANUAL", "QUICK_TIMER", "SCHEDULE"};
+    const char* modeNames[] = {"OFF", "MANUAL", "AUTO", "QUICK_TIMER", "SCHEDULE"};
     LOG_INFO("Mode changed: %s\n", modeNames[currentMode]);
   }
   
@@ -555,6 +629,10 @@ void publishStatus() {
   switch (currentMode) {
     case MODE_MANUAL:
       doc["mode"] = "MANUAL";
+      break;
+    case MODE_AUTO:
+      doc["mode"] = "AUTO";
+      doc["auto_val"] = currentMoistureRaw;
       break;
     case MODE_QUICK_TIMER:
       doc["mode"] = "QUICK_TIMER";
@@ -601,6 +679,9 @@ void publishStatus() {
     doc["quick_on_delay_sec"] = quickTimer.onDelaySec;
     doc["quick_off_min"] = quickTimer.offDelayMin;
   }
+  
+  doc["auto_enabled"] = autoMode.enabled;
+  doc["auto_threshold"] = autoMode.dryThreshold;
 
   char buffer[256];
   serializeJson(doc, buffer);
@@ -621,6 +702,11 @@ void restoreScheduleFromPrefs() {
     LOG_INFO("Restored schedule: %02d:%02d for %u min\n",
              schedule.startHour, schedule.startMinute, schedule.durationMin);
   }
+  
+  // Restore Auto Mode
+  autoMode.enabled = prefs.getBool("auto_en", false);
+  autoMode.dryThreshold = prefs.getInt("auto_thr", 800);
+  LOG_INFO("Restored Auto Mode: %s\n", autoMode.enabled ? "ENABLED" : "DISABLED");
 }
 
 // ========== QUICK TIMER PERSISTENCE ==========
@@ -703,14 +789,35 @@ void readArduinoSerial() {
             token = strtok(NULL, ",");
             if (token != NULL) {
               currentHumidity = atof(token);
+              
+              // Parse Moisture 
+              token = strtok(NULL, ",");
+              if (token != NULL) {
+                currentMoisture = atoi(token);
+                
+                // Parse Raw Moisture
+                token = strtok(NULL, ",");
+                if (token != NULL) {
+                  currentMoistureRaw = atoi(token);
+                } else {
+                  currentMoistureRaw = 0;
+                }
+              } else {
+                currentMoisture = 0;
+                currentMoistureRaw = 0;
+              }
+
               sensorDataValid = true;
-              LOG_INFO("\nSensor: Temp=%.1fC, Humidity=%.1f%%\n", 
-                       currentTemperature, currentHumidity);
+              LOG_INFO("\nSensor: Temp=%.1fC, Humidity=%.1f%%, Moisture=%d%%, Raw=%d\n", 
+                       currentTemperature, currentHumidity, currentMoisture, currentMoistureRaw);
+              
               // Send to Serial for debugging / plotting support
               Serial.print("SENSOR_PARSED:");
               Serial.print(currentTemperature, 1);
               Serial.print(",");
-              Serial.println(currentHumidity, 1);
+              Serial.print(currentHumidity, 1);
+              Serial.print(",");
+              Serial.println(currentMoisture);
             }
           }
         }
@@ -733,6 +840,7 @@ void publishSensorData() {
   StaticJsonDocument<128> doc;
   doc["temperature"] = currentTemperature;
   doc["humidity"] = currentHumidity;
+  doc["moisture"] = currentMoisture;
   
   // Add timestamp if NTP is synced
   if (ntpSynced) {
@@ -745,8 +853,8 @@ void publishSensorData() {
   serializeJson(doc, buffer);
   mqttClient.publish(TOPIC_SENSORS, buffer, false);
   
-  LOG_INFO("Published sensor data: %.1fC, %.1f%%\n", 
-           currentTemperature, currentHumidity);
+  LOG_INFO("Published sensor data: %.1fC, %.1f%%, %d%%\n", 
+           currentTemperature, currentHumidity, currentMoisture);
   Serial.println("SENSOR_PUBLISHED");  // Debug: confirm MQTT publish
 }
 
