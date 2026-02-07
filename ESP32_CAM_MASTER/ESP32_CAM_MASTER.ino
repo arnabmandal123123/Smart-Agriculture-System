@@ -789,6 +789,7 @@ void readArduinoSerial() {
       buffer[bufferIndex] = '\0';
       
       // Parse sensor data: SENSOR:temp,humidity
+      // Parse sensor data: SENSOR:temp,humidity,moist,moistRaw,soilTemp,tds,rain,motion
       if (strncmp(buffer, "SENSOR:", 7) == 0) {
         if (strcmp(buffer + 7, "ERROR") == 0) {
           sensorDataValid = false;
@@ -829,48 +830,21 @@ void readArduinoSerial() {
                       if (token != NULL) {
                         currentRain = atoi(token);
                         
-                        // Parse Motion (PIR sensor)
+                        // Parse Motion (PIR sensor) - periodic update
                         token = strtok(NULL, ",");
                         if (token != NULL) {
+                          // Only update if not recently updated by immediate event? 
+                          // Or just trust the latest. Trust latest.
                           currentMotion = atoi(token);
                         } else {
                           currentMotion = 0;
                         }
-                      } else {
-                        currentRain = 0;
-                        currentMotion = 0;
                       }
-                    } else {
-                      currentTDS = 0;
-                      currentRain = 0;
-                      currentMotion = 0;
                     }
-                  } else {
-                    currentSoilTemperature = 0.0;
-                    currentTDS = 0;
-                    currentRain = 0;
-                    currentMotion = 0;
                   }
-                } else {
-                  currentMoistureRaw = 0;
-                  currentSoilTemperature = 0.0;
-                  currentTDS = 0;
-                  currentRain = 0;
-                  currentMotion = 0;
                 }
-              } else {
-                currentMoisture = 0;
-                currentMoistureRaw = 0;
-                currentSoilTemperature = 0.0;
-                currentTDS = 0;
-                currentRain = 0;
-                currentMotion = 0;
               }
-            } else {
-              currentHumidity = 0.0;
             }
-          } else {
-            currentTemperature = 0.0;
           }
            
           // If we reached here with valid parsing (or at least safe defaults)
@@ -894,7 +868,18 @@ void readArduinoSerial() {
           Serial.print(",");
           Serial.println(currentMotion);
         }
+      } 
+      
+      // Parse immediate motion data: MOTION:1 or MOTION:0
+      else if (strncmp(buffer, "MOTION:", 7) == 0) {
+        int motionState = atoi(buffer + 7);
+        currentMotion = motionState;
+        LOG_INFO("\n🔔 IMMEDIATE MOTION EVENT: %d\n", currentMotion);
+        
+        // Immediately publish updated full sensor data
+        publishSensorData();
       }
+
       // Reset buffer
       bufferIndex = 0;
     } else {

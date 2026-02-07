@@ -126,6 +126,30 @@ void loop() {
     }
   }
 
+  // ========== IMMEDIATE MOTION DETECTION ==========
+  // Check PIR sensor every loop iteration for immediate response
+  static int lastMotionState = -1;
+  static unsigned long lastMotionTime = 0;
+  int currentMotion = digitalRead(PIR_PIN);
+
+  // If state changed
+  if (currentMotion != lastMotionState) {
+    // Debounce/Rate Limit (10 seconds as requested by user)
+    // This ensures we don't spam updates and alarms stick for at least 10s
+    if (millis() - lastMotionTime > 10000) { 
+      lastMotionState = currentMotion;
+      lastMotionTime = millis();
+      
+      // Send immediate update to ESP32
+      espSerial.print("MOTION:");
+      espSerial.println(currentMotion);
+      
+      // Debug
+      Serial.print("ALARM: Motion state changed -> ");
+      Serial.println(currentMotion);
+    }
+  }
+
   // Read and send sensor data every 60 seconds
   unsigned long now = millis();
   if (now - lastSensorMillis >= SENSOR_INTERVAL_MS) {

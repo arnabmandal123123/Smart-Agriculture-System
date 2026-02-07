@@ -2389,6 +2389,23 @@
               <span class="toggle-slider"></span>
             </label>
           </div>
+
+          <!-- Auto-Stop Alarm Timer -->
+          <div
+            style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-top: 1px solid var(--outline-variant);">
+            <div>
+              <div style="font-size: 15px; font-weight: 500; color: var(--on-surface);">Auto-Stop Alarm</div>
+              <div style="font-size: 12px; color: var(--on-surface-variant); margin-top: 2px;">Automatically stop alarm
+                after duration</div>
+            </div>
+            <select id="alarmDurationSelect"
+              style="background: var(--surface-container-highest); color: var(--on-surface); border: none; padding: 8px 12px; border-radius: 8px; outline: none; font-family: inherit; font-size: 14px; cursor: pointer;">
+              <option value="0">Manual Only</option>
+              <option value="30">30 Seconds</option>
+              <option value="60">1 Minute</option>
+              <option value="300">5 Minutes</option>
+            </select>
+          </div>
         </div>
 
       </div>
@@ -6135,6 +6152,7 @@
         const settings = {
           motionAlertsEnabled: document.getElementById('motionAlertsToggle')?.checked || false,
           eventLoggingEnabled: document.getElementById('eventLoggingToggle')?.checked !== false,
+          alarmDuration: parseInt(document.getElementById('alarmDurationSelect')?.value || '0'),
           lastUpdated: Date.now()
         };
 
@@ -6158,7 +6176,10 @@
           if (document.getElementById('eventLoggingToggle')) {
             document.getElementById('eventLoggingToggle').checked = settings.eventLoggingEnabled;
           }
-          console.log('✅ Security settings loaded');
+          if (document.getElementById('alarmDurationSelect')) {
+            document.getElementById('alarmDurationSelect').value = settings.alarmDuration || '0';
+          }
+          console.log('✅ Security settings loaded:', settings);
         }
       } catch (error) {
         console.error('Error loading security settings:', error);
@@ -6339,31 +6360,50 @@
         }
       }
 
-      // Create and play alarm sound (using Web Audio API to generate beep)
+      // Auto-Stop Timer Logic
+      const durationSelect = document.getElementById('alarmDurationSelect');
+      const duration = durationSelect ? parseInt(durationSelect.value) : 0;
+
+      if (duration > 0) {
+        if (window.alarmTimeout) clearTimeout(window.alarmTimeout);
+        window.alarmTimeout = setTimeout(() => {
+          console.log(`⏰ Alarm auto-stopped after ${duration}s`);
+          stopAlarm();
+        }, duration * 1000);
+      }
+
+      // Create and play alarm sound (using Web Audio API)
       try {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        if (!window.audioCtx) {
+          window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        // Attempt to resume if suspended (requires user interaction previously)
+        if (window.audioCtx.state === 'suspended') {
+          window.audioCtx.resume().catch(e => console.log('Audio resume failed:', e));
+        }
 
         function playBeep() {
-          if (!alarmActive) return;
+          if (!alarmActive || !window.audioCtx) return;
 
-          const oscillator = audioContext.createOscillator();
-          const gainNode = audioContext.createGain();
+          const oscillator = window.audioCtx.createOscillator();
+          const gainNode = window.audioCtx.createGain();
 
           oscillator.connect(gainNode);
-          gainNode.connect(audioContext.destination);
+          gainNode.connect(window.audioCtx.destination);
 
           oscillator.frequency.value = 800; // 800 Hz beep
           oscillator.type = 'square';
 
-          gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+          gainNode.gain.setValueAtTime(0.3, window.audioCtx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, window.audioCtx.currentTime + 0.5);
 
-          oscillator.start(audioContext.currentTime);
-          oscillator.stop(audioContext.currentTime + 0.5);
+          oscillator.start(window.audioCtx.currentTime);
+          oscillator.stop(window.audioCtx.currentTime + 0.5);
 
           // Repeat beep every second while alarm is active
           if (alarmActive) {
-            setTimeout(playBeep, 1000);
+            window.alarmTimeoutBeep = setTimeout(playBeep, 1000);
           }
         }
 
@@ -6376,6 +6416,14 @@
     }
 
     function stopAlarm(fromRemote = false) {
+      if (window.alarmTimeout) {
+        clearTimeout(window.alarmTimeout);
+        window.alarmTimeout = null;
+      }
+      if (window.alarmTimeoutBeep) {
+        clearTimeout(window.alarmTimeoutBeep);
+        window.alarmTimeoutBeep = null;
+      }
       console.log(`🔕 stopAlarm called, fromRemote=${fromRemote}, alarmActive=${alarmActive}`);
       alarmActive = false;
 
@@ -7907,22 +7955,41 @@
     // ========== SECURITY SETTINGS INITIALIZATION ==========
     // Initialize security toggles and load settings from Firebase
     setTimeout(() => {
-      const motionAlertsToggle = document.getElementById('motionAlertsToggle');
-      const eventLoggingToggle = document.getElementById('eventLoggingToggle');
+      const motionToggle = document.getElementById('motionAlertsToggle');
+      const loggingToggle = document.getElementById('eventLoggingToggle');
+      const durationSelect = document.getElementById('alarmDurationSelect');
 
-      if (motionAlertsToggle) {
-        motionAlertsToggle.addEventListener('change', saveSecuritySettings);
-      }
-      if (eventLoggingToggle) {
-        eventLoggingToggle.addEventListener('change', saveSecuritySettings);
-      }
+      if (motionToggle) motionToggle.addEventListener('change', saveSecuritySettings);
+      if (loggingToggle) loggingToggle.addEventListener('change', saveSecuritySettings);
+      if (durationSelect) durationSelect.addEventListener('change', saveSecuritySettings);
+
+      // Resume AudioContext on first user interaction to bypass browser autoplay policy
+      document.addEventListener('click', () => {
+        if (!window.audioCtx) {
+          window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (window.audioCtx.state === 'suspended') {
+          window.audioCtx.resume().then(() => {
+            console.log('🔇 -> 🔊 AudioContext resumed by user interaction');
+          }).catch(e => console.error('Audio resume failed:', e));
+        }
+      }, { once: true });
 
       // Load settings and events from Firebase
-      if (firebaseReady && firebaseEnabled) {
-        loadSecuritySettings();
-        loadMotionEvents();
+      if (typeof firebaseReady !== 'undefined' && firebaseReady) {
+        if (typeof loadSecuritySettings === 'function') loadSecuritySettings();
+        if (typeof loadMotionEvents === 'function') loadMotionEvents();
+      }
+
+      // Redundant check for safety if firebaseReady wasn't true yet
+      if (typeof firebaseReadyPromise !== 'undefined') {
+        firebaseReadyPromise.then(() => {
+          if (typeof loadSecuritySettings === 'function') loadSecuritySettings();
+          if (typeof loadMotionEvents === 'function') loadMotionEvents();
+        });
       }
     }, 1000);
+
   </script>
 </body>
 
