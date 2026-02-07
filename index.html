@@ -1800,6 +1800,20 @@
             </label>
           </div>
 
+          <!-- Crop Profile Selector -->
+          <div id="cropProfileDiv"
+            style="display: none; padding: 0 8px; margin-top: -8px; margin-bottom: 8px; animation: fadeIn 0.3s ease;">
+            <select id="cropProfile" onchange="updateAutoProfile()"
+              style="width: 100%; padding: 10px; background: var(--surface-container); border: 1px solid var(--outline-variant); border-radius: 8px; color: var(--on-surface); font-size: 13px; margin-top: 8px; outline: none; cursor: pointer;">
+              <option value="default">Default Profile (36-44%)</option>
+              <option value="veg">Vegetables (Target >60%)</option>
+              <option value="fruit_veg">Fruiting Veg (Target >50%)</option>
+              <option value="grains">Grains (Target >50%)</option>
+              <option value="fruits">Fruits (Target >35%)</option>
+              <option value="house">Houseplants (Target >30%)</option>
+            </select>
+          </div>
+
           <button id="pumpBtn" class="btn pri" onclick="togglePump()"
             style="width: 100%; padding: 16px; justify-content: center; font-size: 16px; margin-top: 4px;">
             <span class="material-symbols-rounded">power_settings_new</span>
@@ -1994,12 +2008,104 @@
             <div class="v" id="soilMoisture">--</div>
             <div class="u"></div>
           </div>
-          <div class="sc">
-            <div class="l translatable">Soil Temperature</div>
-            <div class="v" id="soilTemperature">--</div>
-            <div class="u">°C</div>
+        </div>
+        <div class="sc">
+          <div class="l translatable">Soil Temperature</div>
+          <div class="v" id="soilTemperature">--</div>
+        </div>
+
+        <!-- Soil Quality & Health Cards -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+          <!-- Soil Quality (TDS) -->
+          <div
+            style="background: var(--surface-container); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center;">
+            <div style="font-size: 13px; color: var(--on-surface-variant); margin-bottom: 4px;" class="translatable">
+              Soil
+              Quality</div>
+            <div style="display: flex; align-items: baseline; gap: 4px;">
+              <span id="tdsValue" style="font-size: 24px; font-weight: 700; color: var(--on-surface);">--</span>
+              <span style="font-size: 14px; color: var(--on-surface-variant);">PPM</span>
+            </div>
+          </div>
+
+          <!-- Soil Health Status -->
+          <div id="soilHealthCard"
+            style="background: var(--surface-container); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; border: 1px solid transparent;">
+            <div style="font-size: 13px; color: var(--on-surface-variant); margin-bottom: 4px;" class="translatable">
+              Status
+            </div>
+            <div id="soilHealthStatus"
+              style="font-size: 16px; font-weight: 700; color: var(--on-surface); text-align: center;"
+              class="translatable">
+              --</div>
+            <div id="soilHealthAction"
+              style="font-size: 11px; color: var(--on-surface-variant); margin-top: 4px; text-align: center;"
+              class="translatable"></div>
           </div>
         </div>
+
+        <!-- Rain Sensor Status -->
+        <div
+          style="background: var(--surface-container); padding: 16px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; margin-top: 12px; border: 1px solid var(--outline-variant);">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="material-symbols-rounded"
+              style="color: var(--primary); background: rgba(0, 100, 255, 0.1); padding: 8px; border-radius: 50%;">water_drop</span>
+            <div>
+              <div style="font-size: 13px; color: var(--on-surface-variant);">Runoff Status</div>
+              <div id="rainStatus" style="font-size: 16px; font-weight: 600; color: var(--on-surface);">Runoff Not
+                Detected</div>
+              <div style="font-size: 11px; color: var(--on-surface-variant); margin-top: 2px;">Threshold: 50%</div>
+            </div>
+          </div>
+          <div style="font-size: 18px; font-weight: 700; color: var(--on-surface-variant);"><span
+              id="rainValue">--</span>
+          </div>
+        </div>
+
+        <!-- TDS Info Dropdown -->
+        <div style="margin-top: 12px; background: var(--surface-container); border-radius: 12px; overflow: hidden;">
+          <div onclick="toggleTdsInfo()"
+            style="padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="material-symbols-rounded" style="color: var(--primary); font-size: 18px;">info</span>
+              <span style="font-size: 13px; font-weight: 600; color: var(--on-surface);" class="translatable">Understand
+                Soil Values</span>
+            </div>
+            <span class="material-symbols-rounded" id="tdsInfoArrow"
+              style="color: var(--on-surface-variant); transition: transform 0.3s;">expand_more</span>
+          </div>
+          <div id="tdsInfoContent"
+            style="display: none; padding: 0 16px 16px 16px; border-top: 1px solid var(--outline-variant);">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px; color: var(--on-surface);">
+              <tr style="border-bottom: 1px solid var(--outline-variant);">
+                <th style="text-align: left; padding: 8px 4px; color: var(--on-surface-variant);">PPM</th>
+                <th style="text-align: left; padding: 8px 4px; color: var(--on-surface-variant);">Status</th>
+                <th style="text-align: left; padding: 8px 4px; color: var(--on-surface-variant);">Action</th>
+              </tr>
+              <tr>
+                <td style="padding: 8px 4px; color: var(--error);">&lt; 200</td>
+                <td style="padding: 8px 4px; font-weight: 600;">Hungry</td>
+                <td style="padding: 8px 4px;">Add Fertilizer</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 4px; color: var(--primary);">200 - 800</td>
+                <td style="padding: 8px 4px; font-weight: 600;">Optimal</td>
+                <td style="padding: 8px 4px;">Do Nothing</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 4px; color: #F9A825;">800 - 1500</td>
+                <td style="padding: 8px 4px; font-weight: 600;">High</td>
+                <td style="padding: 8px 4px;">Water Only</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 4px; color: var(--error);">&gt; 2000</td>
+                <td style="padding: 8px 4px; font-weight: 600;">Toxic</td>
+                <td style="padding: 8px 4px;">FLUSH SOIL</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
       </article>
     </div>
 
@@ -2065,6 +2171,18 @@
           </h3>
           <div style="position: relative; height: 300px; width: 100%;">
             <canvas id="soilTemperatureChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Soil Quality (TDS) Chart -->
+        <div class="card" style="padding: 20px; margin-bottom: 16px;">
+          <h3
+            style="font-size: 16px; margin: 0 0 16px 0; color: var(--primary); font-weight: 600; display: flex; align-items: center; gap: 8px;">
+            <span class="material-symbols-rounded">science</span>
+            <span class="translatable">Soil Quality (TDS)</span>
+          </h3>
+          <div style="position: relative; height: 300px; width: 100%;">
+            <canvas id="tdsChart"></canvas>
           </div>
         </div>
       </article>
@@ -2401,6 +2519,18 @@
         console.warn('Could not restore active tab');
       }
     });
+
+    function toggleTdsInfo() {
+      const content = document.getElementById('tdsInfoContent');
+      const arrow = document.getElementById('tdsInfoArrow');
+      if (content.style.display === 'none') {
+        content.style.display = 'block';
+        arrow.style.transform = 'rotate(180deg)';
+      } else {
+        content.style.display = 'none';
+        arrow.style.transform = 'rotate(0deg)';
+      }
+    }
   </script>
 
   <script>
@@ -5628,6 +5758,8 @@
               loadFromFirebase(false).catch(err => {
                 console.log('Auto-load from Firebase skipped:', err.message);
               });
+              // Load historical sensor data
+              loadSensorData().catch(err => console.log('Sensor history load skipped:', err.message));
             }, 500);
           }
         }).catch(err => {
@@ -5664,11 +5796,15 @@
       humidity: [],
       moisture: [],
       soilTemperature: [],
+      tds: [],
+      rain: [],
       charts: {
         temperature: null,
         humidity: null,
         moisture: null,
-        soilTemperature: null
+        soilTemperature: null,
+        tds: null,
+        rain: null
       }
     };
     let currentSensorFilter = '1d'; // Default filter: 1 day
@@ -5722,6 +5858,22 @@
               id: doc.id
             });
           }
+          if (data.tds !== undefined) {
+            if (!sensorData.tds) sensorData.tds = [];
+            sensorData.tds.push({
+              value: data.tds,
+              timestamp: data.timestamp,
+              id: doc.id
+            });
+          }
+          if (data.rain !== undefined) {
+            if (!sensorData.rain) sensorData.rain = [];
+            sensorData.rain.push({
+              value: data.rain,
+              timestamp: data.timestamp,
+              id: doc.id
+            });
+          }
         });
 
         console.log(`📊 Loaded ${sensorData.temperature.length} sensor readings from Firebase`);
@@ -5733,14 +5885,28 @@
 
     // Save sensor reading to Firebase
     // Save sensor reading (Local + Firebase)
-    async function saveSensorReading(temperature, humidity, moisture, soilTemperature) {
+    async function saveSensorReading(data) {
       const timestamp = Date.now();
+      const temperature = data.temp;
+      const humidity = data.hum;
+      const moisture = data.moisture;
+      const soilTemperature = data.soil_temp;
+      const tds = data.tds;
+      const rain = data.rain;
 
       // 1. Update local arrays (always)
       if (temperature !== undefined) sensorData.temperature.push({ value: temperature, timestamp: timestamp });
       if (humidity !== undefined) sensorData.humidity.push({ value: humidity, timestamp: timestamp });
       if (moisture !== undefined) sensorData.moisture.push({ value: moisture, timestamp: timestamp });
       if (soilTemperature !== undefined) sensorData.soilTemperature.push({ value: soilTemperature, timestamp: timestamp });
+      if (tds !== undefined) {
+        if (!sensorData.tds) sensorData.tds = [];
+        sensorData.tds.push({ value: tds, timestamp: timestamp });
+      }
+      if (rain !== undefined) {
+        if (!sensorData.rain) sensorData.rain = [];
+        sensorData.rain.push({ value: rain, timestamp: timestamp });
+      }
 
       // 2. Update charts immediately
       try {
@@ -5752,16 +5918,19 @@
       // 3. Save to Firebase (if available)
       if (firebaseReady && firebaseEnabled && db) {
         try {
-          const data = {
-            temperature: temperature,
-            humidity: humidity,
+          const fbData = {
             timestamp: timestamp,
             date: new Date(timestamp).toISOString()
           };
-          if (moisture !== undefined) data.moisture = moisture;
-          if (soilTemperature !== undefined) data.soilTemperature = soilTemperature;
 
-          await db.collection('sensorData').add(data);
+          if (temperature !== undefined) fbData.temperature = temperature;
+          if (humidity !== undefined) fbData.humidity = humidity;
+          if (moisture !== undefined) fbData.moisture = moisture;
+          if (soilTemperature !== undefined) fbData.soilTemperature = soilTemperature;
+          if (tds !== undefined) fbData.tds = tds;
+          if (rain !== undefined) fbData.rain = rain;
+
+          await db.collection('sensorData').add(fbData);
         } catch (error) {
           console.error('Error saving sensor data to Firebase:', error);
         }
@@ -5828,74 +5997,10 @@
       updateHumidityChart();
       updateMoistureChart();
       updateSoilTemperatureChart();
+      updateTdsChart();
     }
 
-    // Load sensor data from Firebase (History)
-    // Tries 'sensors' first, falls back to 'sensorData' for legacy support
-    function loadSensorData() {
-      const db = firebase.firestore();
 
-      // Helper function to process readings
-      function processReadings(querySnapshot, collectionName) {
-        console.log(`📊 Firebase '${collectionName}' returned:`, querySnapshot.size, "documents");
-        const readings = [];
-        querySnapshot.forEach((doc) => {
-          readings.unshift(doc.data());
-        });
-
-        if (readings.length > 0) {
-          readings.forEach(data => {
-            if (data.temperature !== undefined) sensorData.temperature.push({ value: data.temperature, timestamp: data.timestamp });
-            if (data.humidity !== undefined) sensorData.humidity.push({ value: data.humidity, timestamp: data.timestamp });
-            if (data.moisture !== undefined) sensorData.moisture.push({ value: data.moisture, timestamp: data.timestamp });
-            if (data.soilTemperature !== undefined) sensorData.soilTemperature.push({ value: data.soilTemperature, timestamp: data.timestamp });
-          });
-
-          const latest = readings[readings.length - 1];
-          if (latest.temperature !== undefined) document.getElementById('temperature').innerText = latest.temperature.toFixed(1);
-          if (latest.humidity !== undefined) document.getElementById('humidity').innerText = latest.humidity.toFixed(1);
-          if (latest.moisture !== undefined) {
-            let mEl = document.getElementById('soilMoisture');
-            if (!mEl) mEl = document.getElementById('moisture');
-            if (mEl) mEl.innerText = latest.moisture + '%';
-          }
-          if (latest.soilTemperature !== undefined) {
-            const stEl = document.getElementById('soilTemperature');
-            if (stEl) stEl.innerText = latest.soilTemperature.toFixed(1);
-          }
-
-          updateSensorCharts();
-          console.log("✅ Loaded " + readings.length + " readings from '" + collectionName + "'");
-          return true;
-        }
-        return false;
-      }
-
-      // Try 'sensors' collection first
-      db.collection("sensors")
-        .orderBy("timestamp", "desc")
-        .limit(500)
-        .get()
-        .then((querySnapshot) => {
-          if (!processReadings(querySnapshot, "sensors")) {
-            // Fallback to 'sensorData' if 'sensors' was empty
-            console.log("⚠️ 'sensors' empty, trying 'sensorData'...");
-            db.collection("sensorData")
-              .orderBy("timestamp", "desc")
-              .limit(500)
-              .get()
-              .then((qs2) => processReadings(qs2, "sensorData"))
-              .catch(e => console.log("sensorData fallback failed:", e.message));
-          }
-        })
-        .catch((error) => {
-          if (error.code === 'permission-denied') {
-            console.log("ℹ️ History requires login");
-          } else {
-            console.error("Error loading sensor data:", error);
-          }
-        });
-    }
 
     // Temperature Chart
     function updateTemperatureChart() {
@@ -6233,18 +6338,139 @@
       });
     }
 
+    // Soil Quality (TDS) Chart
+    function updateTdsChart() {
+      const canvas = document.getElementById('tdsChart');
+      if (!canvas) return;
+
+      // Filter data based on current timeline
+      // Check if sensorData.tds exists in case of old data structure
+      if (!sensorData.tds) sensorData.tds = [];
+      const filteredData = filterSensorData(sensorData.tds, currentSensorFilter);
+
+      if (filteredData.length === 0) {
+        // Show empty state
+        if (sensorData.charts.tds) {
+          sensorData.charts.tds.destroy();
+          sensorData.charts.tds = null;
+        }
+        return;
+      }
+
+      // Prepare chart data
+      const labels = filteredData.map(item => new Date(item.timestamp).toLocaleString());
+      const values = filteredData.map(item => item.value);
+
+      // Destroy existing chart
+      if (sensorData.charts.tds) {
+        sensorData.charts.tds.destroy();
+      }
+
+      // Create new chart
+      sensorData.charts.tds = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Soil Quality (PPM)',
+            data: values,
+            borderColor: '#9C27B0', // Purple
+            backgroundColor: 'rgba(156, 39, 176, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 3,
+            pointHoverRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              labels: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface')
+              }
+            },
+            tooltip: {
+              mode: 'index',
+              intersect: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface-variant')
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.05)'
+              }
+            },
+            x: {
+              ticks: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface-variant'),
+                maxRotation: 45,
+                minRotation: 45
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.05)'
+              }
+            }
+          }
+        }
+      });
+    }
+
     let pumpOn = false;
     let autoModeEnabled = false;
     const TOPIC_AUTO = 'irrigation_arnab/pump/auto';
 
+    // Map crop types to raw moisture thresholds
+    // Raw Calibration: Dry Air = 1023 (0%), Wet Soil = 400 (100%)
+    const CROP_THRESHOLDS = {
+      'default': 800,   // ~36% (Legacy)
+      'veg': 650,       // ~60%
+      'fruit_veg': 710, // ~50%
+      'grains': 710,    // ~50%
+      'fruits': 805,    // ~35%
+      'house': 835      // ~30%
+    };
+
     function toggleAutoMode() {
       const toggle = document.getElementById('autoModeToggle');
+      const profileDiv = document.getElementById('cropProfileDiv');
       const newState = toggle.checked;
 
-      const payload = JSON.stringify({ type: "AUTO", enabled: newState });
+      // Show/Hide profile selector
+      if (profileDiv) profileDiv.style.display = newState ? 'block' : 'none';
+
+      // Get current profile threshold
+      const profileSelector = document.getElementById('cropProfile');
+      const profile = profileSelector ? profileSelector.value : 'default';
+      const threshold = CROP_THRESHOLDS[profile] || 800;
+
+      const payload = JSON.stringify({
+        type: "AUTO",
+        enabled: newState,
+        threshold: threshold
+      });
+
       publishIrrigationMessage(TOPIC_AUTO, payload, { retained: true });
 
       autoModeEnabled = newState;
+    }
+
+    function updateAutoProfile() {
+      if (!autoModeEnabled) return; // Only update if already running
+
+      // Re-trigger toggle logic to send update
+      const toggle = document.getElementById('autoModeToggle');
+      if (toggle && toggle.checked) {
+        toggleAutoMode();
+        showToast('Updated moisture profile', 'success');
+      }
     }
 
     let pendingSchedulePayload = null;
@@ -6356,6 +6582,53 @@
       }
     }
 
+    // Update Soil Health Card based on TDS value
+    function updateSoilHealthUI(ppm) {
+      const healthCard = document.getElementById('soilHealthCard');
+      const statusEl = document.getElementById('soilHealthStatus');
+      const actionEl = document.getElementById('soilHealthAction');
+
+      if (!healthCard || !statusEl || !actionEl) return;
+
+      let status = 'Unknown';
+      let action = '';
+      let color = 'var(--on-surface)';
+      let bg = 'var(--surface-container-high)';
+      let border = 'var(--outline-variant)';
+
+      if (ppm < 200) {
+        status = 'Hungry Soil';
+        action = 'Add Fertilizer';
+        color = 'var(--error)';
+        border = 'var(--error)';
+        bg = 'rgba(176, 0, 32, 0.05)';
+      } else if (ppm >= 200 && ppm < 800) {
+        status = 'Optimal';
+        action = 'Do Nothing';
+        color = 'var(--primary)';
+        border = 'var(--primary)';
+        bg = 'rgba(0, 100, 0, 0.05)';
+      } else if (ppm >= 800 && ppm < 2000) {
+        status = 'High Nutrient';
+        action = 'Water Only';
+        color = '#F9A825'; // Yellow/Orange
+        border = '#F9A825';
+        bg = 'rgba(249, 168, 37, 0.05)';
+      } else if (ppm >= 2000) {
+        status = 'Toxic Runoff';
+        action = 'FLUSH SOIL'; // Urgent
+        color = 'var(--error)';
+        border = 'var(--error)';
+        bg = 'rgba(176, 0, 32, 0.1)';
+      }
+
+      statusEl.textContent = status;
+      statusEl.style.color = color;
+      actionEl.textContent = action;
+      healthCard.style.borderColor = border;
+      healthCard.style.backgroundColor = bg;
+    }
+
     function onMessageArrived(message) {
       const payload = message.payloadString;
 
@@ -6369,6 +6642,8 @@
             let msg = `Sensor Data: ${data.temperature}°C, ${data.humidity}%`;
             if (data.moisture !== undefined) msg += `, ${data.moisture}%`;
             if (data.soilTemperature !== undefined) msg += `, Soil: ${data.soilTemperature}°C`;
+            if (data.tds !== undefined) msg += `, TDS: ${Math.round(data.tds)}ppm`;
+            if (data.rain !== undefined) msg += `, Rain: ${data.rain}%`;
             showToast(msg, 'success');
           }
 
@@ -6390,11 +6665,45 @@
             const stEl = document.getElementById('soilTemperature');
             if (stEl) stEl.innerText = parseFloat(data.soilTemperature).toFixed(1);
           }
+          if (data.tds !== undefined) {
+            const tdsVal = Math.round(data.tds);
+            const el = document.getElementById('tdsValue');
+            if (el) el.textContent = tdsVal;
+            // Update Soil Health Card
+            if (typeof updateSoilHealthUI === 'function') {
+              updateSoilHealthUI(tdsVal);
+            }
+          }
+          if (data.rain !== undefined) {
+            const rainVal = Math.round(data.rain);
+            // Update Rain UI (assuming element exists, if not we'll create it)
+            const rainValEl = document.getElementById('rainValue');
+            const rainStatusEl = document.getElementById('rainStatus');
+            if (rainValEl) rainValEl.textContent = rainVal + '%';
+            if (rainStatusEl) {
+              // Rain sensor: High=Dry (0%), Low=Wet (100%) - Logic handled in Arduino
+              // Arduino sends 0-100% where 100% is wettest
+              if (rainVal > 50) {
+                rainStatusEl.textContent = 'Runoff Detected';
+                rainStatusEl.style.color = 'var(--primary)';
+              } else {
+                rainStatusEl.textContent = 'Runoff Not Detected';
+                rainStatusEl.style.color = 'var(--on-surface-variant)';
+              }
+            }
+          }
 
           // Save to Firebase and update charts
-          if (data.temperature !== undefined && data.humidity !== undefined) {
+          if (data.temperature !== undefined || data.tds !== undefined || data.rain !== undefined) {
             try {
-              saveSensorReading(data.temperature, data.humidity, data.moisture, data.soilTemperature);
+              saveSensorReading({
+                temp: data.temperature,
+                hum: data.humidity,
+                moisture: data.moisture,
+                soil_temp: data.soilTemperature,
+                tds: data.tds,
+                rain: data.rain
+              });
             } catch (e) {
               console.error('❌ saveSensorReading error:', e);
             }
@@ -6444,8 +6753,14 @@
           }
 
           // Save to Firebase
-          if (data.temperature !== undefined && data.humidity !== undefined) {
-            saveSensorReading(data.temperature, data.humidity, data.soilMoisture, data.soilTemperature);
+          if (data.temperature !== undefined || data.tds !== undefined) {
+            saveSensorReading({
+              temp: data.temperature,
+              hum: data.humidity,
+              moisture: data.soilMoisture, // Note: legacy format might use soilMoisture key
+              soil_temp: data.soilTemperature,
+              tds: data.tds
+            });
           }
 
           const arduinoDot = document.getElementById('arduinoDot');
@@ -6476,41 +6791,7 @@
     let countdownInterval = null;
     let lastScheduleSignature = null;
 
-    // Save sensor reading to Firebase and update local charts
-    function saveSensorReading(temp, hum, moist, soilTemp) {
-      const now = Date.now();
-      const timestamp = new Date().toISOString();
 
-      // 1. Update Local Data (Immediate UI Update)
-      if (temp !== undefined) sensorData.temperature.push({ value: temp, timestamp: timestamp });
-      if (hum !== undefined) sensorData.humidity.push({ value: hum, timestamp: timestamp });
-      if (moist !== undefined) sensorData.moisture.push({ value: moist, timestamp: timestamp }); // 0% is valid for dry soil
-
-      // Limit local array size to avoid memory issues (keep last 500)
-      if (sensorData.temperature.length > 500) sensorData.temperature.shift();
-      if (sensorData.humidity.length > 500) sensorData.humidity.shift();
-      if (sensorData.moisture.length > 500) sensorData.moisture.shift();
-
-      // Update Charts
-      console.log(`📈 Updating charts with new data: T=${temp}, H=${hum}, M=${moist} | Moisture array length: ${sensorData.moisture.length}`);
-      updateSensorCharts();
-
-      // 2. Save to Firebase (Throttled: every 5 mins or so? Or every reading?)
-      // Current frequency is 60s. Saving every reading is fine for this scale.
-      if (firebaseEnabled && auth.currentUser) {
-        const db = firebase.firestore();
-        const sensorDoc = {
-          temperature: temp !== undefined ? parseFloat(temp) : null,
-          humidity: hum !== undefined ? parseFloat(hum) : null,
-          moisture: moist !== undefined ? parseFloat(moist) : null,
-          soilTemperature: soilTemp !== undefined ? parseFloat(soilTemp) : null,
-          timestamp: timestamp
-        };
-        db.collection("sensors").add(sensorDoc)
-          .then(() => console.log("✅ Saved sensor data to Firebase:", sensorDoc))
-          .catch(e => console.error("❌ Error saving to Firebase:", e));
-      }
-    }
 
     // Update UI based on ESP32 device-side status
     function updatePumpStatus(status) {
@@ -6554,6 +6835,28 @@
         const toggle = document.getElementById('autoModeToggle');
         if (toggle) toggle.checked = status.auto_enabled;
         autoModeEnabled = status.auto_enabled;
+
+        // Update profile visual state
+        const profileDiv = document.getElementById('cropProfileDiv');
+        if (profileDiv) profileDiv.style.display = status.auto_enabled ? 'block' : 'none';
+      }
+
+      // Update threshold dropdown if reported by device
+      if (status.auto_threshold !== undefined && CROP_THRESHOLDS) {
+        const sel = document.getElementById('cropProfile');
+        if (sel) {
+          // Find key for value
+          let found = false;
+          for (const [key, val] of Object.entries(CROP_THRESHOLDS)) {
+            // Allow small margin of error (e.g. +/- 2)
+            if (Math.abs(val - status.auto_threshold) < 5) {
+              sel.value = key;
+              found = true;
+              break;
+            }
+          }
+          if (!found) sel.value = 'default';
+        }
       }
 
       // Show mode and remaining time

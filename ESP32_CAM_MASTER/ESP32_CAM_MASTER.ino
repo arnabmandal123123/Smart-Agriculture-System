@@ -131,6 +131,8 @@ float currentHumidity = 0.0;
 int currentMoisture = 0;
 int currentMoistureRaw = 0;
 float currentSoilTemperature = 0.0;
+int currentTDS = 0;
+int currentRain = 0;
 bool sensorDataValid = false;
 unsigned long lastSensorPublish = 0;
 
@@ -761,14 +763,13 @@ void restoreQuickTimerFromPrefs() {
 
 // ========== READ SENSOR DATA FROM ARDUINO ==========
 void readArduinoSerial() {
-  static char buffer[64];
+  static char buffer[128];
   static uint8_t bufferIndex = 0;
   
   while (Serial2.available()) {
     char c = Serial2.read();
     
     // ECHO to USB Serial for debugging
-    // This allows the user to see exactly what the Arduino is sending
     Serial.print(c); 
     
     // Skip carriage return
@@ -783,15 +784,17 @@ void readArduinoSerial() {
           sensorDataValid = false;
           LOG_INFO("\nSensor read error\n");
         } else {
-          // Parse temperature and humidity
+          // Parse temperature
           char* token = strtok(buffer + 7, ",");
           if (token != NULL) {
             currentTemperature = atof(token);
+            
+            // Parse humidity
             token = strtok(NULL, ",");
             if (token != NULL) {
               currentHumidity = atof(token);
               
-              // Parse Moisture 
+              // Parse Moisture Percentage
               token = strtok(NULL, ",");
               if (token != NULL) {
                 currentMoisture = atoi(token);
@@ -805,43 +808,77 @@ void readArduinoSerial() {
                   token = strtok(NULL, ",");
                   if (token != NULL) {
                     currentSoilTemperature = atof(token);
+                    
+                    // Parse TDS
+                    token = strtok(NULL, ",");
+                    if (token != NULL) {
+                      currentTDS = atoi(token);
+                      
+                      // Parse Rain
+                      token = strtok(NULL, ",");
+                      if (token != NULL) {
+                        currentRain = atoi(token);
+                      } else {
+                        currentRain = 0;
+                      }
+                    } else {
+                      currentTDS = 0;
+                      currentRain = 0;
+                    }
                   } else {
                     currentSoilTemperature = 0.0;
+                    currentTDS = 0;
+                    currentRain = 0;
                   }
                 } else {
                   currentMoistureRaw = 0;
                   currentSoilTemperature = 0.0;
+                  currentTDS = 0;
+                  currentRain = 0;
                 }
               } else {
                 currentMoisture = 0;
                 currentMoistureRaw = 0;
                 currentSoilTemperature = 0.0;
+                currentTDS = 0;
+                currentRain = 0;
               }
-
-              sensorDataValid = true;
-              LOG_INFO("\nSensor: Temp=%.1fC, Humidity=%.1f%%, Moisture=%d%%, Raw=%d, SoilTemp=%.1fC\n", 
-                       currentTemperature, currentHumidity, currentMoisture, currentMoistureRaw, currentSoilTemperature);
-              
-              // Send to Serial for debugging / plotting support
-              Serial.print("SENSOR_PARSED:");
-              Serial.print(currentTemperature, 1);
-              Serial.print(",");
-              Serial.print(currentHumidity, 1);
-              Serial.print(",");
-              Serial.print(currentMoisture);
-              Serial.print(",");
-              Serial.println(currentSoilTemperature, 1);
+            } else {
+              currentHumidity = 0.0;
             }
+          } else {
+            currentTemperature = 0.0;
           }
+           
+          // If we reached here with valid parsing (or at least safe defaults)
+          sensorDataValid = true;
+          LOG_INFO("\nSensor: Temp=%.1fC, Hum=%.1f%%, M=%d%%, Raw=%d, SoilTemp=%.1fC, TDS=%d, Rain=%d%%\n", 
+                   currentTemperature, currentHumidity, currentMoisture, currentMoistureRaw, currentSoilTemperature, currentTDS, currentRain);
+          
+          // Send to Serial for debugging / plotting support
+          Serial.print("SENSOR_PARSED:");
+          Serial.print(currentTemperature, 1);
+          Serial.print(",");
+          Serial.print(currentHumidity, 1);
+          Serial.print(",");
+          Serial.print(currentMoisture);
+          Serial.print(",");
+          Serial.print(currentSoilTemperature, 1);
+          Serial.print(",");
+          Serial.print(currentTDS);
+          Serial.print(",");
+          Serial.println(currentRain);
         }
       }
-      
+      // Reset buffer
       bufferIndex = 0;
-    } else if (bufferIndex < sizeof(buffer) - 1) {
-      buffer[bufferIndex++] = c;
     } else {
-      // Buffer overflow, reset
-      bufferIndex = 0;
+      if (bufferIndex < sizeof(buffer) - 1) {
+        buffer[bufferIndex++] = c;
+      } else {
+        // Buffer overflow, reset
+        bufferIndex = 0;
+      }
     }
   }
 }
@@ -850,11 +887,13 @@ void readArduinoSerial() {
 void publishSensorData() {
   if (!mqttClient.connected() || !sensorDataValid) return;
   
-  StaticJsonDocument<128> doc;
+  StaticJsonDocument<256> doc;
   doc["temperature"] = currentTemperature;
   doc["humidity"] = currentHumidity;
   doc["moisture"] = currentMoisture;
   doc["soilTemperature"] = currentSoilTemperature;
+  doc["tds"] = currentTDS;
+  doc["rain"] = currentRain;
   
   // Add timestamp if NTP is synced
   if (ntpSynced) {
@@ -863,13 +902,12 @@ void publishSensorData() {
     doc["timestamp"] = now;
   }
   
-  char buffer[128];
+  char buffer[256];
   serializeJson(doc, buffer);
-  mqttClient.publish(TOPIC_SENSORS, buffer, false);
+  mqttClient.publish(TOPIC_SENSORS, buffer, true);
   
-  LOG_INFO("Published sensor data: %.1fC, %.1f%%, %d%%, Soil: %.1fC\n", 
-           currentTemperature, currentHumidity, currentMoisture, currentSoilTemperature);
-  Serial.println("SENSOR_PUBLISHED");  // Debug: confirm MQTT publish
+  LOG_INFO("Published sensor data: %.1fC, %.1f%%, %d%%, Soil: %.1fC, TDS: %d, Rain: %d%%\n", 
+           currentTemperature, currentHumidity, currentMoisture, currentSoilTemperature, currentTDS, currentRain);
 }
 
 // ============ CAMERA INIT ============

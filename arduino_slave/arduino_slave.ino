@@ -27,6 +27,13 @@ const int MOISTURE_PIN = A3;
 const int AIR_VALUE = 1023;   // Calibration value for dry air (raw analog reading)
 const int WATER_VALUE = 400;  // Calibration value for wet soil (adjust based on your soil)
 
+// TDS Sensor
+#define TDS_PIN A1
+
+// Rain Sensor
+#define RAIN_PIN A0
+
+
 // Actuator pin
 const int pumpPin = 10; // Water pump connected to pin 10
 
@@ -141,7 +148,26 @@ void loop() {
       espSerial.print(",");
       espSerial.print(moistureRaw);
       espSerial.print(",");
-      espSerial.println(soilTemp, 1);
+
+      espSerial.print(soilTemp, 1);
+      
+      // Read TDS (Simple approximation for Gravity TDS sensor)
+      // Vref = 5.0V
+      int tdsRaw = analogRead(TDS_PIN);
+      float tdsVoltage = tdsRaw * 5.0 / 1024.0;
+      // Standard DFRobot formula coefficient approx
+      float tdsValue = (133.42 * tdsVoltage * tdsVoltage * tdsVoltage - 255.86 * tdsVoltage * tdsVoltage + 857.39 * tdsVoltage) * 0.5;
+      
+      // Read Rain Sensor
+      int rainRaw = analogRead(RAIN_PIN);
+      // Rain sensor is resistive: High (1023) = Dry, Low (~0) = Wet
+      int rainPercent = map(rainRaw, 1023, 0, 0, 100);
+      rainPercent = constrain(rainPercent, 0, 100);
+
+      espSerial.print(",");
+      espSerial.print((int)tdsValue);
+      espSerial.print(",");
+      espSerial.println(rainPercent);
       
       // Duplicate to USB for debugging
       Serial.print("DEBUG TX: SENSOR:");
@@ -153,7 +179,11 @@ void loop() {
       Serial.print(",");
       Serial.print(moistureRaw);
       Serial.print(",");
-      Serial.println(soilTemp, 1);
+      Serial.print(soilTemp, 1);
+      Serial.print(",");
+      Serial.print((int)tdsValue);
+      Serial.print(",");
+      Serial.println(rainPercent);
     } else {
       espSerial.println("SENSOR:ERROR");
       Serial.println("DEBUG: Sensor read error");
