@@ -5970,6 +5970,7 @@
     const TOPIC_MANUAL = 'irrigation_arnab/pump/manual';
     const TOPIC_STATUS = 'irrigation_arnab/pump/status';
     const TOPIC_SENSORS = 'irrigation_arnab/sensors/data';
+    const TOPIC_ALARM = 'irrigation_arnab/alarm/status';  // Synchronized alarm across devices
 
     // ========== Sensor Data Storage ==========
     let sensorData = {
@@ -6310,9 +6311,23 @@
     let alarmAudio = null;
     let alarmActive = false;
 
-    function startAlarm() {
+    function startAlarm(fromRemote = false) {
       if (alarmActive) return; // Already active
       alarmActive = true;
+
+      // Publish alarm state to MQTT (unless triggered from remote)
+      if (!fromRemote && client && client.isConnected()) {
+        const payload = JSON.stringify({
+          status: 'ACTIVE',
+          timestamp: Date.now(),
+          time: new Date().toLocaleTimeString()
+        });
+        const message = new Paho.MQTT.Message(payload);
+        message.destinationName = TOPIC_ALARM;
+        message.retained = false;
+        client.send(message);
+        console.log('📢 Alarm broadcast to all devices');
+      }
 
       // Show alarm banner
       const alarmBanner = document.getElementById('alarmBanner');
@@ -6360,8 +6375,24 @@
       console.log('🚨 Alarm started');
     }
 
-    function stopAlarm() {
+    function stopAlarm(fromRemote = false) {
+      console.log(`🔕 stopAlarm called, fromRemote=${fromRemote}, alarmActive=${alarmActive}`);
       alarmActive = false;
+
+      // Publish stop to MQTT (unless triggered from remote)
+      if (!fromRemote && client && client.isConnected()) {
+        const payload = JSON.stringify({
+          status: 'STOPPED',
+          timestamp: Date.now()
+        });
+        const message = new Paho.MQTT.Message(payload);
+        message.destinationName = TOPIC_ALARM;
+        message.retained = false;
+        client.send(message);
+        console.log('📢 Alarm stop broadcast to all devices via MQTT:', TOPIC_ALARM);
+      } else {
+        console.log(`⚠️ MQTT not sent: fromRemote=${fromRemote}, client=${!!client}, isConnected=${client?.isConnected()}`);
+      }
 
       // Hide alarm banner
       const alarmBanner = document.getElementById('alarmBanner');
@@ -7044,7 +7075,8 @@
       client.subscribe('esp32/cam/status');
       // Subscribe to irrigation status (device-side updates)
       client.subscribe(TOPIC_STATUS);
-      console.log('Subscribed to irrigation control topics and sensor data');
+      client.subscribe(TOPIC_ALARM);  // Subscribe for cross-device alarm sync
+      console.log('Subscribed to irrigation control topics, sensor data, and alarm');
       document.getElementById('mqttDot').classList.remove('offline');
       flushPendingIrrigationCommands();
       // document.getElementById('mqttStatus').textContent = 'Online';
@@ -7286,6 +7318,28 @@
           return;
         } catch (e) {
           console.error('Failed to parse sensor data:', e);
+        }
+      }
+
+      // Handle alarm synchronization from other devices
+      if (message.destinationName === TOPIC_ALARM) {
+        try {
+          const alarmData = JSON.parse(payload);
+          console.log('🔔 Alarm Status Update:', alarmData);
+
+          if (alarmData.status === 'ACTIVE') {
+            // Another device triggered the alarm - start it here too
+            startAlarm(true);  // fromRemote=true to prevent echo
+            showToast('🚨 Alarm triggered from another device!', 'error');
+          } else if (alarmData.status === 'STOPPED') {
+            // Another device stopped the alarm - stop it here too
+            console.log('⏹️ Stopping alarm from remote device');
+            stopAlarm(true);  // fromRemote=true to prevent echo
+            showToast('✅ Alarm stopped from another device', 'success');
+          }
+          return;
+        } catch (e) {
+          console.error('Failed to parse alarm data:', e);
         }
       }
 
