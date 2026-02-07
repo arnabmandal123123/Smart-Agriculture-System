@@ -133,6 +133,7 @@ int currentMoistureRaw = 0;
 float currentSoilTemperature = 0.0;
 int currentTDS = 0;
 int currentRain = 0;
+int currentMotion = 0;         // PIR motion sensor (1 = motion detected, 0 = no motion)
 bool sensorDataValid = false;
 unsigned long lastSensorPublish = 0;
 
@@ -827,23 +828,35 @@ void readArduinoSerial() {
                       token = strtok(NULL, ",");
                       if (token != NULL) {
                         currentRain = atoi(token);
+                        
+                        // Parse Motion (PIR sensor)
+                        token = strtok(NULL, ",");
+                        if (token != NULL) {
+                          currentMotion = atoi(token);
+                        } else {
+                          currentMotion = 0;
+                        }
                       } else {
                         currentRain = 0;
+                        currentMotion = 0;
                       }
                     } else {
                       currentTDS = 0;
                       currentRain = 0;
+                      currentMotion = 0;
                     }
                   } else {
                     currentSoilTemperature = 0.0;
                     currentTDS = 0;
                     currentRain = 0;
+                    currentMotion = 0;
                   }
                 } else {
                   currentMoistureRaw = 0;
                   currentSoilTemperature = 0.0;
                   currentTDS = 0;
                   currentRain = 0;
+                  currentMotion = 0;
                 }
               } else {
                 currentMoisture = 0;
@@ -851,6 +864,7 @@ void readArduinoSerial() {
                 currentSoilTemperature = 0.0;
                 currentTDS = 0;
                 currentRain = 0;
+                currentMotion = 0;
               }
             } else {
               currentHumidity = 0.0;
@@ -861,8 +875,8 @@ void readArduinoSerial() {
            
           // If we reached here with valid parsing (or at least safe defaults)
           sensorDataValid = true;
-          LOG_INFO("\nSensor: Temp=%.1fC, Hum=%.1f%%, M=%d%%, Raw=%d, SoilTemp=%.1fC, TDS=%d, Rain=%d%%\n", 
-                   currentTemperature, currentHumidity, currentMoisture, currentMoistureRaw, currentSoilTemperature, currentTDS, currentRain);
+          LOG_INFO("\nSensor: Temp=%.1fC, Hum=%.1f%%, M=%d%%, Raw=%d, SoilTemp=%.1fC, TDS=%d, Rain=%d%%, Motion=%d\n", 
+                   currentTemperature, currentHumidity, currentMoisture, currentMoistureRaw, currentSoilTemperature, currentTDS, currentRain, currentMotion);
           
           // Send to Serial for debugging / plotting support
           Serial.print("SENSOR_PARSED:");
@@ -876,7 +890,9 @@ void readArduinoSerial() {
           Serial.print(",");
           Serial.print(currentTDS);
           Serial.print(",");
-          Serial.println(currentRain);
+          Serial.print(currentRain);
+          Serial.print(",");
+          Serial.println(currentMotion);
         }
       }
       // Reset buffer
@@ -903,6 +919,7 @@ void publishSensorData() {
   doc["soilTemperature"] = currentSoilTemperature;
   doc["tds"] = currentTDS;
   doc["rain"] = currentRain;
+  doc["motion"] = currentMotion;  // PIR motion sensor
   
   // Add timestamp if NTP is synced
   if (ntpSynced) {
@@ -915,8 +932,8 @@ void publishSensorData() {
   serializeJson(doc, buffer);
   mqttClient.publish(TOPIC_SENSORS, buffer, true);
   
-  LOG_INFO("Published sensor data: %.1fC, %.1f%%, %d%%, Soil: %.1fC, TDS: %d, Rain: %d%%\n", 
-           currentTemperature, currentHumidity, currentMoisture, currentSoilTemperature, currentTDS, currentRain);
+  LOG_INFO("Published sensor data: %.1fC, %.1f%%, %d%%, Soil: %.1fC, TDS: %d, Rain: %d%%, Motion: %d\n", 
+           currentTemperature, currentHumidity, currentMoisture, currentSoilTemperature, currentTDS, currentRain, currentMotion);
 }
 
 // ============ CAMERA INIT ============

@@ -2221,6 +2221,180 @@
     </div>
 
     <!-- ==========================================
+         FARM SECURITY TAB - Security Features
+         ========================================== -->
+    <div id="securityTab" class="tab-content">
+      <div style="padding: 16px; padding-bottom: 80px;">
+
+        <!-- ALARM BANNER (Hidden by default) -->
+        <div id="alarmBanner"
+          style="display: none; background: linear-gradient(135deg, #c62828 0%, #d32f2f 100%); padding: 20px; border-radius: 12px; margin-bottom: 16px; box-shadow: 0 8px 24px rgba(198, 40, 40, 0.4);">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <span class="material-symbols-rounded" style="color: white; font-size: 48px;">emergency</span>
+              <div>
+                <div style="color: white; font-size: 24px; font-weight: 700; margin-bottom: 4px;">🚨 SECURITY ALERT!
+                </div>
+                <div style="color: rgba(255,255,255,0.9); font-size: 16px;">Motion detected! Intrusion alert active.
+                </div>
+                <div id="alarmTime" style="color: rgba(255,255,255,0.8); font-size: 13px; margin-top: 4px;"></div>
+              </div>
+            </div>
+            <button onclick="stopAlarm()"
+              style="background: white; color: #c62828; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px; transition: transform 0.2s;"
+              onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+              <span class="material-symbols-rounded">notifications_off</span>
+              STOP ALARM
+            </button>
+          </div>
+        </div>
+
+        <!-- Security Header -->
+        <div style="margin-bottom: 20px;">
+          <h2 style="font-size: 24px; font-weight: 700; margin: 0 0 4px 0; color: var(--on-surface);">
+            <span class="material-symbols-rounded" style="vertical-align: middle; margin-right: 8px;">security</span>
+            Farm Security
+          </h2>
+          <p style="color: var(--on-surface-variant); margin: 0; font-size: 14px;">Real-time monitoring and intrusion
+            detection</p>
+        </div>
+
+        <!-- Motion Detection Status Card -->
+        <div id="motionSensorCard"
+          style="background: linear-gradient(135deg, var(--surface-container) 0%, var(--surface-container-high) 100%); padding: 20px; border-radius: 16px; margin-bottom: 16px; border: 2px solid var(--outline-variant); box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span class="material-symbols-rounded" id="motionIcon"
+                style="color: var(--success); background: rgba(52, 168, 83, 0.2); padding: 12px; border-radius: 50%; font-size: 32px; transition: all 0.3s;">shield</span>
+              <div>
+                <div style="font-size: 14px; color: var(--on-surface-variant); font-weight: 500;" class="translatable">
+                  PIR Motion Sensor</div>
+                <div id="motionStatus"
+                  style="font-size: 22px; font-weight: 700; color: var(--on-surface); margin-top: 4px;">No Motion
+                  Detected</div>
+                <div style="font-size: 12px; color: var(--on-surface-variant); margin-top: 4px;">
+                  <span class="material-symbols-rounded"
+                    style="vertical-align: middle; font-size: 14px;">location_on</span>
+                  Arduino Pin 5 • Range: ~7m
+                </div>
+              </div>
+            </div>
+            <div id="motionIndicator"
+              style="width: 16px; height: 16px; border-radius: 50%; background: var(--success); transition: all 0.3s; box-shadow: 0 0 0 4px rgba(52, 168, 83, 0.2);">
+            </div>
+          </div>
+
+          <!-- Status Details -->
+          <div
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-top: 16px; border-top: 1px solid var(--outline-variant);">
+            <div style="text-align: center; padding: 12px; background: var(--surface-container); border-radius: 12px;">
+              <div
+                style="font-size: 11px; color: var(--on-surface-variant); text-transform: uppercase; letter-spacing: 0.5px;">
+                Status</div>
+              <div id="motionStatusBadge"
+                style="margin-top: 4px; padding: 4px 12px; background: rgba(52, 168, 83, 0.2); color: var(--success); border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block;">
+                SECURE</div>
+            </div>
+            <div style="text-align: center; padding: 12px; background: var(--surface-container); border-radius: 12px;">
+              <div
+                style="font-size: 11px; color: var(--on-surface-variant); text-transform: uppercase; letter-spacing: 0.5px;">
+                Last Event</div>
+              <div id="lastMotionTime"
+                style="margin-top: 4px; font-size: 13px; font-weight: 600; color: var(--on-surface);">No events yet
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Motion Events Timeline -->
+        <div
+          style="background: var(--surface-container); padding: 20px; border-radius: 16px; margin-bottom: 16px; border: 1px solid var(--outline-variant);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: var(--on-surface);">
+              <span class="material-symbols-rounded"
+                style="vertical-align: middle; margin-right: 8px; font-size: 20px;">history</span>
+              Recent Motion Events
+            </h3>
+            <div id="motionEventCount"
+              style="background: var(--primary-container); color: var(--on-primary-container); padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 600;">
+              0 Today</div>
+          </div>
+
+          <!-- Events List -->
+          <div id="motionEventsList" style="max-height: 300px; overflow-y: auto;">
+            <div style="text-align: center; padding: 32px; color: var(--on-surface-variant);">
+              <span class="material-symbols-rounded"
+                style="font-size: 48px; opacity: 0.3; display: block; margin-bottom: 8px;">event_note</span>
+              <div style="font-size: 14px;">No motion events recorded yet</div>
+              <div style="font-size: 12px; margin-top: 4px; opacity: 0.7;">Events will appear here when motion is
+                detected</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Security Statistics -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+          <!-- Total Events -->
+          <div
+            style="background: var(--surface-container); padding: 16px; border-radius: 12px; text-align: center; border: 1px solid var(--outline-variant);">
+            <span class="material-symbols-rounded" style="color: var(--primary); font-size: 28px;">analytics</span>
+            <div id="totalMotionEvents"
+              style="font-size: 24px; font-weight: 700; color: var(--on-surface); margin-top: 8px;">0</div>
+            <div style="font-size: 12px; color: var(--on-surface-variant); margin-top: 4px;">Total Events</div>
+          </div>
+
+          <!-- Today's Events -->
+          <div
+            style="background: var(--surface-container); padding: 16px; border-radius: 12px; text-align: center; border: 1px solid var(--outline-variant);">
+            <span class="material-symbols-rounded"
+              style="color: var(--secondary); font-size: 28px;">event_available</span>
+            <div id="todayMotionEvents"
+              style="font-size: 24px; font-weight: 700; color: var(--on-surface); margin-top: 8px;">0</div>
+            <div style="font-size: 12px; color: var(--on-surface-variant); margin-top: 4px;">Today's Events</div>
+          </div>
+        </div>
+
+        <!-- Security Settings -->
+        <div
+          style="background: var(--surface-container); padding: 20px; border-radius: 16px; border: 1px solid var(--outline-variant);">
+          <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 600; color: var(--on-surface);">
+            <span class="material-symbols-rounded"
+              style="vertical-align: middle; margin-right: 8px; font-size: 20px;">settings</span>
+            Security Settings
+          </h3>
+
+          <!-- Motion Alerts Toggle -->
+          <div
+            style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--outline-variant);">
+            <div>
+              <div style="font-size: 15px; font-weight: 500; color: var(--on-surface);">Motion Alerts</div>
+              <div style="font-size: 12px; color: var(--on-surface-variant); margin-top: 2px;">Receive notifications on
+                motion detection</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="motionAlertsToggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <!-- Event Logging -->
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0;">
+            <div>
+              <div style="font-size: 15px; font-weight: 500; color: var(--on-surface);">Event Logging</div>
+              <div style="font-size: 12px; color: var(--on-surface-variant); margin-top: 2px;">Save motion events to
+                Firebase</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="eventLoggingToggle" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==========================================
          MORE TAB - Settings & Analysis Logs
          ========================================== -->
     <div id="moreTab" class="tab-content">
@@ -2372,6 +2546,10 @@
     <div class="nav-item" onclick="showTab('analytics')">
       <span class="material-symbols-rounded nav-icon">analytics</span>
       <div class="nav-label translatable">Analytics</div>
+    </div>
+    <div class="nav-item" onclick="showTab('security')">
+      <span class="material-symbols-rounded nav-icon">shield</span>
+      <div class="nav-label translatable">Security</div>
     </div>
     <div class="nav-item" onclick="showTab('more')">
       <span class="material-symbols-rounded nav-icon">menu</span>
@@ -5801,13 +5979,15 @@
       soilTemperature: [],
       tds: [],
       rain: [],
+      motion: [],  // PIR motion sensor events
       charts: {
         temperature: null,
         humidity: null,
         moisture: null,
         soilTemperature: null,
         tds: null,
-        rain: null
+        rain: null,
+        motion: null
       }
     };
     let currentSensorFilter = '1d'; // Default filter: 1 day
@@ -5896,6 +6076,7 @@
       const soilTemperature = data.soil_temp;
       const tds = data.tds;
       const rain = data.rain;
+      const motion = data.motion;  // PIR motion sensor
 
       // 1. Update local arrays (always)
       if (temperature !== undefined) sensorData.temperature.push({ value: temperature, timestamp: timestamp });
@@ -5909,6 +6090,10 @@
       if (rain !== undefined) {
         if (!sensorData.rain) sensorData.rain = [];
         sensorData.rain.push({ value: rain, timestamp: timestamp });
+      }
+      if (motion !== undefined) {
+        if (!sensorData.motion) sensorData.motion = [];
+        sensorData.motion.push({ value: motion, timestamp: timestamp });
       }
 
       // 2. Update charts immediately
@@ -5932,12 +6117,260 @@
           if (soilTemperature !== undefined) fbData.soilTemperature = soilTemperature;
           if (tds !== undefined) fbData.tds = tds;
           if (rain !== undefined) fbData.rain = rain;
+          if (motion !== undefined) fbData.motion = motion;
 
           await db.collection('sensorData').add(fbData);
         } catch (error) {
           console.error('Error saving sensor data to Firebase:', error);
         }
       }
+    }
+
+    // ========== SECURITY SETTINGS MANAGEMENT ==========
+    async function saveSecuritySettings() {
+      if (!firebaseReady || !firebaseEnabled || !db) return;
+
+      try {
+        const settings = {
+          motionAlertsEnabled: document.getElementById('motionAlertsToggle')?.checked || false,
+          eventLoggingEnabled: document.getElementById('eventLoggingToggle')?.checked !== false,
+          lastUpdated: Date.now()
+        };
+
+        await db.collection('securitySettings').doc('config').set(settings);
+        console.log('✅ Security settings saved');
+      } catch (error) {
+        console.error('Error saving security settings:', error);
+      }
+    }
+
+    async function loadSecuritySettings() {
+      if (!firebaseReady || !firebaseEnabled || !db) return;
+
+      try {
+        const doc = await db.collection('securitySettings').doc('config').get();
+        if (doc.exists) {
+          const settings = doc.data();
+          if (document.getElementById('motionAlertsToggle')) {
+            document.getElementById('motionAlertsToggle').checked = settings.motionAlertsEnabled;
+          }
+          if (document.getElementById('eventLoggingToggle')) {
+            document.getElementById('eventLoggingToggle').checked = settings.eventLoggingEnabled;
+          }
+          console.log('✅ Security settings loaded');
+        }
+      } catch (error) {
+        console.error('Error loading security settings:', error);
+      }
+    }
+
+    // ========== MOTION EVENT LOGGING ==========
+    let motionEvents = [];
+    let todayMotionCount = 0;
+    let totalMotionCount = 0;
+
+    async function addMotionEvent(timestamp) {
+      const eventLoggingEnabled = document.getElementById('eventLoggingToggle')?.checked;
+      if (eventLoggingEnabled === false) return;
+
+      const event = {
+        timestamp: timestamp,
+        date: new Date(timestamp).toISOString(),
+        timeString: new Date(timestamp).toLocaleTimeString()
+      };
+
+      motionEvents.unshift(event);
+      if (motionEvents.length > 50) motionEvents.pop();
+
+      updateMotionStatistics();
+      updateMotionTimeline();
+
+      if (firebaseReady && firebaseEnabled && db) {
+        try {
+          await db.collection('motionEvents').add(event);
+          console.log('📍 Motion event logged');
+        } catch (error) {
+          console.error('Error logging motion event:', error);
+        }
+      }
+    }
+
+    function updateMotionStatistics() {
+      const today = new Date().setHours(0, 0, 0, 0);
+      todayMotionCount = motionEvents.filter(e => e.timestamp >= today).length;
+      totalMotionCount = motionEvents.length;
+
+      const todayEl = document.getElementById('todayMotionEvents');
+      const totalEl = document.getElementById('totalMotionEvents');
+      const countEl = document.getElementById('motionEventCount');
+
+      if (todayEl) todayEl.textContent = todayMotionCount;
+      if (totalEl) totalEl.textContent = totalMotionCount;
+      if (countEl) countEl.textContent = `${todayMotionCount} Today`;
+    }
+
+    function updateMotionTimeline() {
+      const listEl = document.getElementById('motionEventsList');
+      if (!listEl) return;
+
+      if (motionEvents.length === 0) {
+        listEl.innerHTML = `
+          <div style="text-align: center; padding: 32px; color: var(--on-surface-variant);">
+            <span class="material-symbols-rounded" style="font-size: 48px; opacity: 0.3; display: block; margin-bottom: 8px;">event_note</span>
+            <div style="font-size: 14px;">No motion events recorded yet</div>
+            <div style="font-size: 12px; margin-top: 4px; opacity: 0.7;">Events will appear here when motion is detected</div>
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = motionEvents.slice(0, 10).map(event => `
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--surface-container-highest); border-radius: 8px; margin-bottom: 8px;">
+          <span class="material-symbols-rounded" style="color: var(--error); font-size: 20px;">motion_sensor_alert</span>
+          <div style="flex: 1;">
+            <div style="font-size: 14px; font-weight: 500; color: var(--on-surface);">Motion Detected</div>
+            <div style="font-size: 12px; color: var(--on-surface-variant);">${event.timeString}</div>
+          </div>
+          <div style="font-size: 11px; color: var(--on-surface-variant);">${getTimeAgo(event.timestamp)}</div>
+        </div>
+      `).join('');
+    }
+
+    function getTimeAgo(timestamp) {
+      const seconds = Math.floor((Date.now() - timestamp) / 1000);
+      if (seconds < 60) return `${seconds}s ago`;
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return `${minutes}m ago`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours}h ago`;
+      return `${Math.floor(hours / 24)}d ago`;
+    }
+
+    async function loadMotionEvents() {
+      if (!firebaseReady || !firebaseEnabled || !db) return;
+
+      try {
+        const snapshot = await db.collection('motionEvents')
+          .orderBy('timestamp', 'desc')
+          .limit(50)
+          .get();
+
+        motionEvents = snapshot.docs.map(doc => doc.data());
+        updateMotionStatistics();
+        updateMotionTimeline();
+        console.log(`📊 Loaded ${motionEvents.length} motion events`);
+      } catch (error) {
+        console.error('Error loading motion events:', error);
+      }
+    }
+
+    // ========== MOTION ALERT NOTIFICATIONS ==========
+    let lastNotificationTime = 0;
+    const NOTIFICATION_COOLDOWN = 10000; // 10 seconds between notifications
+
+    async function sendMotionAlert() {
+      // Prevent notification spam (max 1 per 10 seconds)
+      const now = Date.now();
+      if (now - lastNotificationTime < NOTIFICATION_COOLDOWN) {
+        return;
+      }
+      lastNotificationTime = now;
+
+      // Show toast notification
+      showToast('🚨 Motion Detected! Intrusion alert.', 'error');
+
+      // Request browser notification permission if not granted
+      if ('Notification' in window && Notification.permission === 'default') {
+        await Notification.requestPermission();
+      }
+
+      // Send browser notification if permission granted
+      if ('Notification' in window && Notification.permission === 'granted') {
+        const notification = new Notification('🚨 Security Alert', {
+          body: 'Motion detected on your farm! Check the Security tab for details.',
+          icon: 'https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsrounded/security/default/48px.svg',
+          badge: 'https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsrounded/sensors/default/48px.svg',
+          tag: 'motion-alert',
+          requireInteraction: true,
+          vibrate: [200, 100, 200]
+        });
+
+        notification.onclick = function () {
+          window.focus();
+          // Switch to Security tab
+          showTab('securityTab');
+          notification.close();
+        };
+      }
+
+      console.log('🔔 Motion alert sent');
+    }
+
+    // ========== ALARM SYSTEM ==========
+    let alarmAudio = null;
+    let alarmActive = false;
+
+    function startAlarm() {
+      if (alarmActive) return; // Already active
+      alarmActive = true;
+
+      // Show alarm banner
+      const alarmBanner = document.getElementById('alarmBanner');
+      if (alarmBanner) {
+        alarmBanner.style.display = 'block';
+        const alarmTime = document.getElementById('alarmTime');
+        if (alarmTime) {
+          alarmTime.textContent = 'Alert triggered at ' + new Date().toLocaleTimeString();
+        }
+      }
+
+      // Create and play alarm sound (using Web Audio API to generate beep)
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playBeep() {
+          if (!alarmActive) return;
+
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+
+          oscillator.frequency.value = 800; // 800 Hz beep
+          oscillator.type = 'square';
+
+          gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+          oscillator.start(audioContext.currentTime);
+          oscillator.stop(audioContext.currentTime + 0.5);
+
+          // Repeat beep every second while alarm is active
+          if (alarmActive) {
+            setTimeout(playBeep, 1000);
+          }
+        }
+
+        playBeep();
+      } catch (error) {
+        console.error('Error starting alarm sound:', error);
+      }
+
+      console.log('🚨 Alarm started');
+    }
+
+    function stopAlarm() {
+      alarmActive = false;
+
+      // Hide alarm banner
+      const alarmBanner = document.getElementById('alarmBanner');
+      if (alarmBanner) {
+        alarmBanner.style.display = 'none';
+      }
+
+      showToast('Alarm stopped', 'success');
+      console.log('🔕 Alarm stopped');
     }
 
     // Filter sensor data based on timeline
@@ -6755,6 +7188,75 @@
             }
           }
 
+          // Update Motion Sensor UI
+          if (data.motion !== undefined) {
+            const motionStatus = document.getElementById('motionStatus');
+            const motionIcon = document.getElementById('motionIcon');
+            const motionIndicator = document.getElementById('motionIndicator');
+            const motionCard = document.getElementById('motionSensorCard');
+            const motionStatusBadge = document.getElementById('motionStatusBadge');
+            const lastMotionTime = document.getElementById('lastMotionTime');
+
+            if (data.motion === 1) {
+              // Motion detected!
+              if (motionStatus) motionStatus.textContent = 'Motion Detected!';
+
+              // Log event to Firebase
+              addMotionEvent(Date.now());
+
+              // Start alarm if Motion Alerts enabled
+              const motionAlertsEnabled = document.getElementById('motionAlertsToggle')?.checked;
+              if (motionAlertsEnabled) {
+                startAlarm();
+                sendMotionAlert();
+              }
+
+              if (motionIcon) {
+                motionIcon.textContent = 'sensors';
+                motionIcon.style.color = 'var(--error)';
+                motionIcon.style.background = 'rgba(234, 67, 53, 0.2)';
+                motionIcon.style.animation = 'pulse 1s infinite';
+              }
+              if (motionIndicator) {
+                motionIndicator.style.background = 'var(--error)';
+                motionIndicator.style.boxShadow = '0 0 8px var(--error)';
+              }
+              if (motionCard) {
+                motionCard.style.borderColor = 'var(--error)';
+              }
+              if (motionStatusBadge) {
+                motionStatusBadge.textContent = 'ALERT';
+                motionStatusBadge.style.background = 'rgba(234, 67, 53, 0.2)';
+                motionStatusBadge.style.color = 'var(--error)';
+              }
+              if (lastMotionTime) {
+                lastMotionTime.textContent = new Date().toLocaleTimeString();
+              }
+              console.log('🚨 Motion Detected!');
+            } else {
+              // No motion
+              if (motionStatus) motionStatus.textContent = 'No Motion Detected';
+              if (motionIcon) {
+                motionIcon.textContent = 'shield';
+                motionIcon.style.color = 'var(--success)';
+                motionIcon.style.background = 'rgba(52, 168, 83, 0.2)';
+                motionIcon.style.animation = 'none';
+              }
+              if (motionIndicator) {
+                motionIndicator.style.background = 'var(--success)';
+                motionIndicator.style.boxShadow = '0 0 0 4px rgba(52, 168, 83, 0.2)';
+              }
+              if (motionCard) {
+                motionCard.style.borderColor = 'var(--outline-variant)';
+              }
+              if (motionStatusBadge) {
+                motionStatusBadge.textContent = 'SECURE';
+                motionStatusBadge.style.background = 'rgba(52, 168, 83, 0.2)';
+                motionStatusBadge.style.color = 'var(--success)';
+              }
+            }
+          }
+
           // Save to Firebase and update charts
           if (data.temperature !== undefined || data.tds !== undefined || data.rain !== undefined) {
             try {
@@ -6814,6 +7316,51 @@
             if (soilTempEl) soilTempEl.innerText = parseFloat(data.soilTemperature).toFixed(1);
           }
 
+          // Update Motion Sensor UI
+          if (data.motion !== undefined) {
+            const motionStatus = document.getElementById('motionStatus');
+            const motionIcon = document.getElementById('motionIcon');
+            const motionIndicator = document.getElementById('motionIndicator');
+            const motionCard = document.getElementById('motionSensorCard');
+
+            if (data.motion === 1) {
+              // Motion detected!
+              if (motionStatus) motionStatus.textContent = 'Motion Detected!';
+
+              // Log event to Firebase
+              addMotionEvent(Date.now());
+              if (motionIcon) {
+                motionIcon.textContent = 'sensors';
+                motionIcon.style.color = 'var(--error)';
+                motionIcon.style.background = 'rgba(234, 67, 53, 0.2)';
+                motionIcon.style.animation = 'pulse 1s infinite';
+              }
+              if (motionIndicator) {
+                motionIndicator.style.background = 'var(--error)';
+                motionIndicator.style.boxShadow = '0 0 8px var(--error)';
+              }
+              if (motionCard) {
+                motionCard.style.borderColor = 'var(--error)';
+              }
+            } else {
+              // No motion
+              if (motionStatus) motionStatus.textContent = 'No Motion';
+              if (motionIcon) {
+                motionIcon.textContent = 'shield';
+                motionIcon.style.color = 'var(--success)';
+                motionIcon.style.background = 'rgba(52, 168, 83, 0.2)';
+                motionIcon.style.animation = 'none';
+              }
+              if (motionIndicator) {
+                motionIndicator.style.background = 'var(--success)';
+                motionIndicator.style.boxShadow = 'none';
+              }
+              if (motionCard) {
+                motionCard.style.borderColor = 'var(--outline-variant)';
+              }
+            }
+          }
+
           // Save to Firebase
           if (data.temperature !== undefined || data.tds !== undefined) {
             saveSensorReading({
@@ -6821,7 +7368,8 @@
               hum: data.humidity,
               moisture: data.soilMoisture, // Note: legacy format might use soilMoisture key
               soil_temp: data.soilTemperature,
-              tds: data.tds
+              tds: data.tds,
+              motion: data.motion
             });
           }
 
@@ -7301,6 +7849,26 @@
         }
       });
     }
+
+    // ========== SECURITY SETTINGS INITIALIZATION ==========
+    // Initialize security toggles and load settings from Firebase
+    setTimeout(() => {
+      const motionAlertsToggle = document.getElementById('motionAlertsToggle');
+      const eventLoggingToggle = document.getElementById('eventLoggingToggle');
+
+      if (motionAlertsToggle) {
+        motionAlertsToggle.addEventListener('change', saveSecuritySettings);
+      }
+      if (eventLoggingToggle) {
+        eventLoggingToggle.addEventListener('change', saveSecuritySettings);
+      }
+
+      // Load settings and events from Firebase
+      if (firebaseReady && firebaseEnabled) {
+        loadSecuritySettings();
+        loadMotionEvents();
+      }
+    }, 1000);
   </script>
 </body>
 

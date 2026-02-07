@@ -33,6 +33,8 @@ const int WATER_VALUE = 400;  // Calibration value for wet soil (adjust based on
 // Rain Sensor
 #define RAIN_PIN A0
 
+// PIR Motion Sensor
+#define PIR_PIN 5         // PIR sensor connected to digital pin 5
 
 // Actuator pin
 const int pumpPin = 10; // Water pump connected to pin 10
@@ -49,6 +51,9 @@ void setup() {
 
   // Initialize DS18B20 sensor
   sensors.begin();
+
+  // Initialize PIR sensor pin
+  pinMode(PIR_PIN, INPUT);
 
   // Debug startup message
   Serial.println("ARDUINO: started, awaiting commands");
@@ -164,10 +169,15 @@ void loop() {
       int rainPercent = map(rainRaw, 1023, 0, 0, 100);
       rainPercent = constrain(rainPercent, 0, 100);
 
+      // Read PIR Motion Sensor
+      int motionDetected = digitalRead(PIR_PIN);  // 1 = motion, 0 = no motion
+
       espSerial.print(",");
       espSerial.print((int)tdsValue);
       espSerial.print(",");
-      espSerial.println(rainPercent);
+      espSerial.print(rainPercent);
+      espSerial.print(",");
+      espSerial.println(motionDetected);
       
       // Duplicate to USB for debugging
       Serial.print("DEBUG TX: SENSOR:");
@@ -183,7 +193,9 @@ void loop() {
       Serial.print(",");
       Serial.print((int)tdsValue);
       Serial.print(",");
-      Serial.println(rainPercent);
+      Serial.print(rainPercent);
+      Serial.print(",");
+      Serial.println(motionDetected);
     } else {
       espSerial.println("SENSOR:ERROR");
       Serial.println("DEBUG: Sensor read error");
