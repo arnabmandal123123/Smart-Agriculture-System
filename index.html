@@ -3196,6 +3196,9 @@
             // Load history only after auth
             loadSensorData();
 
+            // Load persist settings
+            loadAutoModeState();
+
             resolve();
           })
           .catch(err => {
@@ -6438,6 +6441,62 @@
       'house': 835      // ~30%
     };
 
+
+    // Save Auto Mode state to Firebase
+    function saveAutoModeState(enabled) {
+      if (!db || !auth.currentUser) return;
+
+      const userId = auth.currentUser.uid;
+      db.collection('settings').doc('pump_control').set({
+        autoModeEnabled: enabled,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedBy: userId
+      }, { merge: true })
+        .then(() => console.log('✅ Auto Mode state saved:', enabled))
+        .catch((error) => console.error('❌ Error saving Auto Mode state:', error));
+    }
+
+    // Load Auto Mode state from Firebase
+    function loadAutoModeState() {
+      if (!db) return;
+
+      db.collection('settings').doc('pump_control').get().then((doc) => {
+        if (doc.exists) {
+          const data = doc.data();
+          if (data.autoModeEnabled !== undefined) {
+            console.log('🔄 Loaded Auto Mode state:', data.autoModeEnabled);
+            const toggle = document.getElementById('autoModeToggle');
+            const profileDiv = document.getElementById('cropProfileDiv');
+
+            if (toggle) {
+              toggle.checked = data.autoModeEnabled;
+              autoModeEnabled = data.autoModeEnabled;
+
+              // Update UI visibility
+              if (profileDiv) profileDiv.style.display = autoModeEnabled ? 'block' : 'none';
+
+              // Sync to ESP32 if connected (ensures device matches saved state)
+              // Only send if different from default or if we want to enforce it
+              if (client && client.isConnected()) {
+                const profileSelector = document.getElementById('cropProfile');
+                const profile = profileSelector ? profileSelector.value : 'default';
+                const threshold = CROP_THRESHOLDS[profile] || 800;
+
+                const payload = JSON.stringify({
+                  type: "AUTO",
+                  enabled: autoModeEnabled,
+                  threshold: threshold
+                });
+                publishIrrigationMessage(TOPIC_AUTO, payload, { retained: true });
+              }
+            }
+          }
+        }
+      }).catch((error) => {
+        console.error("Error getting Auto Mode state:", error);
+      });
+    }
+
     function toggleAutoMode() {
       const toggle = document.getElementById('autoModeToggle');
       const profileDiv = document.getElementById('cropProfileDiv');
@@ -6460,6 +6519,9 @@
       publishIrrigationMessage(TOPIC_AUTO, payload, { retained: true });
 
       autoModeEnabled = newState;
+
+      // Save state to Firebase
+      saveAutoModeState(newState);
     }
 
     function updateAutoProfile() {
@@ -6922,6 +6984,19 @@
     }
 
     function togglePump(source = 'manual') {
+      // If manually activating/deactivating, disable Auto Mode first to prevent conflict
+      if (source === 'manual' && autoModeEnabled) {
+        console.log('⚠️ Manual pump action detected while Auto Mode is ON. Disabling Auto Mode.');
+        const toggle = document.getElementById('autoModeToggle');
+        if (toggle) toggle.checked = false;
+        toggleAutoMode(); // This will auto-save the disabled state too
+        showToast('Disabling Auto Mode for manual control', 'info');
+
+        // Slight delay to ensure Auto Mode disable command is sent first
+        setTimeout(() => togglePump('manual'), 300);
+        return;
+      }
+
       if (source === 'manual') {
         if (activePumpTimer) {
           clearTimeout(activePumpTimer);
@@ -6950,9 +7025,13 @@
       console.log('📤 Publishing manual override:', payload, 'to', TOPIC_MANUAL);
       client.send(message);
 
+      // OPTIMISTIC UI UPDATE: Update UI immediately, ESP32 will confirm
+      pumpOn = (newState === 'ON');
+      updatePumpStatus({ pump: newState, mode: 'MANUAL' });
+
       showToast('Manual ' + newState + ' command sent to ESP32', 'info');
 
-      // UI will be updated by ESP32 status messages (device-side control)
+      // UI will also be updated by ESP32 status messages (device-side control)
       // No local state changes - ESP32 is the source of truth
     }
 

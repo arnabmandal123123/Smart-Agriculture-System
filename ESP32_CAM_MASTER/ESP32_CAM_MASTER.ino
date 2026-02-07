@@ -443,11 +443,20 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
           LOG_INFO("Quick Timer cancelled by MANUAL OFF\n");
         }
         LOG_INFO("Manual override: OFF (released)\n");
+        
+        // CRITICAL: Clear retained message to prevent re-triggering on reconnect
+        mqttClient.publish(TOPIC_MANUAL, "", true);  // Empty retained message
+        
+        // Apply pump state immediately and publish status
+        setPumpState(false, "Manual OFF");
       } else {
         // User turned pump ON - hold manual control
         manualState.active = true;
         manualState.desiredState = true;
         LOG_INFO("Manual override: ON (active)\n");
+        
+        // Apply pump state immediately and publish status
+        setPumpState(true, "Manual ON");
       }
     }
   }
