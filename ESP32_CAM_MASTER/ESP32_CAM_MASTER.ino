@@ -33,6 +33,7 @@ const char* TOPIC_MANUAL = "irrigation_arnab/pump/manual";
 const char* TOPIC_STATUS = "irrigation_arnab/pump/status";
 const char* TOPIC_SENSORS = "irrigation_arnab/sensors/data";
 const char* TOPIC_AUTO = "irrigation_arnab/pump/auto";
+const char* TOPIC_SAFETY = "irrigation_arnab/pump/safety"; // New topic for safety settings
 
 // NTP Configuration
 const char* ntpServer = "pool.ntp.org";
@@ -134,8 +135,23 @@ float currentSoilTemperature = 0.0;
 int currentTDS = 0;
 int currentRain = 0;
 int currentMotion = 0;         // PIR motion sensor (1 = motion detected, 0 = no motion)
+int currentDistance = 0;       // Ultrasonic distance in cm
+int currentLight = 0;          // LDR sensor (0 = Day, 1 = Night)
 bool sensorDataValid = false;
 unsigned long lastSensorPublish = 0;
+
+// Water Management Variables
+float currentFlowRate = 0.0;
+unsigned int currentFlowVol = 0; // Volume in last second (mL)
+float dailyVolumeLiters = 0.0;
+unsigned long lastFlowRecvTime = 0;
+bool dryRunAlertActive = false;
+
+// Safety Settings
+bool maxRunEnabled = false;
+uint32_t maxRunMinutes = 20; // Default 20 mins
+unsigned long pumpStartTime = 0;
+int currentDay = -1; // For tracking daily reset
 
 // ========== FUNCTION DECLARATIONS ==========
 bool initCamera();
@@ -258,11 +274,7 @@ void loop() {
     lastStatusPublish = millis();
   }
 
-  // Publish sensor data periodically (every 60 seconds)
-  if (sensorDataValid && millis() - lastSensorPublish > 60000) {
-    publishSensorData();
-    lastSensorPublish = millis();
-  }
+
 
   yield();  // Let ESP32 background tasks run
 }
@@ -461,6 +473,23 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
       }
     }
   }
+  
+  // ========== SAFETY SETTINGS TOPIC ==========
+  else if (topicStr == TOPIC_SAFETY) {
+     const char* type = doc["type"];
+     if (strcmp(type, "SAFETY") == 0) {
+       // {"type":"SAFETY", "max_run_enabled":true, "max_run_min":20}
+       if (doc.containsKey("max_run_enabled")) maxRunEnabled = doc["max_run_enabled"];
+       if (doc.containsKey("max_run_min")) maxRunMinutes = doc["max_run_min"];
+       
+       LOG_INFO("Safety updated: MaxRun=%s (%u min)\n", maxRunEnabled?"ON":"OFF", maxRunMinutes);
+       
+       prefs.putBool("safe_en", maxRunEnabled);
+       prefs.putUInt("safe_min", maxRunMinutes);
+       
+       publishStatus();
+     }
+  }
 }
 
 // ========== MQTT RECONNECT (NON-BLOCKING) ==========
@@ -476,9 +505,14 @@ void mqttReconnect() {
     mqttClient.subscribe(TOPIC_SCHEDULE, 1);  // QoS 1 for reliability
     mqttClient.subscribe(TOPIC_MANUAL, 1);
     mqttClient.subscribe(TOPIC_AUTO, 1);
+    mqttClient.subscribe(TOPIC_SAFETY, 1);
     
     // Restore state from preferences (in case ESP rebooted)
     restoreScheduleFromPrefs();
+    
+    // Restore Safety Settings
+    maxRunEnabled = prefs.getBool("safe_en", false);
+    maxRunMinutes = prefs.getUInt("safe_min", 20);
     
     publishStatus();
   } else {
@@ -612,6 +646,23 @@ void processTimerLogic() {
   if (desiredPumpState != pumpPhysicalState) {
     setPumpState(desiredPumpState, "Timer Logic");
   }
+
+  // ========== SAFETY LOGIC REMOVED (User Request) ==========
+  // Dry Run Protection and Max Run Timer disabled.
+  // Flow data is still collected for display purposes.
+
+  // ========== DAILY RESET ==========
+  if (ntpSynced) {
+    struct tm timeinfo;
+    if (getLocalTime(&timeinfo)) {
+      if (currentDay != -1 && currentDay != timeinfo.tm_mday) {
+        // New day!
+        dailyVolumeLiters = 0.0;
+        LOG_INFO("Daily Volume Reset (New Day: %d)\n", timeinfo.tm_mday);
+      }
+      currentDay = timeinfo.tm_mday;
+    }
+  }
 }
 
 // ========== PUMP CONTROL ==========
@@ -626,7 +677,13 @@ void setPumpState(bool state, const char* reason) {
   } else {
     Serial2.println("PUMP_OFF");     // Send command to Arduino
     digitalWrite(RELAY_PIN, HIGH);  // Turn OFF (backup)
+    digitalWrite(RELAY_PIN, HIGH);  // Turn OFF (backup)
     LOG_INFO("PUMP OFF (%s)\n", reason);
+    pumpStartTime = 0; // Reset timer
+  }
+  
+  if (state && pumpStartTime == 0) {
+     pumpStartTime = millis(); // Start timer if not already running
   }
   
   publishStatus();
@@ -696,7 +753,11 @@ void publishStatus() {
   doc["auto_enabled"] = autoMode.enabled;
   doc["auto_threshold"] = autoMode.dryThreshold;
 
-  char buffer[256];
+  // Water data only - safety features removed
+  doc["flow_rate"] = currentFlowRate;
+  doc["today_vol"] = dailyVolumeLiters;
+
+  char buffer[512];
   serializeJson(doc, buffer);
   // Publish retained status so clients receive latest device state on subscribe
   mqttClient.publish(TOPIC_STATUS, buffer, true);
@@ -772,6 +833,7 @@ void restoreQuickTimerFromPrefs() {
 }
 
 // ========== READ SENSOR DATA FROM ARDUINO ==========
+// ========== READ SENSOR DATA FROM ARDUINO ==========
 void readArduinoSerial() {
   static char buffer[128];
   static uint8_t bufferIndex = 0;
@@ -788,96 +850,97 @@ void readArduinoSerial() {
     if (c == '\n') {
       buffer[bufferIndex] = '\0';
       
-      // Parse sensor data: SENSOR:temp,humidity
-      // Parse sensor data: SENSOR:temp,humidity,moist,moistRaw,soilTemp,tds,rain,motion
-      if (strncmp(buffer, "SENSOR:", 7) == 0) {
-        if (strcmp(buffer + 7, "ERROR") == 0) {
-          sensorDataValid = false;
-          LOG_INFO("\nSensor read error\n");
+      // === ENVIRONMENT DATA (Every 30s) ===
+      // Format: ENV:temp,hum,moist%,raw,soilT,tds,rain
+      if (strncmp(buffer, "ENV:", 4) == 0) {
+        if (strcmp(buffer + 4, "ERROR") == 0) {
+          LOG_INFO("\nEnv sensor read error\n");
         } else {
-          // Parse temperature
-          char* token = strtok(buffer + 7, ",");
-          if (token != NULL) {
-            currentTemperature = atof(token);
-            
-            // Parse humidity
-            token = strtok(NULL, ",");
-            if (token != NULL) {
-              currentHumidity = atof(token);
-              
-              // Parse Moisture Percentage
-              token = strtok(NULL, ",");
-              if (token != NULL) {
-                currentMoisture = atoi(token);
-                
-                // Parse Raw Moisture
-                token = strtok(NULL, ",");
-                if (token != NULL) {
-                  currentMoistureRaw = atoi(token);
-                  
-                  // Parse Soil Temperature
-                  token = strtok(NULL, ",");
-                  if (token != NULL) {
-                    currentSoilTemperature = atof(token);
-                    
-                    // Parse TDS
-                    token = strtok(NULL, ",");
-                    if (token != NULL) {
-                      currentTDS = atoi(token);
-                      
-                      // Parse Rain
-                      token = strtok(NULL, ",");
-                      if (token != NULL) {
-                        currentRain = atoi(token);
-                        
-                        // Parse Motion (PIR sensor) - periodic update
-                        token = strtok(NULL, ",");
-                        if (token != NULL) {
-                          // Only update if not recently updated by immediate event? 
-                          // Or just trust the latest. Trust latest.
-                          currentMotion = atoi(token);
-                        } else {
-                          currentMotion = 0;
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-           
-          // If we reached here with valid parsing (or at least safe defaults)
-          sensorDataValid = true;
-          LOG_INFO("\nSensor: Temp=%.1fC, Hum=%.1f%%, M=%d%%, Raw=%d, SoilTemp=%.1fC, TDS=%d, Rain=%d%%, Motion=%d\n", 
-                   currentTemperature, currentHumidity, currentMoisture, currentMoistureRaw, currentSoilTemperature, currentTDS, currentRain, currentMotion);
+          char* token = strtok(buffer + 4, ",");
+          if (token) currentTemperature = atof(token);
           
-          // Send to Serial for debugging / plotting support
-          Serial.print("SENSOR_PARSED:");
-          Serial.print(currentTemperature, 1);
-          Serial.print(",");
-          Serial.print(currentHumidity, 1);
-          Serial.print(",");
-          Serial.print(currentMoisture);
-          Serial.print(",");
-          Serial.print(currentSoilTemperature, 1);
-          Serial.print(",");
-          Serial.print(currentTDS);
-          Serial.print(",");
-          Serial.print(currentRain);
-          Serial.print(",");
-          Serial.println(currentMotion);
+          token = strtok(NULL, ",");
+          if (token) currentHumidity = atof(token);
+          
+          token = strtok(NULL, ",");
+          if (token) currentMoisture = atoi(token);
+          
+          token = strtok(NULL, ",");
+          if (token) currentMoistureRaw = atoi(token);
+          
+          token = strtok(NULL, ",");
+          if (token) currentSoilTemperature = atof(token);
+          
+          token = strtok(NULL, ",");
+          if (token) currentTDS = atoi(token);
+          
+          token = strtok(NULL, ",");
+          if (token) currentRain = atoi(token);
+
+          token = strtok(NULL, ",");
+          if (token) currentLight = atoi(token);
+
+          // We received valid ENV data, mark as valid so we can publish
+          sensorDataValid = true;
+          
+          LOG_INFO("\n[ENV] T=%.1f H=%.1f M=%d%% S=%.1f Tds=%d R=%d%% L=%d\n", 
+                   currentTemperature, currentHumidity, currentMoisture, 
+                   currentSoilTemperature, currentTDS, currentRain, currentLight);
+                   
+          publishEnvData(); // Publish immediately on receipt
         }
       } 
       
-      // Parse immediate motion data: MOTION:1 or MOTION:0
+      // === SECURITY DATA (Every 5s) ===
+      // Format: SEC:motion,distance
+      else if (strncmp(buffer, "SEC:", 4) == 0) {
+        char* token = strtok(buffer + 4, ",");
+        if (token) currentMotion = atoi(token);
+        
+        token = strtok(NULL, ",");
+        if (token) currentDistance = atoi(token);
+        
+        // Security data also validates system is working
+        sensorDataValid = true;
+        
+        LOG_INFO("\n[SEC] Mot=%d Dist=%dcm\n", currentMotion, currentDistance);
+
+        publishSecData(); // Publish immediately on receipt
+      }
+      
+      // === IMMEDIATE MOTION EVENT (Interrupt) ===
+      // Format: MOTION:1 or MOTION:0
       else if (strncmp(buffer, "MOTION:", 7) == 0) {
         int motionState = atoi(buffer + 7);
         currentMotion = motionState;
         LOG_INFO("\n🔔 IMMEDIATE MOTION EVENT: %d\n", currentMotion);
         
-        // Immediately publish updated full sensor data
-        publishSensorData();
+        // Immediately publish for ultra-low latency
+        publishSecData();
+      }
+
+      // === FLOW DATA (Every 1s when Pump ON) ===
+      // Format: FLOW:rate,vol
+      else if (strncmp(buffer, "FLOW:", 5) == 0) {
+        char* token = strtok(buffer + 5, ",");
+        if (token) currentFlowRate = atof(token);
+        
+        token = strtok(NULL, ",");
+        if (token) {
+           if (currentFlowRate > 0) {
+             float litersInSec = currentFlowRate / 60.0;
+             dailyVolumeLiters += litersInSec;
+           }
+        }
+        
+        lastFlowRecvTime = millis();
+        // Clear Dry Run Alert since we have flow
+        if (currentFlowRate > 0.1) dryRunAlertActive = false;
+        
+        LOG_INFO("FLOW: %.2f L/min, Daily=%.2f L\n", currentFlowRate, dailyVolumeLiters);
+        
+        // Publish immediately when flow data is received
+        publishStatus();
       }
 
       // Reset buffer
@@ -894,32 +957,13 @@ void readArduinoSerial() {
 }
 
 // ========== PUBLISH SENSOR DATA TO MQTT ==========
-void publishSensorData() {
-  if (!mqttClient.connected() || !sensorDataValid) return;
-  
-  StaticJsonDocument<256> doc;
-  doc["temperature"] = currentTemperature;
-  doc["humidity"] = currentHumidity;
-  doc["moisture"] = currentMoisture;
-  doc["soilTemperature"] = currentSoilTemperature;
-  doc["tds"] = currentTDS;
-  doc["rain"] = currentRain;
-  doc["motion"] = currentMotion;  // PIR motion sensor
-  
-  // Add timestamp if NTP is synced
-  if (ntpSynced) {
-    time_t now;
-    time(&now);
-    doc["timestamp"] = now;
-  }
-  
-  char buffer[256];
-  serializeJson(doc, buffer);
-  mqttClient.publish(TOPIC_SENSORS, buffer, true);
-  
-  LOG_INFO("Published sensor data: %.1fC, %.1f%%, %d%%, Soil: %.1fC, TDS: %d, Rain: %d%%, Motion: %d\n", 
-           currentTemperature, currentHumidity, currentMoisture, currentSoilTemperature, currentTDS, currentRain, currentMotion);
-}
+
+
+
+
+
+// ========== PUBLISH SENSOR DATA TO MQTT ==========
+
 
 // ============ CAMERA INIT ============
 bool initCamera() {
@@ -1136,4 +1180,55 @@ void handleCaptureJPG() {
   
   LOG_DBG("Sent %u/%u bytes\n", (unsigned)written, (unsigned)fb->len);
   esp_camera_fb_return(fb);
+}
+void publishEnvData() {
+  if (!mqttClient.connected()) return;
+  
+  StaticJsonDocument<512> doc;
+  doc["type"] = "SENSOR_DATA";
+  doc["temperature"] = currentTemperature;
+  doc["humidity"] = currentHumidity;
+  doc["moisture"] = currentMoisture;
+  doc["moisture_raw"] = currentMoistureRaw;
+  doc["soilTemperature"] = currentSoilTemperature;
+  doc["tds"] = currentTDS;
+  doc["rain"] = currentRain;
+  doc["light"] = currentLight;
+  doc["flow"] = currentFlowRate;        // Add flow rate (L/min)
+  doc["today_vol"] = dailyVolumeLiters; // Add daily water usage (L)
+  
+  // Add timestamp if NTP is synced
+  if (ntpSynced) {
+    time_t now;
+    time(&now);
+    doc["timestamp"] = now;
+  }
+
+  char buffer[512];
+  serializeJson(doc, buffer);
+  mqttClient.publish(TOPIC_SENSORS, buffer);
+  
+  LOG_INFO("Published ENV data\n");
+}
+
+void publishSecData() {
+  if (!mqttClient.connected()) return;
+  
+  StaticJsonDocument<256> doc;
+  doc["type"] = "SENSOR_DATA"; // Keep type same for UI compatibility
+  doc["motion"] = currentMotion;
+  doc["distance"] = currentDistance;
+  
+  // Add timestamp if NTP is synced
+  if (ntpSynced) {
+    time_t now;
+    time(&now);
+    doc["timestamp"] = now;
+  }
+
+  char buffer[256];
+  serializeJson(doc, buffer);
+  mqttClient.publish(TOPIC_SENSORS, buffer);
+  
+  LOG_INFO("Published SEC data: Mot=%d Dist=%d\n", currentMotion, currentDistance);
 }

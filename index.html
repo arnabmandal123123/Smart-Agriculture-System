@@ -1820,6 +1820,35 @@
             <span class="translatable">Activate Pump</span>
           </button>
 
+          <!-- Water Flow & Usage Stats (Visible when relevant) -->
+          <div id="flowStatsDiv" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px;">
+            <!-- Flow & Volume Combined -->
+            <div
+              style="background: var(--surface-container); padding: 12px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; border: 1px solid rgba(0,0,0,0.05); grid-column: span 2;">
+              <div style="font-size: 12px; color: var(--on-surface-variant); margin-bottom: 4px;" class="translatable">
+                Water Flow</div>
+              <div id="flowVolumeDisplay" style="font-size: 16px; font-weight: 700; color: var(--primary); text-align: center;">
+                Rate=0.0000 L/min, Vol=0 mL
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                <div id="flowStatus" style="font-size: 10px; color: var(--on-surface-variant);">Offline</div>
+                <span style="color: var(--on-surface-variant);">•</span>
+                <div style="font-size: 10px; color: var(--on-surface-variant);">Resets 00:00</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dry Run Alert Banner (Hidden) -->
+          <div id="dryRunAlert"
+            style="display: none; background: rgba(234, 67, 53, 0.1); border: 1px solid var(--error); border-radius: 8px; padding: 12px; margin-top: 12px; align-items: center; gap: 12px;">
+            <span class="material-symbols-rounded" style="color: var(--error);">warning</span>
+            <div>
+              <div style="color: var(--error); font-weight: 700; font-size: 13px;">DRY RUN DETECTED</div>
+              <div style="color: var(--error); font-size: 11px;">Pump stopped to prevent damage. Check water source.
+              </div>
+            </div>
+          </div>
+
           <!-- Schedule Section -->
           <div style="margin-top: 12px; padding-top: 16px; border-top: 1px solid var(--outline-variant);">
             <!-- Quick Delay Timer -->
@@ -1860,6 +1889,8 @@
               <span class="material-symbols-rounded">event_available</span> <span class="translatable">Set
                 Schedule</span>
             </button>
+
+
           </div>
         </div>
       </article>
@@ -2062,6 +2093,28 @@
           </div>
         </div>
 
+        <!-- Light Sensor Status (LDR) -->
+        <div
+          style="background: var(--surface-container); padding: 16px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; margin-top: 12px; border: 1px solid var(--outline-variant);">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div id="lightIconBg"
+              style="background: rgba(253, 216, 53, 0.2); padding: 8px; border-radius: 50%; transition: all 0.5s;">
+              <span class="material-symbols-rounded" id="lightIcon"
+                style="color: var(--warning); font-size: 24px; transition: all 0.5s;">wb_sunny</span>
+            </div>
+            <div>
+              <div style="font-size: 13px; color: var(--on-surface-variant);" class="translatable">Light Status</div>
+              <div id="lightStatus" style="font-size: 16px; font-weight: 600; color: var(--on-surface);">Daytime</div>
+              <div id="lightDuration" style="font-size: 11px; color: var(--on-surface-variant); margin-top: 2px;">
+                Duration: --</div>
+            </div>
+          </div>
+          <div style="font-size: 13px; font-weight: 500; color: var(--on-surface-variant); text-align: right;">
+            <span class="material-symbols-rounded" style="vertical-align: middle; font-size: 16px;">wb_twilight</span>
+            A2
+          </div>
+        </div>
+
         <!-- TDS Info Dropdown -->
         <div style="margin-top: 12px; background: var(--surface-container); border-radius: 12px; overflow: hidden;">
           <div onclick="toggleTdsInfo()"
@@ -2185,6 +2238,51 @@
             <canvas id="tdsChart"></canvas>
           </div>
         </div>
+
+        <!-- Light Level Chart -->
+        <div class="card" style="padding: 20px; margin-bottom: 16px;">
+          <h3
+            style="font-size: 16px; margin: 0 0 16px 0; color: var(--primary); font-weight: 600; display: flex; align-items: center; gap: 8px;">
+            <span class="material-symbols-rounded">wb_sunny</span>
+            <span class="translatable">Light Level History</span>
+          </h3>
+          <div style="position: relative; height: 300px; width: 100%;">
+            <canvas id="lightChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Water Usage Chart -->
+        <div class="card" style="padding: 20px; margin-bottom: 16px;">
+          <h3
+            style="font-size: 16px; margin: 0 0 16px 0; color: var(--primary); font-weight: 600; display: flex; align-items: center; gap: 8px;">
+            <span class="material-symbols-rounded">water_drop</span>
+            <span class="translatable">Water Usage History</span>
+          </h3>
+          
+          <!-- Water Statistics Summary -->
+          <div id="waterStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px;">
+            <div style="background: var(--surface-container); padding: 12px; border-radius: 12px; border-left: 3px solid #3B82F6;">
+              <div style="font-size: 11px; color: var(--on-surface-variant); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Total Usage</div>
+              <div style="font-size: 20px; font-weight: 700; color: var(--on-surface);" id="waterTotalStat">0 L</div>
+            </div>
+            <div style="background: var(--surface-container); padding: 12px; border-radius: 12px; border-left: 3px solid #10B981;">
+              <div style="font-size: 11px; color: var(--on-surface-variant); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Daily Avg</div>
+              <div style="font-size: 20px; font-weight: 700; color: var(--on-surface);" id="waterAvgStat">0 L</div>
+            </div>
+            <div style="background: var(--surface-container); padding: 12px; border-radius: 12px; border-left: 3px solid #F59E0B;">
+              <div style="font-size: 11px; color: var(--on-surface-variant); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Peak Day</div>
+              <div style="font-size: 20px; font-weight: 700; color: var(--on-surface);" id="waterPeakStat">0 L</div>
+            </div>
+            <div style="background: var(--surface-container); padding: 12px; border-radius: 12px; border-left: 3px solid #8B5CF6;">
+              <div style="font-size: 11px; color: var(--on-surface-variant); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Days Active</div>
+              <div style="font-size: 20px; font-weight: 700; color: var(--on-surface);" id="waterDaysStat">0</div>
+            </div>
+          </div>
+          
+          <div style="position: relative; height: 320px; width: 100%;">
+            <canvas id="waterChart"></canvas>
+          </div>
+        </div>
       </article>
 
       <article class="card">
@@ -2303,6 +2401,37 @@
                 style="margin-top: 4px; font-size: 13px; font-weight: 600; color: var(--on-surface);">No events yet
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- Ultrasonic Distance Sensor Card -->
+        <div id="ultrasonicCard"
+          style="background: linear-gradient(135deg, var(--surface-container) 0%, var(--surface-container-high) 100%); padding: 20px; border-radius: 16px; margin-bottom: 16px; border: 2px solid var(--outline-variant); box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span class="material-symbols-rounded" id="distanceIcon"
+                style="color: var(--primary); background: rgba(62, 166, 255, 0.2); padding: 12px; border-radius: 50%; font-size: 32px; transition: all 0.3s;">straighten</span>
+              <div>
+                <div style="font-size: 14px; color: var(--on-surface-variant); font-weight: 500;" class="translatable">
+                  Ultrasonic Distance</div>
+                <div id="distanceStatus"
+                  style="font-size: 22px; font-weight: 700; color: var(--on-surface); margin-top: 4px;">-- cm</div>
+                <div style="font-size: 12px; color: var(--on-surface-variant); margin-top: 4px;">
+                  <span class="material-symbols-rounded"
+                    style="vertical-align: middle; font-size: 14px;">settings_ethernet</span>
+                  Arduino Pins 6/7 • Range: 2-400cm
+                </div>
+              </div>
+            </div>
+            <div id="distanceIndicator"
+              style="width: 16px; height: 16px; border-radius: 50%; background: var(--primary); transition: all 0.3s; box-shadow: 0 0 0 4px rgba(62, 166, 255, 0.2);">
+            </div>
+          </div>
+          <!-- Distance Bar -->
+          <div
+            style="background: var(--surface-container-high); height: 8px; border-radius: 4px; overflow: hidden; margin-top: 12px;">
+            <div id="distanceBar"
+              style="width: 0%; height: 100%; background: var(--primary); transition: width 0.3s ease;"></div>
           </div>
         </div>
 
@@ -5905,10 +6034,30 @@
     // Initialize plant selector on page load
     initPlantSelector();
 
+
+
     // Auto-load saved IP or use default, then auto-connect
     window.addEventListener('DOMContentLoaded', function () {
 
 
+      // Restore last known daily usage from localStorage immediately (before Firebase loads)
+      try {
+        const lastUsage = localStorage.getItem('lastDailyUsage');
+        const lastTime = localStorage.getItem('lastDailyUsageTime');
+        if (lastUsage && lastTime) {
+          const age = Date.now() - parseInt(lastTime);
+          // Only restore if less than 24 hours old (otherwise it's from a previous day)
+          if (age < 86400000) {
+            const displayEl = document.getElementById('flowVolumeDisplay');
+            if (displayEl) {
+              const vol = Math.round(parseFloat(lastUsage) * 1000);
+              displayEl.textContent = `Rate=0.0000 L/min, Vol=${vol} mL`;
+              console.log('💧 Restored daily usage from localStorage: ' + lastUsage + ' L (' + vol + ' mL)');
+            }
+          }
+        }
+      } catch (e) { /* ignore */ }
+      
       // Initialize pump card as disabled (until ESP connects)
       const pumpBtn = document.getElementById('pumpBtn');
       const pumpCard = document.getElementById('pumpCard');
@@ -6005,7 +6154,11 @@
         soilTemperature: null,
         tds: null,
         rain: null,
-        motion: null
+        tds: null,
+        rain: null,
+        motion: null,
+        light: null,
+        water: null
       }
     };
     let currentSensorFilter = '1d'; // Default filter: 1 day
@@ -6067,6 +6220,22 @@
               id: doc.id
             });
           }
+          if (data.light !== undefined) {
+            if (!sensorData.light) sensorData.light = [];
+            sensorData.light.push({
+              value: data.light,
+              timestamp: data.timestamp,
+              id: doc.id
+            });
+          }
+          if (data.today_vol !== undefined) {
+            if (!sensorData.water) sensorData.water = [];
+            sensorData.water.push({
+              value: data.today_vol,
+              timestamp: data.timestamp,
+              id: doc.id
+            });
+          }
           if (data.rain !== undefined) {
             if (!sensorData.rain) sensorData.rain = [];
             sensorData.rain.push({
@@ -6078,6 +6247,21 @@
         });
 
         console.log(`📊 Loaded ${sensorData.temperature.length} sensor readings from Firebase`);
+        
+        // Restore last known daily water usage to UI
+        if (sensorData.water && sensorData.water.length > 0) {
+          const latestWater = sensorData.water[sensorData.water.length - 1];
+          const displayEl = document.getElementById('flowVolumeDisplay');
+          if (displayEl && latestWater.value !== undefined) {
+            const vol = Math.round(parseFloat(latestWater.value) * 1000);
+            const currentText = displayEl.textContent;
+            const rateMatch = currentText.match(/Rate=([\d.]+)/);
+            const rate = rateMatch ? rateMatch[1] : '0.0000';
+            displayEl.textContent = `Rate=${rate} L/min, Vol=${vol} mL`;
+            console.log('💧 Restored daily usage: ' + latestWater.value + ' L (' + vol + ' mL)');
+          }
+        }
+        
         updateSensorCharts();
       } catch (error) {
         console.error('Error loading sensor data:', error);
@@ -6094,7 +6278,10 @@
       const soilTemperature = data.soil_temp;
       const tds = data.tds;
       const rain = data.rain;
-      const motion = data.motion;  // PIR motion sensor
+      const motion = data.motion;
+      const light = data.light;
+      const flow = data.flow;         // Flow Rate
+      const water = data.today_vol;   // Daily Volume
 
       // 1. Update local arrays (always)
       if (temperature !== undefined) sensorData.temperature.push({ value: temperature, timestamp: timestamp });
@@ -6105,6 +6292,11 @@
         if (!sensorData.tds) sensorData.tds = [];
         sensorData.tds.push({ value: tds, timestamp: timestamp });
       }
+      if (water !== undefined) {
+        if (!sensorData.water) sensorData.water = [];
+        sensorData.water.push({ value: water, timestamp: timestamp });
+        console.log('💧 Water added to local array:', water, 'L, Total records:', sensorData.water.length);
+      }
       if (rain !== undefined) {
         if (!sensorData.rain) sensorData.rain = [];
         sensorData.rain.push({ value: rain, timestamp: timestamp });
@@ -6112,6 +6304,10 @@
       if (motion !== undefined) {
         if (!sensorData.motion) sensorData.motion = [];
         sensorData.motion.push({ value: motion, timestamp: timestamp });
+      }
+      if (light !== undefined) {
+        if (!sensorData.light) sensorData.light = [];
+        sensorData.light.push({ value: light, timestamp: timestamp });
       }
 
       // 2. Update charts immediately
@@ -6136,8 +6332,15 @@
           if (tds !== undefined) fbData.tds = tds;
           if (rain !== undefined) fbData.rain = rain;
           if (motion !== undefined) fbData.motion = motion;
+          if (light !== undefined) fbData.light = light;
+          if (flow !== undefined) fbData.flow = flow;
+          if (water !== undefined) fbData.today_vol = water;
 
           await db.collection('sensorData').add(fbData);
+          
+          if (water !== undefined) {
+            console.log('✅ Water data saved to Firebase:', water, 'L at', new Date(timestamp).toLocaleTimeString());
+          }
         } catch (error) {
           console.error('Error saving sensor data to Firebase:', error);
         }
@@ -6513,6 +6716,8 @@
       updateMoistureChart();
       updateSoilTemperatureChart();
       updateTdsChart();
+      updateLightChart();
+      updateWaterChart();
     }
 
 
@@ -6938,6 +7143,242 @@
       });
     }
 
+    // Light History Chart
+    function updateLightChart() {
+      const canvas = document.getElementById('lightChart');
+      if (!canvas) return;
+
+      // Filter data based on current timeline
+      // Check if sensorData.light exists
+      if (!sensorData.light) sensorData.light = [];
+      const filteredData = filterSensorData(sensorData.light, currentSensorFilter);
+
+      if (filteredData.length === 0) {
+        if (sensorData.charts.light) {
+          sensorData.charts.light.destroy();
+          sensorData.charts.light = null;
+        }
+        return;
+      }
+
+      // Prepare chart data
+      const labels = filteredData.map(item => new Date(item.timestamp).toLocaleString());
+      // Map: 0(Day)->100, 1(Night)->0
+      const plotValues = filteredData.map(item => item.value === 0 ? 100 : 0);
+
+      // Destroy existing chart
+      if (sensorData.charts.light) {
+        sensorData.charts.light.destroy();
+      }
+
+      // Create new chart
+      sensorData.charts.light = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Light Level',
+            data: plotValues,
+            borderColor: '#FBC02D',
+            backgroundColor: 'rgba(253, 216, 53, 0.2)',
+            borderWidth: 2,
+            fill: true,
+            stepped: true,
+            pointRadius: 0,
+            pointHoverRadius: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  return context.raw > 50 ? 'Daytime' : 'Nighttime';
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 110,
+              ticks: {
+                callback: function (value) { if (value === 100) return 'Day'; if (value === 0) return 'Night'; return ''; },
+                color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface-variant')
+              },
+              grid: { color: 'rgba(255, 255, 255, 0.05)' }
+            },
+            x: {
+              ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface-variant') },
+              grid: { color: 'rgba(255, 255, 255, 0.05)' }
+            }
+          }
+        }
+      });
+    }
+
+    // Water Usage Chart (Bar Chart of Daily Totals)
+    function updateWaterChart() {
+      const canvas = document.getElementById('waterChart');
+      if (!canvas) return;
+
+      // Use raw water data (cumulative daily volume)
+      // We want to find the MAX volume for each day in the range.
+
+      const filteredData = filterSensorData(sensorData.water || [], currentSensorFilter);
+      if (filteredData.length === 0) {
+        if (sensorData.charts.water) { sensorData.charts.water.destroy(); sensorData.charts.water = null; }
+        // Hide stats
+        const statsDiv = document.getElementById('waterStats');
+        if (statsDiv) statsDiv.style.display = 'none';
+        return;
+      }
+
+      // Aggregate by Day (Max val per day)
+      const dailyMax = {}; // 'YYYY-MM-DD': maxVol
+      filteredData.forEach(item => {
+        const dateKey = new Date(item.timestamp).toLocaleDateString();
+        if (!dailyMax[dateKey] || item.value > dailyMax[dateKey]) {
+          dailyMax[dateKey] = item.value;
+        }
+      });
+
+      const labels = Object.keys(dailyMax);
+      const values = Object.values(dailyMax);
+
+      // Calculate statistics
+      const totalUsage = values.reduce((sum, val) => sum + val, 0);
+      const avgUsage = totalUsage / values.length;
+      const peakUsage = Math.max(...values);
+      const daysActive = values.length;
+
+      // Update stats display
+      const statsDiv = document.getElementById('waterStats');
+      if (statsDiv) {
+        statsDiv.style.display = 'grid';
+        document.getElementById('waterTotalStat').textContent = totalUsage.toFixed(1) + ' L';
+        document.getElementById('waterAvgStat').textContent = avgUsage.toFixed(1) + ' L';
+        document.getElementById('waterPeakStat').textContent = peakUsage.toFixed(1) + ' L';
+        document.getElementById('waterDaysStat').textContent = daysActive;
+      }
+
+      if (sensorData.charts.water) sensorData.charts.water.destroy();
+
+      // Create gradient
+      const ctx = canvas.getContext('2d');
+      const gradient = ctx.createLinearGradient(0, 0, 0, 320);
+      gradient.addColorStop(0, 'rgba(59, 130, 246, 0.8)');
+      gradient.addColorStop(0.5, 'rgba(59, 130, 246, 0.6)');
+      gradient.addColorStop(1, 'rgba(59, 130, 246, 0.4)');
+
+      sensorData.charts.water = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Water Used',
+            data: values,
+            backgroundColor: gradient,
+            borderColor: 'rgba(59, 130, 246, 1)',
+            borderWidth: 2,
+            borderRadius: 8,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface'),
+                font: { size: 13, weight: '600' },
+                padding: 15,
+                usePointStyle: true,
+                pointStyle: 'circle'
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              titleColor: '#fff',
+              bodyColor: '#fff',
+              borderColor: 'rgba(59, 130, 246, 0.5)',
+              borderWidth: 1,
+              padding: 12,
+              displayColors: true,
+              callbacks: {
+                title: function(context) {
+                  return '📅 ' + context[0].label;
+                },
+                label: function(context) {
+                  const value = context.parsed.y;
+                  const percent = ((value / totalUsage) * 100).toFixed(1);
+                  return [
+                    '💧 Used: ' + value.toFixed(1) + ' L',
+                    '📊 ' + percent + '% of total',
+                    value > avgUsage ? '⬆️ Above average' : '⬇️ Below average'
+                  ];
+                },
+                footer: function(context) {
+                  const value = context[0].parsed.y;
+                  if (value === peakUsage) {
+                    return '🏆 Peak day!';
+                  }
+                  return '';
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(255, 255, 255, 0.05)',
+                drawBorder: false
+              },
+              ticks: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface-variant'),
+                font: { size: 12 },
+                callback: function(value) {
+                  return value.toFixed(0) + ' L';
+                }
+              },
+              title: {
+                display: true,
+                text: 'Liters (L)',
+                color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface'),
+                font: { size: 13, weight: '600' }
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              },
+              ticks: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface-variant'),
+                font: { size: 11 },
+                maxRotation: 45,
+                minRotation: 45
+              }
+            }
+          },
+          animation: {
+            duration: 750,
+            easing: 'easeInOutQuart'
+          }
+        }
+      });
+    }
+
     let pumpOn = false;
     let autoModeEnabled = false;
     const TOPIC_AUTO = 'irrigation_arnab/pump/auto';
@@ -7337,8 +7778,154 @@
             }
           }
 
+          // Update Ultrasonic Sensor UI
+          if (data.distance !== undefined) {
+            const dist = parseInt(data.distance);
+            const distStatus = document.getElementById('distanceStatus');
+            const distIcon = document.getElementById('distanceIcon');
+            const distIndicator = document.getElementById('distanceIndicator');
+            const distCard = document.getElementById('ultrasonicCard');
+            const distBar = document.getElementById('distanceBar');
+
+            if (distStatus) distStatus.textContent = dist + ' cm';
+
+            // Update Bar (Max 400cm)
+            if (distBar) distBar.style.width = Math.min((dist / 400) * 100, 100) + '%';
+
+            // Alarm Logic (Threshold < 50cm) -> Only trigger if distance > 0 (valid reading)
+            if (dist > 0 && dist < 50) {
+              // INTRUDER ALERT
+              if (distStatus) distStatus.textContent = dist + ' cm (INTRUDER!)';
+
+              // Visual Alarm
+              if (distIcon) {
+                distIcon.textContent = 'warning';
+                distIcon.style.color = 'var(--error)';
+                distIcon.style.background = 'rgba(234, 67, 53, 0.2)';
+                distIcon.style.animation = 'pulse 0.5s infinite';
+              }
+              if (distIndicator) {
+                distIndicator.style.background = 'var(--error)';
+                distIndicator.style.boxShadow = '0 0 8px var(--error)';
+              }
+              if (distCard) {
+                distCard.style.borderColor = 'var(--error)';
+              }
+
+              // Trigger Main Alarm if enabled
+              const motionAlertsEnabled = document.getElementById('motionAlertsToggle')?.checked;
+              if (motionAlertsEnabled) {
+                startAlarm();
+                // Log specific ultrasonic event (Throttle logging? maybe once per 5s)
+                // For now, rely on startAlarm de-bouncing or add simple throttle
+                const now = Date.now();
+                if (!window.lastDistLog || now - window.lastDistLog > 5000) {
+                  addMotionEvent(now, `Intruder detected at ${dist}cm`); // Reusing addMotionEvent to log to same collection
+                  window.lastDistLog = now;
+                }
+              }
+            } else {
+              // Clear Status
+              if (distIcon) {
+                distIcon.textContent = 'straighten';
+                distIcon.style.color = 'var(--primary)';
+                distIcon.style.background = 'rgba(62, 166, 255, 0.2)';
+                distIcon.style.animation = 'none';
+              }
+              if (distIndicator) {
+                distIndicator.style.background = 'var(--primary)';
+                distIndicator.style.boxShadow = '0 0 0 4px rgba(62, 166, 255, 0.2)';
+              }
+              if (distCard) {
+                distCard.style.borderColor = 'var(--outline-variant)';
+              }
+            }
+          }
+
+          // Update Light Sensor UI
+          if (data.light !== undefined) {
+            const lightVal = parseInt(data.light); // 0=Light, 1=Dark
+            const lightStatusEl = document.getElementById('lightStatus');
+            const lightIconEl = document.getElementById('lightIcon');
+            const lightIconBgEl = document.getElementById('lightIconBg');
+            const lightDurationEl = document.getElementById('lightDuration');
+
+            // State tracking for duration
+            const now = Date.now();
+            let lastState = localStorage.getItem('lastLightState');
+            let lastChange = localStorage.getItem('lastLightChangeTime');
+
+            if (lastState === null || parseInt(lastState) !== lightVal) {
+              lastState = lightVal;
+              lastChange = now;
+              localStorage.setItem('lastLightState', lastState);
+              localStorage.setItem('lastLightChangeTime', lastChange);
+            }
+
+            const diffMs = now - parseInt(lastChange);
+            const diffHrs = Math.floor(diffMs / 3600000);
+            const diffMins = Math.floor((diffMs % 3600000) / 60000);
+
+            if (lightVal === 1) { // Nighttime
+              if (lightStatusEl) lightStatusEl.textContent = 'Nighttime';
+              if (lightIconEl) { lightIconEl.textContent = 'dark_mode'; lightIconEl.style.color = '#7986cb'; }
+              if (lightIconBgEl) lightIconBgEl.style.background = 'rgba(121, 134, 203, 0.2)';
+            } else { // Daytime
+              if (lightStatusEl) lightStatusEl.textContent = 'Daytime';
+              if (lightIconEl) { lightIconEl.textContent = 'wb_sunny'; lightIconEl.style.color = 'var(--warning)'; }
+              if (lightIconBgEl) lightIconBgEl.style.background = 'rgba(253, 216, 53, 0.2)';
+            }
+            if (lightDurationEl) lightDurationEl.textContent = `Duration: ${diffHrs}h ${diffMins}m`;
+          }
+
+          // Flow/usage UI updates (may arrive without temp/humidity)
+          const flowValue = data.flow !== undefined ? data.flow : (data.flow_rate !== undefined ? data.flow_rate : null);
+          const volValue = data.today_vol;
+          
+          if (flowValue !== null || volValue !== undefined) {
+            console.log('💧 Water data received - Flow:', flowValue, 'L/min, Volume:', volValue, 'L');
+            
+            const displayEl = document.getElementById('flowVolumeDisplay');
+            const flowStatEl = document.getElementById('flowStatus');
+            
+            // Get current or default values
+            const rate = flowValue !== null ? parseFloat(flowValue).toFixed(4) : '0.0000';
+            const vol = volValue !== undefined ? Math.round(parseFloat(volValue) * 1000) : 0;
+            
+            if (displayEl) {
+              displayEl.textContent = `Rate=${rate} L/min, Vol=${vol} mL`;
+            }
+            
+            if (flowStatEl && flowValue !== null) {
+              if (parseFloat(flowValue) > 0) {
+                flowStatEl.textContent = 'Flowing';
+                flowStatEl.style.color = 'var(--success)';
+              } else {
+                flowStatEl.textContent = 'No Flow';
+                flowStatEl.style.color = 'var(--on-surface-variant)';
+              }
+            }
+            
+            // Persist to localStorage for quick restore on refresh
+            if (volValue !== undefined) {
+              try {
+                localStorage.setItem('lastDailyUsage', volValue.toString());
+                localStorage.setItem('lastDailyUsageTime', Date.now().toString());
+                console.log('💾 Saved to localStorage:', volValue, 'L');
+              } catch (e) { console.error('localStorage error:', e); }
+            }
+          }
+
           // Save to Firebase and update charts
-          if (data.temperature !== undefined || data.tds !== undefined || data.rain !== undefined) {
+          if (
+            data.temperature !== undefined ||
+            data.tds !== undefined ||
+            data.rain !== undefined ||
+            data.light !== undefined ||
+            data.flow !== undefined ||
+            data.flow_rate !== undefined ||
+            data.today_vol !== undefined
+          ) {
             try {
               saveSensorReading({
                 temp: data.temperature,
@@ -7346,7 +7933,10 @@
                 moisture: data.moisture,
                 soil_temp: data.soilTemperature,
                 tds: data.tds,
-                rain: data.rain
+                rain: data.rain,
+                light: data.light,
+                flow: data.flow !== undefined ? data.flow : data.flow_rate,
+                today_vol: data.today_vol
               });
             } catch (e) {
               console.error('❌ saveSensorReading error:', e);
@@ -7464,14 +8054,22 @@
           }
 
           // Save to Firebase
-          if (data.temperature !== undefined || data.tds !== undefined) {
+          if (
+            data.temperature !== undefined ||
+            data.tds !== undefined ||
+            data.flow !== undefined ||
+            data.flow_rate !== undefined ||
+            data.today_vol !== undefined
+          ) {
             saveSensorReading({
               temp: data.temperature,
               hum: data.humidity,
               moisture: data.soilMoisture, // Note: legacy format might use soilMoisture key
               soil_temp: data.soilTemperature,
               tds: data.tds,
-              motion: data.motion
+              motion: data.motion,
+              flow: data.flow !== undefined ? data.flow : data.flow_rate,
+              today_vol: data.today_vol
             });
           }
 
@@ -7541,6 +8139,61 @@
         }
         if (icon) icon.style.color = 'var(--on-surface-variant)';
       }
+
+      // Update Flow & Usage UI from Status Packet
+      const flowValue = status.flow_rate;
+      const volValue = status.today_vol;
+      
+      if (flowValue !== undefined || volValue !== undefined) {
+        console.log('💧 Water data in status - Flow:', flowValue, 'L/min, Volume:', volValue, 'L');
+        
+        const displayEl = document.getElementById('flowVolumeDisplay');
+        const flowStatEl = document.getElementById('flowStatus');
+        
+        // Get current or default values
+        const rate = flowValue !== undefined ? parseFloat(flowValue).toFixed(4) : '0.0000';
+        const vol = volValue !== undefined ? Math.round(parseFloat(volValue) * 1000) : 0;
+        
+        if (displayEl) {
+          displayEl.textContent = `Rate=${rate} L/min, Vol=${vol} mL`;
+        }
+        
+        if (flowStatEl && flowValue !== undefined) {
+          if (parseFloat(flowValue) > 0) {
+            flowStatEl.textContent = 'Flowing';
+            flowStatEl.style.color = 'var(--success)';
+          } else {
+            flowStatEl.textContent = 'No Flow';
+            flowStatEl.style.color = 'var(--on-surface-variant)';
+          }
+        }
+        
+        // Persist to localStorage for quick restore on refresh
+        if (volValue !== undefined) {
+          try {
+            localStorage.setItem('lastDailyUsage', volValue.toString());
+            localStorage.setItem('lastDailyUsageTime', Date.now().toString());
+            console.log('💾 Saved to localStorage:', volValue, 'L');
+          } catch (e) { console.error('localStorage error:', e); }
+        }
+
+        // Immediate save with 5s throttle to prevent excessive writes
+        const now = Date.now();
+        // Save immediately when pump is ON or if 5s have passed since last save
+        if (!window.lastWaterSave || now - window.lastWaterSave > 5000) {
+          console.log('💾 Saving water data to Firebase...');
+          saveSensorReading({
+            flow: status.flow_rate || 0,
+            today_vol: status.today_vol
+          });
+          window.lastWaterSave = now;
+        } else {
+          const timeLeft = 5 - Math.floor((now - window.lastWaterSave) / 1000);
+          console.log('⏳ Throttled - next save in ' + timeLeft + 's');
+        }
+      }
+
+
 
       // Update Auto Mode Toggle
       if (status.auto_enabled !== undefined) {
@@ -7985,10 +8638,133 @@
       if (typeof firebaseReadyPromise !== 'undefined') {
         firebaseReadyPromise.then(() => {
           if (typeof loadSecuritySettings === 'function') loadSecuritySettings();
-          if (typeof loadMotionEvents === 'function') loadMotionEvents();
+          // if (typeof loadMotionEvents === 'function') loadMotionEvents(); 
+          if (typeof loadSecurityLog === 'function') loadSecurityLog();
         });
       }
     }, 1000);
+
+    // ========== SECURITY LOGGING IMPLEMENTATION ==========
+
+    // Generic security event logger (Motion + Intruder)
+    window.lastSecurityLogTime = 0;
+
+    function addMotionEvent(timestamp, message = 'Motion detected') {
+      // Wrapper for backward compatibility or direct call
+      addSecurityEvent('MOTION', message, timestamp);
+    }
+
+    function addSecurityEvent(type, message, timestamp = Date.now()) {
+      if (!firebaseReady) return;
+
+      const user = auth.currentUser;
+      if (!user) return;
+
+      // Simple throttle to prevent spamming logs (except critical ones)
+      if (Date.now() - window.lastSecurityLogTime < 2000) return;
+      window.lastSecurityLogTime = Date.now();
+
+      const logEntry = {
+        type: type, // 'MOTION' or 'INTRUDER'
+        message: message,
+        timestamp: timestamp,
+        read: false
+      };
+
+      // Add to Firestore collection 'security_logs'
+      db.collection('users').doc(user.uid).collection('security_logs').add(logEntry)
+        .then(() => {
+          console.log('📝 Security event logged:', message);
+          loadSecurityLog(); // Refresh UI
+          updateSecurityStats(); // Update counters
+        })
+        .catch((error) => {
+          console.error('Error adding security log:', error);
+        });
+    }
+
+    function loadSecurityLog() {
+      if (!firebaseReady) return;
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const list = document.getElementById('motionEventsList');
+      if (!list) return;
+
+      // Query last 20 events
+      db.collection('users').doc(user.uid).collection('security_logs')
+        .orderBy('timestamp', 'desc')
+        .limit(20)
+        .get()
+        .then((querySnapshot) => {
+          if (querySnapshot.empty) {
+            list.innerHTML = `
+                <div style="text-align: center; padding: 32px; color: var(--on-surface-variant);">
+                  <span class="material-symbols-rounded" style="font-size: 48px; opacity: 0.3; display: block; margin-bottom: 8px;">event_note</span>
+                  <div style="font-size: 14px;">No security events recorded</div>
+                </div>`;
+            return;
+          }
+
+          let html = '';
+          let todayCount = 0;
+          const today = new Date().toDateString();
+
+          querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const date = new Date(data.timestamp);
+            const isToday = date.toDateString() === today;
+            if (isToday) todayCount++;
+
+            const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const dateStr = isToday ? 'Today' : date.toLocaleDateString();
+
+            let icon = 'info';
+            let color = 'var(--primary)';
+            let bg = 'var(--surface-container-high)';
+
+            if (data.type === 'INTRUDER' || (data.message && data.message.includes('Intruder'))) {
+              icon = 'gpp_bad';
+              color = 'var(--error)';
+              bg = 'rgba(176, 0, 32, 0.05)';
+            } else if (data.type === 'MOTION') {
+              icon = 'motion_sensor_active';
+              color = 'var(--warning)';
+              bg = 'rgba(255, 152, 0, 0.05)';
+            }
+
+            html += `
+               <div style="display: flex; gap: 12px; padding: 12px; border-bottom: 1px solid var(--outline-variant); background: ${bg}; border-radius: 8px; margin-bottom: 4px;">
+                 <div style="background: var(--surface); padding: 8px; border-radius: 50%; height: 32px; width: 32px; display: flex; align-items: center; justify-content: center; box-shadow: var(--elevation-1);">
+                   <span class="material-symbols-rounded" style="font-size: 18px; color: ${color};">${icon}</span>
+                 </div>
+                 <div style="flex: 1;">
+                   <div style="font-size: 14px; font-weight: 500; color: var(--on-surface);">${data.message}</div>
+                   <div style="font-size: 12px; color: var(--on-surface-variant); margin-top: 2px;">${dateStr} • ${timeStr}</div>
+                 </div>
+               </div>
+             `;
+          });
+
+          list.innerHTML = html;
+
+          // Update Stats
+          const todayEl = document.getElementById('todayMotionEvents');
+          if (todayEl) todayEl.textContent = todayCount;
+
+          const totalEl = document.getElementById('totalMotionEvents');
+          // Note: Total count query would be expensive, just use snapshot size + known offset if needed?
+          // For now just show "20+" if full or actual count
+          if (totalEl) totalEl.textContent = (querySnapshot.size === 20) ? '20+' : querySnapshot.size;
+
+        }).catch((error) => {
+          console.error("Error loading security logs:", error);
+        });
+    }
+
+    function updateSecurityStats() {
+      // Optional: aggregate stats
+    }
 
   </script>
 </body>
