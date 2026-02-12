@@ -8760,7 +8760,18 @@
 
 
       // Update UI based on ESP32 device-side status
+      // Global variable to store last known full status
+      window.lastPumpStatus = window.lastPumpStatus || {};
+
       function updatePumpStatus(status) {
+        // Merge with last known status to ensure we have all fields
+        // If this is a full update (has ntp_synced), update the global state
+        if (status.ntp_synced !== undefined) {
+          Object.assign(window.lastPumpStatus, status);
+        } else {
+          // Partial update (e.g. manual toggle), merge with history
+          status = Object.assign({}, window.lastPumpStatus, status);
+        }
         const btn = document.getElementById('pumpBtn');
         const card = document.getElementById('pumpCard');
         const statusText = document.getElementById('pumpStatusText');
