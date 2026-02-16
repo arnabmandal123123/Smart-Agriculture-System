@@ -1,0 +1,102 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============ SENSOR DATA ============
+    match /sensorData/{documentId} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null
+        && request.resource.data.timestamp is number
+        && request.resource.data.timestamp > 0;
+      allow delete: if request.auth != null;
+    }
+    
+    // ============ WATER USAGE ============
+    match /waterUsage/{documentId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // ============ IRRIGATION LOGS ============
+    match /irrigationLogs/{documentId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // ============ MOTION EVENTS ============
+    match /motionEvents/{documentId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // ============ SECURITY EVENTS (NEW) ============
+    match /securityEvents/{documentId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // ============ SECURITY SETTINGS ============
+    match /securitySettings/{documentId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    match /securityLogs/{documentId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // ============ USER SETTINGS ============
+    match /userSettings/{documentId} {
+      allow read, write: if request.auth != null;
+      
+      // Validate dry run protection setting
+      allow update: if request.auth != null
+        && (!request.resource.data.keys().hasAny(['dryRunProtection']) 
+            || request.resource.data.dryRunProtection is bool);
+    }
+    
+    // ============ DISEASE ANALYTICS & FEEDBACK ============
+    match /modelFeedback/{documentId} {
+      allow read: if request.auth != null;
+      allow write: if true; // Allow anonymous feedback
+    }
+    
+    match /analytics/{documentId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    match /diseaseAnalytics/{documentId} {
+      allow read, write: if true;
+    }
+    
+    // ============ ACTIVITY LOGS ============
+    match /activityLogs/{documentId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // ============ SYSTEM SETTINGS (Auto Mode, etc) ============
+    match /autoModeState/{documentId} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /settings/{documentId} {
+      allow read, write: if true;
+    }
+    
+    // ============ ADVANCED IRRIGATION (CROP PROFILES & ALARMS) ============
+    match /activeAlarms/{documentId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    match /cropProfiles/{documentId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+    
+    // ============ USERS ============
+    match /users/{documentId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // ============ CATCH-ALL ============
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}

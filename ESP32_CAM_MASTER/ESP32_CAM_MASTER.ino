@@ -21,7 +21,6 @@
 #include <WiFi.h>
 #include <time.h>
 
-
 // ========== WIFI & MQTT CONFIGURATION ==========
 const char *ssid = "Arnabmandal";
 const char *password = "hm403496";
@@ -95,7 +94,8 @@ enum PumpMode {
 
 struct AutoMode {
   bool enabled;
-  int dryThreshold; // Default 800
+  int dryThreshold;  // ON threshold (Raw ADC)
+  int stopThreshold; // OFF threshold (Raw ADC)
 };
 
 struct QuickTimer {
@@ -125,8 +125,8 @@ PumpMode currentMode = MODE_OFF;
 ManualOverride manualState = {false, false};
 QuickTimer quickTimer = {false, 0, 0, 0, false};
 Schedule schedule = {false, 0, 0, 0, false, 0};
-AutoMode autoMode = {false, 800}; // Default disabled, 800 threshold
-bool pumpPhysicalState = false;   // Current relay state (true = ON)
+AutoMode autoMode = {false, 800, 750}; // Default disabled, 800 ON, 750 OFF
+bool pumpPhysicalState = false;        // Current relay state (true = ON)
 bool ntpSynced = false;
 unsigned long lastNtpSync = 0;
 unsigned long lastMqttReconnect = 0;
@@ -159,6 +159,11 @@ bool maxRunEnabled = false;
 uint32_t maxRunMinutes = 20; // Default 20 mins
 unsigned long pumpStartTime = 0;
 int currentDay = -1; // For tracking daily reset
+
+// Dry Run Protection Settings
+bool dryRunProtectionEnabled = false;
+unsigned long lastFlowDetectedTime = 0;
+const unsigned long DRY_RUN_TIMEOUT_MS = 30000; // 30 seconds
 
 // ========== FUNCTION DECLARATIONS ==========
 bool initCamera();
@@ -432,18 +437,22 @@ void mqttCallback(char *topic, byte *payload, unsigned int length) {
       // Parse: {"type":"AUTO","enabled":true}
       autoMode.enabled = doc["enabled"];
 
-      // Optional: Update threshold if provided
+      // Optional: Update thresholds if provided
       if (doc.containsKey("threshold")) {
         autoMode.dryThreshold = doc["threshold"];
       }
+      if (doc.containsKey("stop_threshold")) {
+        autoMode.stopThreshold = doc["stop_threshold"];
+      }
 
-      LOG_INFO("Auto Mode updated: %s (Threshold: %d)\n",
-               autoMode.enabled ? "ENABLED" : "DISABLED",
-               autoMode.dryThreshold);
+      LOG_INFO("Auto Mode updated: %s (ON>%d, OFF<%d)\n",
+               autoMode.enabled ? "ENABLED" : "DISABLED", autoMode.dryThreshold,
+               autoMode.stopThreshold);
 
       // Persist
       prefs.putBool("auto_en", autoMode.enabled);
       prefs.putInt("auto_thr", autoMode.dryThreshold);
+      prefs.putInt("auto_stop_thr", autoMode.stopThreshold);
     }
   }
 
@@ -506,6 +515,26 @@ void mqttCallback(char *topic, byte *payload, unsigned int length) {
 
       publishStatus();
     }
+    // Handle Dry Run Protection settings
+    else if (strcmp(type, "DRY_RUN_PROTECTION") == 0) {
+      // {"type":"DRY_RUN_PROTECTION", "enabled":true}
+      if (doc.containsKey("enabled")) {
+        dryRunProtectionEnabled = doc["enabled"];
+
+        LOG_INFO("Dry Run Protection updated: %s\n",
+                 dryRunProtectionEnabled ? "ENABLED" : "DISABLED");
+
+        // Reset timer when enabling
+        if (dryRunProtectionEnabled && pumpPhysicalState) {
+          lastFlowDetectedTime = millis();
+        }
+
+        // Persist setting
+        prefs.putBool("dry_run_en", dryRunProtectionEnabled);
+
+        publishStatus();
+      }
+    }
   }
 }
 
@@ -531,6 +560,11 @@ void mqttReconnect() {
     maxRunEnabled = prefs.getBool("safe_en", false);
     maxRunMinutes = prefs.getUInt("safe_min", 20);
 
+    // Restore Dry Run Protection Settings
+    dryRunProtectionEnabled = prefs.getBool("dry_run_en", false);
+    LOG_INFO("Dry Run Protection restored: %s\n",
+             dryRunProtectionEnabled ? "ENABLED" : "DISABLED");
+
     publishStatus();
   } else {
     LOG_INFO("MQTT connect failed, state=%d\n", mqttClient.state());
@@ -553,10 +587,9 @@ void processTimerLogic() {
   // ========== PRIORITY 2: AUTO MODE ==========
   else if (autoMode.enabled) {
     // Trigger if Dry (Raw > Threshold)
-    // Hysteresis: Turn ON if > Threshold, Turn OFF if < (Threshold - 50)
-    // This prevents rapid toggling
+    // Hysteresis: Turn ON if > dryThreshold, Turn OFF if < stopThreshold
     int onThreshold = autoMode.dryThreshold;
-    int offThreshold = autoMode.dryThreshold - 50;
+    int offThreshold = autoMode.stopThreshold;
 
     // Debug Logic - Log every 5 seconds to Serial
     static unsigned long lastDebugTime = 0;
@@ -577,12 +610,6 @@ void processTimerLogic() {
         LOG_INFO("Auto Mode Trigger: Wet Soil detected (%d < %d) -> Pump OFF\n",
                  currentMoistureRaw, offThreshold);
       desiredPumpState = false;
-      // We don't set newMode = MODE_AUTO here because if it's OFF,
-      // it's just "OFF" unless we want to explicitly show "AUTO (OFF)"
-      // But for simplicity, let's say:
-      // If Auto Mode says OFF, we check lower priorities?
-      // No, typically Auto Mode should be authoritative if enabled.
-      // "Auto Mode will take precedence over Scheduled Timers"
       newMode = MODE_AUTO;
     } else {
       // In the hysteresis deadband, keep previous state if it was AUTO
@@ -590,7 +617,6 @@ void processTimerLogic() {
         desiredPumpState = pumpPhysicalState;
         newMode = MODE_AUTO;
       } else {
-        // Default to off if we just entered this band?
         desiredPumpState = false;
         newMode = MODE_AUTO;
       }
@@ -671,8 +697,35 @@ void processTimerLogic() {
     setPumpState(desiredPumpState, "Timer Logic");
   }
 
+  // ========== DRY RUN PROTECTION ==========
+  // Monitor flow sensor and stop pump if no flow detected for 30 seconds
+  if (dryRunProtectionEnabled && pumpPhysicalState) {
+    // Check if we have received flow data recently
+    unsigned long timeSincePumpStart = millis() - pumpStartTime;
+    unsigned long timeSinceLastFlow = millis() - lastFlowDetectedTime;
+
+    // Only check after pump has been running for 5 seconds (allow time for flow
+    // to start)
+    if (timeSincePumpStart > 5000) {
+      // If no flow detected for 30 seconds, stop the pump
+      if (timeSinceLastFlow > DRY_RUN_TIMEOUT_MS) {
+        LOG_INFO("DRY RUN DETECTED! No flow for 30s - Stopping pump\n");
+        dryRunAlertActive = true;
+
+        // Force pump OFF regardless of mode
+        setPumpState(false, "Dry Run Protection");
+
+        // Release all control modes to prevent immediate restart
+        manualState.active = false;
+        quickTimer.active = false;
+
+        // Clear quick timer from preferences
+        clearQuickTimerPrefs();
+      }
+    }
+  }
+
   // ========== SAFETY LOGIC REMOVED (User Request) ==========
-  // Dry Run Protection and Max Run Timer disabled.
   // Flow data is still collected for display purposes.
 
   // ========== DAILY RESET ==========
@@ -698,16 +751,21 @@ void setPumpState(bool state, const char *reason) {
     Serial2.println("PUMP_ON");   // Send command to Arduino
     digitalWrite(RELAY_PIN, LOW); // Turn ON (Active-LOW backup)
     LOG_INFO("PUMP ON (%s)\n", reason);
+
+    // Start timers
+    if (pumpStartTime == 0) {
+      pumpStartTime = millis();
+    }
+
+    // Reset dry run protection timer
+    lastFlowDetectedTime = millis();
   } else {
     Serial2.println("PUMP_OFF");   // Send command to Arduino
     digitalWrite(RELAY_PIN, HIGH); // Turn OFF (backup)
     digitalWrite(RELAY_PIN, HIGH); // Turn OFF (backup)
     LOG_INFO("PUMP OFF (%s)\n", reason);
-    pumpStartTime = 0; // Reset timer
-  }
-
-  if (state && pumpStartTime == 0) {
-    pumpStartTime = millis(); // Start timer if not already running
+    pumpStartTime = 0;        // Reset timer
+    lastFlowDetectedTime = 0; // Reset dry run timer
   }
 
   publishStatus();
@@ -728,6 +786,8 @@ void publishStatus() {
   case MODE_AUTO:
     doc["mode"] = "AUTO";
     doc["auto_val"] = currentMoistureRaw;
+    doc["auto_target"] = autoMode.dryThreshold;
+    doc["auto_stop"] = autoMode.stopThreshold;
     break;
   case MODE_QUICK_TIMER:
     doc["mode"] = "QUICK_TIMER";
@@ -781,9 +841,11 @@ void publishStatus() {
   doc["auto_enabled"] = autoMode.enabled;
   doc["auto_threshold"] = autoMode.dryThreshold;
 
-  // Water data only - safety features removed
+  // Water data and dry run protection status
   doc["flow_rate"] = currentFlowRate;
   doc["today_vol"] = dailyVolumeLiters;
+  doc["dry_run_alert"] = dryRunAlertActive;
+  doc["dry_run_protection"] = dryRunProtectionEnabled;
 
   char buffer[512];
   serializeJson(doc, buffer);
@@ -808,8 +870,10 @@ void restoreScheduleFromPrefs() {
   // Restore Auto Mode
   autoMode.enabled = prefs.getBool("auto_en", false);
   autoMode.dryThreshold = prefs.getInt("auto_thr", 800);
-  LOG_INFO("Restored Auto Mode: %s\n",
-           autoMode.enabled ? "ENABLED" : "DISABLED");
+  autoMode.stopThreshold = prefs.getInt("auto_stop_thr", 750);
+  LOG_INFO("Restored Auto Mode: %s (ON>%d, OFF<%d)\n",
+           autoMode.enabled ? "ENABLED" : "DISABLED", autoMode.dryThreshold,
+           autoMode.stopThreshold);
 }
 
 // ========== QUICK TIMER PERSISTENCE ==========
@@ -978,9 +1042,12 @@ void readArduinoSerial() {
         }
 
         lastFlowRecvTime = millis();
-        // Clear Dry Run Alert since we have flow
-        if (currentFlowRate > 0.1)
-          dryRunAlertActive = false;
+
+        // Update dry run protection timer if flow is detected
+        if (currentFlowRate > 0.1) {
+          lastFlowDetectedTime = millis();
+          dryRunAlertActive = false; // Clear alert if flow resumes
+        }
 
         LOG_INFO("FLOW: %.2f L/min, Daily=%.2f L\n", currentFlowRate,
                  dailyVolumeLiters);
