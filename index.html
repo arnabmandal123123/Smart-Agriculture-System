@@ -3018,25 +3018,30 @@
               <div class="sensor-grid"
                 style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; text-align: center;">
                 <div style="background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 8px; min-width: 0;">
-                  <div style="font-size: 10px; color: var(--on-surface-variant); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                  <div
+                    style="font-size: 10px; color: var(--on-surface-variant); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
                     class="translatable">
                     Moisture</div>
                   <div id="ctxMoisture" style="font-size: 14px; font-weight: 700; color: #4ade80;">--%</div>
                 </div>
                 <div style="background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 8px; min-width: 0;">
-                  <div style="font-size: 10px; color: var(--on-surface-variant); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                  <div
+                    style="font-size: 10px; color: var(--on-surface-variant); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
                     class="translatable">
                     Temp</div>
                   <div id="ctxTemp" style="font-size: 14px; font-weight: 700; color: #fbbc04;">--°C</div>
                 </div>
                 <div style="background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 8px; min-width: 0;">
-                  <div style="font-size: 10px; color: var(--on-surface-variant); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                  <div
+                    style="font-size: 10px; color: var(--on-surface-variant); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
                     class="translatable">
                     Humidity</div>
                   <div id="ctxHumidity" style="font-size: 14px; font-weight: 700; color: #62a6ff;">--%</div>
                 </div>
                 <div style="background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 8px; min-width: 0;">
-                  <div style="font-size: 10px; color: var(--on-surface-variant); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">TDS</div>
+                  <div
+                    style="font-size: 10px; color: var(--on-surface-variant); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    TDS</div>
                   <div id="ctxTDS" style="font-size: 14px; font-weight: 700; color: #a78bfa;">--ppm</div>
                 </div>
               </div>
@@ -3256,7 +3261,8 @@
                 style="font-size:64px; opacity:0.5; color:#34a853;">psychology</span>
               <p style="margin-top:16px; font-size:18px; font-weight:600; color:var(--on-surface);"
                 class="translatable">AI Analysis Enabled</p>
-              <p style="margin-top:10px; font-size:15px;" class="translatable">Run an analysis to see AI-powered insights
+              <p style="margin-top:10px; font-size:15px;" class="translatable">Run an analysis to see AI-powered
+                insights
               </p>
             </div>
           </div>
@@ -3941,13 +3947,13 @@
               <div style="display: flex; align-items: center; gap: 16px;">
                 <div
                   style="width: 40px; height: 40px; border-radius: 50%; background: rgba(52, 168, 83, 0.1); display: flex; align-items: center; justify-content: center;">
-                  <span class="material-symbols-rounded"
-                    style="font-size: 20px; color: #34a853;">water_drop</span>
+                  <span class="material-symbols-rounded" style="font-size: 20px; color: #34a853;">water_drop</span>
                 </div>
                 <div style="display: flex; flex-direction: column; align-items: flex-start;">
                   <span class="translatable"
                     style="font-weight: 600; font-size: 15px; color: var(--on-surface);">Nutrient Loss Monitor</span>
-                  <span class="translatable" style="font-size: 12px; color: var(--on-surface-variant);">Track nutrient runoff</span>
+                  <span class="translatable" style="font-size: 12px; color: var(--on-surface-variant);">Track nutrient
+                    runoff</span>
                 </div>
               </div>
               <span class="material-symbols-rounded"
@@ -4059,36 +4065,48 @@
          ========================================== -->
     <div id="nutrientTab" class="tab-content">
       <!-- Global Alert Banner (shown when active) -->
-      <div id="nutrientAlertBanner" style="display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 10000; padding: 16px; background: linear-gradient(135deg, #ea4335 0%, #d32f2f 100%); box-shadow: 0 4px 12px rgba(234, 67, 53, 0.3);">
-        <div style="max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+      <div id="nutrientAlertBanner"
+        style="display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 10000; padding: 16px; background: linear-gradient(135deg, #ea4335 0%, #d32f2f 100%); box-shadow: 0 4px 12px rgba(234, 67, 53, 0.3);">
+        <div
+          style="max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
           <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 200px;">
             <span class="material-symbols-rounded" style="font-size: 32px; color: white;">warning</span>
             <div>
               <div style="font-weight: 700; font-size: 16px; color: white;">⚠ Nutrient Loss Alert Active</div>
-              <div id="alertBannerMessage" style="font-size: 13px; color: rgba(255,255,255,0.9); margin-top: 4px;"></div>
+              <div id="alertBannerMessage" style="font-size: 13px; color: rgba(255,255,255,0.9); margin-top: 4px;">
+              </div>
             </div>
           </div>
-          <button onclick="acknowledgeNutrientAlert()" style="background: white; color: #ea4335; border: none; padding: 10px 24px; border-radius: 24px; font-weight: 600; cursor: pointer; font-size: 14px; white-space: nowrap;">
+          <button onclick="acknowledgeNutrientAlert()"
+            style="background: white; color: #ea4335; border: none; padding: 10px 24px; border-radius: 24px; font-weight: 600; cursor: pointer; font-size: 14px; white-space: nowrap;">
             Acknowledge
           </button>
         </div>
       </div>
 
-      <section class="hero nutrient-hero" style="margin-top: 0; min-height: 180px; display: flex; align-items: center; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); position: relative; overflow: hidden;">
+      <section class="hero nutrient-hero"
+        style="margin-top: 0; min-height: 180px; display: flex; align-items: center; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); position: relative; overflow: hidden;">
         <!-- Custom background for Nutrient Monitor -->
-        <div style="position: absolute; inset: 0; background: url('nutrients_loss_header.jpeg') center/cover no-repeat; z-index: 0;"></div>
-        <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(5, 15, 8, 0.82) 0%, rgba(10, 30, 15, 0.65) 50%, rgba(5, 20, 10, 0.78) 100%); z-index: 1;"></div>
-        
+        <div
+          style="position: absolute; inset: 0; background: url('nutrients_loss_header.jpeg') center/cover no-repeat; z-index: 0;">
+        </div>
+        <div
+          style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(5, 15, 8, 0.82) 0%, rgba(10, 30, 15, 0.65) 50%, rgba(5, 20, 10, 0.78) 100%); z-index: 1;">
+        </div>
+
         <div class="hero-content" style="text-align: center; width: 100%; position: relative; z-index: 2;">
           <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 12px;">
             <span class="material-symbols-rounded" style="font-size: 48px; color: #4ade80;">water_drop</span>
-            <h1 style="margin: 0; font-size: 36px; font-weight: 800; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.3);">Nutrient Loss Monitor</h1>
+            <h1 style="margin: 0; font-weight: 800; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.3);">Nutrient
+              Monitor</h1>
           </div>
-          <p style="color: rgba(255, 255, 255, 0.95); font-size: 17px; margin: 8px 0 0 0; text-shadow: 0 1px 4px rgba(0,0,0,0.2); font-weight: 500;">
-            🌿 Auto Nutrient Runoff Analysis
+          <p
+            style="color: rgba(255, 255, 255, 0.95); margin: 8px 0 0 0; text-shadow: 0 1px 4px rgba(0,0,0,0.2); font-weight: 500;">
+            🌿 Runoff Analysis
           </p>
-          <p style="color: rgba(255, 255, 255, 0.85); font-size: 14px; margin: 12px auto 0; max-width: 600px; text-shadow: 0 1px 3px rgba(0,0,0,0.2);">
-            Track fertilizer loss during irrigation & rainfall • Real-time alerts • Smart recommendations
+          <p
+            style="color: rgba(255, 255, 255, 0.85); margin: 12px auto 0; max-width: 600px; text-shadow: 0 1px 3px rgba(0,0,0,0.2);">
+            Track Loss • Alerts • Insights
           </p>
         </div>
       </section>
@@ -4101,36 +4119,55 @@
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
           <!-- Rain Status -->
           <div style="background: var(--surface-container); padding: 16px; border-radius: 12px; text-align: center;">
-            <div style="font-size: 11px; color: var(--on-surface-variant); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Rain Status</div>
+            <div
+              style="font-size: 11px; color: var(--on-surface-variant); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
+              Rain Status</div>
             <div id="nlm_rainStatus" style="font-size: 18px; font-weight: 700; color: var(--on-surface);">Inactive</div>
           </div>
           <!-- Pump Status -->
           <div style="background: var(--surface-container); padding: 16px; border-radius: 12px; text-align: center;">
-            <div style="font-size: 11px; color: var(--on-surface-variant); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Pump Status</div>
+            <div
+              style="font-size: 11px; color: var(--on-surface-variant); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
+              Pump Status</div>
             <div id="nlm_pumpStatus" style="font-size: 18px; font-weight: 700; color: var(--on-surface);">OFF</div>
           </div>
           <!-- Event Status -->
-          <div style="background: var(--surface-container); padding: 16px; border-radius: 12px; text-align: center; border: 2px solid transparent;" id="nlm_eventCard">
-            <div style="font-size: 11px; color: var(--on-surface-variant); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Event Status</div>
-            <div id="nlm_eventStatus" style="font-size: 18px; font-weight: 700; color: var(--on-surface-variant);">Idle</div>
+          <div
+            style="background: var(--surface-container); padding: 16px; border-radius: 12px; text-align: center; border: 2px solid transparent;"
+            id="nlm_eventCard">
+            <div
+              style="font-size: 11px; color: var(--on-surface-variant); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
+              Event Status</div>
+            <div id="nlm_eventStatus" style="font-size: 18px; font-weight: 700; color: var(--on-surface-variant);">Idle
+            </div>
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: 12px;">
+        <div
+          style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: 12px;">
           <!-- Initial TDS -->
           <div style="background: var(--surface-container); padding: 16px; border-radius: 12px; text-align: center;">
-            <div style="font-size: 11px; color: var(--on-surface-variant); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Initial TDS</div>
-            <div id="nlm_initialTDS" style="font-size: 20px; font-weight: 700; color: #4285f4;">--<span style="font-size: 12px; margin-left: 3px;">ppm</span></div>
+            <div
+              style="font-size: 11px; color: var(--on-surface-variant); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
+              Initial TDS</div>
+            <div id="nlm_initialTDS" style="font-size: 20px; font-weight: 700; color: #4285f4;">--<span
+                style="font-size: 12px; margin-left: 3px;">ppm</span></div>
           </div>
           <!-- Current TDS -->
           <div style="background: var(--surface-container); padding: 16px; border-radius: 12px; text-align: center;">
-            <div style="font-size: 11px; color: var(--on-surface-variant); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Current TDS</div>
-            <div id="nlm_currentTDS" style="font-size: 20px; font-weight: 700; color: var(--primary);">--<span style="font-size: 12px; margin-left: 3px;">ppm</span></div>
+            <div
+              style="font-size: 11px; color: var(--on-surface-variant); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
+              Current TDS</div>
+            <div id="nlm_currentTDS" style="font-size: 20px; font-weight: 700; color: var(--primary);">--<span
+                style="font-size: 12px; margin-left: 3px;">ppm</span></div>
           </div>
           <!-- Final TDS -->
           <div style="background: var(--surface-container); padding: 16px; border-radius: 12px; text-align: center;">
-            <div style="font-size: 11px; color: var(--on-surface-variant); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Final TDS</div>
-            <div id="nlm_finalTDS" style="font-size: 20px; font-weight: 700; color: #34a853;">--<span style="font-size: 12px; margin-left: 3px;">ppm</span></div>
+            <div
+              style="font-size: 11px; color: var(--on-surface-variant); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
+              Final TDS</div>
+            <div id="nlm_finalTDS" style="font-size: 20px; font-weight: 700; color: #34a853;">--<span
+                style="font-size: 12px; margin-left: 3px;">ppm</span></div>
           </div>
         </div>
       </article>
@@ -4142,41 +4179,57 @@
         </div>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
           <!-- Nutrient Loss -->
-          <div style="background: var(--surface-container); padding: 20px; border-radius: 14px; border: 2px solid var(--outline-variant);">
-            <div style="font-size: 12px; color: var(--on-surface-variant); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Nutrient Loss</div>
+          <div
+            style="background: var(--surface-container); padding: 20px; border-radius: 14px; border: 2px solid var(--outline-variant);">
+            <div
+              style="font-size: 12px; color: var(--on-surface-variant); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+              Nutrient Loss</div>
             <div style="display: flex; align-items: baseline; gap: 6px;">
               <span id="nlm_nutrientLoss" style="font-size: 32px; font-weight: 700; color: var(--primary);">0</span>
               <span style="font-size: 14px; color: var(--on-surface-variant);">ppm</span>
             </div>
           </div>
           <!-- Loss Percentage -->
-          <div style="background: var(--surface-container); padding: 20px; border-radius: 14px; border: 2px solid var(--outline-variant);">
-            <div style="font-size: 12px; color: var(--on-surface-variant); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Loss Percentage</div>
+          <div
+            style="background: var(--surface-container); padding: 20px; border-radius: 14px; border: 2px solid var(--outline-variant);">
+            <div
+              style="font-size: 12px; color: var(--on-surface-variant); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+              Loss Percentage</div>
             <div style="display: flex; align-items: baseline; gap: 6px;">
               <span id="nlm_lossPercentage" style="font-size: 32px; font-weight: 700; color: var(--primary);">0</span>
               <span style="font-size: 14px; color: var(--on-surface-variant);">%</span>
             </div>
           </div>
           <!-- Severity Badge -->
-          <div style="background: var(--surface-container); padding: 20px; border-radius: 14px; border: 2px solid var(--outline-variant);" id="nlm_severityCard">
-            <div style="font-size: 12px; color: var(--on-surface-variant); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Severity</div>
+          <div
+            style="background: var(--surface-container); padding: 20px; border-radius: 14px; border: 2px solid var(--outline-variant);"
+            id="nlm_severityCard">
+            <div
+              style="font-size: 12px; color: var(--on-surface-variant); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+              Severity</div>
             <div id="nlm_severity" style="font-size: 18px; font-weight: 700; color: #4ade80;">Safe</div>
           </div>
         </div>
 
         <div style="margin-top: 16px; background: var(--surface-container); padding: 16px; border-radius: 12px;">
-          <div style="font-size: 12px; color: var(--on-surface-variant); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Event Duration</div>
+          <div
+            style="font-size: 12px; color: var(--on-surface-variant); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">
+            Event Duration</div>
           <div id="nlm_eventDuration" style="font-size: 16px; font-weight: 600; color: var(--on-surface);">--</div>
         </div>
 
         <div style="margin-top: 12px; background: var(--surface-container); padding: 16px; border-radius: 12px;">
-          <div style="font-size: 12px; color: var(--on-surface-variant); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Last Event</div>
-          <div id="nlm_lastEvent" style="font-size: 14px; font-weight: 500; color: var(--on-surface);">No events recorded</div>
+          <div
+            style="font-size: 12px; color: var(--on-surface-variant); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">
+            Last Event</div>
+          <div id="nlm_lastEvent" style="font-size: 14px; font-weight: 500; color: var(--on-surface);">No events
+            recorded</div>
         </div>
 
         <!-- TDS Chart -->
         <div style="margin-top: 20px;">
-          <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--on-surface);">TDS Timeline</h3>
+          <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--on-surface);">TDS Timeline
+          </h3>
           <canvas id="nlm_tdsChart" style="max-height: 250px;"></canvas>
         </div>
       </article>
@@ -4190,12 +4243,18 @@
           <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
             <thead>
               <tr style="background: var(--surface-container); border-bottom: 2px solid var(--outline-variant);">
-                <th style="padding: 12px 8px; text-align: left; color: var(--on-surface-variant); font-weight: 600;">Date</th>
-                <th style="padding: 12px 8px; text-align: left; color: var(--on-surface-variant); font-weight: 600;">Type</th>
-                <th style="padding: 12px 8px; text-align: left; color: var(--on-surface-variant); font-weight: 600;">Initial TDS</th>
-                <th style="padding: 12px 8px; text-align: left; color: var(--on-surface-variant); font-weight: 600;">Final TDS</th>
-                <th style="padding: 12px 8px; text-align: left; color: var(--on-surface-variant); font-weight: 600;">Loss %</th>
-                <th style="padding: 12px 8px; text-align: left; color: var(--on-surface-variant); font-weight: 600;">Severity</th>
+                <th style="padding: 12px 8px; text-align: left; color: var(--on-surface-variant); font-weight: 600;">
+                  Date</th>
+                <th style="padding: 12px 8px; text-align: left; color: var(--on-surface-variant); font-weight: 600;">
+                  Type</th>
+                <th style="padding: 12px 8px; text-align: left; color: var(--on-surface-variant); font-weight: 600;">
+                  Initial TDS</th>
+                <th style="padding: 12px 8px; text-align: left; color: var(--on-surface-variant); font-weight: 600;">
+                  Final TDS</th>
+                <th style="padding: 12px 8px; text-align: left; color: var(--on-surface-variant); font-weight: 600;">
+                  Loss %</th>
+                <th style="padding: 12px 8px; text-align: left; color: var(--on-surface-variant); font-weight: 600;">
+                  Severity</th>
               </tr>
             </thead>
             <tbody id="nlm_historyTable">
@@ -4215,9 +4274,12 @@
         <div class="head">
           <h2>🌿 Recommendations</h2>
         </div>
-        <div id="nlm_recommendations" style="padding: 20px; background: var(--surface-container); border-radius: 12px; border-left: 4px solid var(--primary);">
-          <div style="font-size: 15px; font-weight: 600; color: var(--on-surface); margin-bottom: 8px;">Monitor soil condition</div>
-          <div style="font-size: 14px; color: var(--on-surface-variant); line-height: 1.6;">TDS levels are within acceptable range. Continue regular monitoring.</div>
+        <div id="nlm_recommendations"
+          style="padding: 20px; background: var(--surface-container); border-radius: 12px; border-left: 4px solid var(--primary);">
+          <div style="font-size: 15px; font-weight: 600; color: var(--on-surface); margin-bottom: 8px;">Monitor soil
+            condition</div>
+          <div style="font-size: 14px; color: var(--on-surface-variant); line-height: 1.6;">TDS levels are within
+            acceptable range. Continue regular monitoring.</div>
         </div>
       </article>
     </div>
