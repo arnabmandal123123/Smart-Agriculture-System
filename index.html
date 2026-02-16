@@ -2980,88 +2980,6 @@
           </div>
         </article>
 
-        <article class="card">
-          <div class="head">
-            <h2 class="translatable">Analyze Local Image</h2>
-            <span class="pill translatable">Local</span>
-          </div>
-          <div id="localImagePreview" class="frame" style="display: none;min-height: 240px;"></div>
-          <p id="localImagePlaceholder" style="color: var(--on-surface-variant); font-size: 14px; text-align: center;"
-            class="translatable">Select an image to analyze</p>
-          <div class="actions">
-            <input type="file" id="imageInput" accept="image/*" capture="environment" style="display: none;">
-            <input type="file" id="imageInputGallery" accept="image/*" style="display: none;">
-
-            <div class="local-image-controls" style="display:flex; gap:8px;">
-              <button class="btn sec translatable" onclick="document.getElementById('imageInput').click()">Capture
-                Photo</button>
-              <button class="btn sec translatable" onclick="document.getElementById('imageInputGallery').click()">Choose
-                from Gallery</button>
-            </div>
-
-            <div id="batchProgress" class="batch-progress" style="display:none; margin-top:12px;">
-              <div class="bar"
-                style="width:0%; height:8px; border-radius:6px; background:linear-gradient(90deg,var(--primary),#0b4eb3);">
-              </div>
-              <div class="label" id="batchProgressLabel"
-                style="margin-top:6px; font-size:13px; color:var(--on-surface-variant);"></div>
-            </div>
-            <button id="localAnalyzeBtn" class="btn pri" onclick="analyzeLocalImage()" disabled><span
-                class="material-symbols-rounded">image_search</span> <span class="translatable">Analyze
-                Image</span></button>
-          </div>
-        </article>
-
-        <article class="card">
-          <div class="head">
-            <h2 class="translatable">Diagnostic Results</h2>
-          </div>
-          <div id="res" class="results">
-            <div class="rc">
-              <div class="t translatable">Awaiting Analysis</div>
-              <p style="color: var(--on-surface-variant); font-size: 14px; margin-bottom: 16px;" class="translatable">
-                Connect to a device and then run diagnostics.</p>
-
-              <!-- Disease Detection Models Display -->
-              <div style="background: rgba(26, 115, 232, 0.05); border-radius: 8px; padding: 16px; margin-top: 12px;">
-                <h4 style="margin: 0 0 12px 0; color: var(--primary); font-size: 14px; font-weight: 600;"
-                  class="translatable">
-                  Active Detection Models
-                </h4>
-                <div id="modelsList" style="display: flex; flex-direction: column; gap: 8px;">
-                  <!-- Models will be displayed here -->
-                </div>
-              </div>
-            </div>
-          </div>
-        </article>
-
-        <!-- AI Expert Analysis Card -->
-        <article class="card" id="aiAnalysisCard">
-          <div class="head">
-            <div
-              style="display:flex; justify-content:space-between; align-items:center; width:100%; flex-wrap: wrap; gap: 10px;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span class="material-symbols-rounded" style="color:#4285f4;">psychology</span>
-                <h2 class="translatable">AI Expert Analysis</h2>
-              </div>
-              <button id="toggleGeminiBtn" onclick="toggleGeminiAnalysis()"
-                style="background:var(--primary-container); color:var(--primary); border:none; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.3s;">
-                <span class="material-symbols-rounded" style="font-size:18px;" id="geminiToggleIcon">toggle_on</span>
-                <span class="translatable" id="geminiToggleText">Enabled</span>
-              </button>
-            </div>
-          </div>
-          <div id="aiAnalysisContent" style="padding:20px;">
-            <div style="text-align:center; color:var(--on-surface-variant);">
-              <span class="material-symbols-rounded"
-                style="font-size:48px; opacity:0.5; color:#34a853;">psychology</span>
-              <p style="margin-top:12px; font-size:15px; font-weight:500; color:var(--on-surface);"
-                class="translatable">AI Analysis Enabled</p>
-              <p style="margin-top:8px; font-size:13px;" class="translatable">Run an analysis to see AI-powered insights
-              </p>
-        </article>
-
         <!-- Context-Aware Disease Verification Matrix (NEW) -->
         <article class="card" id="contextAwareCard" style="border-top: 4px solid #fbbc04;">
           <div class="head">
@@ -3092,27 +3010,27 @@
                 Live Sensor Context
               </h4>
               <div class="sensor-grid"
-                style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center;">
-                <div style="background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 8px;">
-                  <div style="font-size: 10px; color: var(--on-surface-variant); margin-bottom: 4px;"
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; text-align: center;">
+                <div style="background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 8px; min-width: 0;">
+                  <div style="font-size: 10px; color: var(--on-surface-variant); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
                     class="translatable">
                     Moisture</div>
                   <div id="ctxMoisture" style="font-size: 14px; font-weight: 700; color: #4ade80;">--%</div>
                 </div>
-                <div style="background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 8px;">
-                  <div style="font-size: 10px; color: var(--on-surface-variant); margin-bottom: 4px;"
+                <div style="background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 8px; min-width: 0;">
+                  <div style="font-size: 10px; color: var(--on-surface-variant); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
                     class="translatable">
                     Temp</div>
                   <div id="ctxTemp" style="font-size: 14px; font-weight: 700; color: #fbbc04;">--°C</div>
                 </div>
-                <div style="background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 8px;">
-                  <div style="font-size: 10px; color: var(--on-surface-variant); margin-bottom: 4px;"
+                <div style="background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 8px; min-width: 0;">
+                  <div style="font-size: 10px; color: var(--on-surface-variant); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
                     class="translatable">
                     Humidity</div>
                   <div id="ctxHumidity" style="font-size: 14px; font-weight: 700; color: #62a6ff;">--%</div>
                 </div>
-                <div style="background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 8px;">
-                  <div style="font-size: 10px; color: var(--on-surface-variant); margin-bottom: 4px;">TDS</div>
+                <div style="background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 8px; min-width: 0;">
+                  <div style="font-size: 10px; color: var(--on-surface-variant); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">TDS</div>
                   <div id="ctxTDS" style="font-size: 14px; font-weight: 700; color: #a78bfa;">--ppm</div>
                 </div>
               </div>
@@ -3273,6 +3191,90 @@
               <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #a78bfa;">
                 <span class="material-symbols-rounded" style="font-size: 18px;">verified_user</span>
                 <span class="translatable">✅ Improved Reliability</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="head">
+            <h2 class="translatable">Analyze Local Image</h2>
+            <span class="pill translatable">Local</span>
+          </div>
+          <div id="localImagePreview" class="frame" style="display: none;min-height: 240px;"></div>
+          <p id="localImagePlaceholder" style="color: var(--on-surface-variant); font-size: 14px; text-align: center;"
+            class="translatable">Select an image to analyze</p>
+          <div class="actions">
+            <input type="file" id="imageInput" accept="image/*" capture="environment" style="display: none;">
+            <input type="file" id="imageInputGallery" accept="image/*" style="display: none;">
+
+            <div class="local-image-controls" style="display:flex; gap:8px;">
+              <button class="btn sec translatable" onclick="document.getElementById('imageInput').click()">Capture
+                Photo</button>
+              <button class="btn sec translatable" onclick="document.getElementById('imageInputGallery').click()">Choose
+                from Gallery</button>
+            </div>
+
+            <div id="batchProgress" class="batch-progress" style="display:none; margin-top:12px;">
+              <div class="bar"
+                style="width:0%; height:8px; border-radius:6px; background:linear-gradient(90deg,var(--primary),#0b4eb3);">
+              </div>
+              <div class="label" id="batchProgressLabel"
+                style="margin-top:6px; font-size:13px; color:var(--on-surface-variant);"></div>
+            </div>
+            <button id="localAnalyzeBtn" class="btn pri" onclick="analyzeLocalImage()" disabled><span
+                class="material-symbols-rounded">image_search</span> <span class="translatable">Analyze
+                Image</span></button>
+          </div>
+        </article>
+
+        <!-- AI Expert Analysis Card -->
+        <article class="card" id="aiAnalysisCard">
+          <div class="head">
+            <div
+              style="display:flex; justify-content:space-between; align-items:center; width:100%; flex-wrap: wrap; gap: 10px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="material-symbols-rounded" style="color:#4285f4;">psychology</span>
+                <h2 class="translatable">AI Expert Analysis</h2>
+              </div>
+              <button id="toggleGeminiBtn" onclick="toggleGeminiAnalysis()"
+                style="background:var(--primary-container); color:var(--primary); border:none; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.3s;">
+                <span class="material-symbols-rounded" style="font-size:18px;" id="geminiToggleIcon">toggle_on</span>
+                <span class="translatable" id="geminiToggleText">Enabled</span>
+              </button>
+            </div>
+          </div>
+          <div id="aiAnalysisContent" style="padding:32px 20px; min-height:180px;">
+            <div style="text-align:center; color:var(--on-surface-variant);">
+              <span class="material-symbols-rounded"
+                style="font-size:64px; opacity:0.5; color:#34a853;">psychology</span>
+              <p style="margin-top:16px; font-size:18px; font-weight:600; color:var(--on-surface);"
+                class="translatable">AI Analysis Enabled</p>
+              <p style="margin-top:10px; font-size:15px;" class="translatable">Run an analysis to see AI-powered insights
+              </p>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="head">
+            <h2 class="translatable">Diagnostic Results</h2>
+          </div>
+          <div id="res" class="results">
+            <div class="rc">
+              <div class="t translatable">Awaiting Analysis</div>
+              <p style="color: var(--on-surface-variant); font-size: 14px; margin-bottom: 16px;" class="translatable">
+                Connect to a device and then run diagnostics.</p>
+
+              <!-- Disease Detection Models Display -->
+              <div style="background: rgba(26, 115, 232, 0.05); border-radius: 8px; padding: 16px; margin-top: 12px;">
+                <h4 style="margin: 0 0 12px 0; color: var(--primary); font-size: 14px; font-weight: 600;"
+                  class="translatable">
+                  Active Detection Models
+                </h4>
+                <div id="modelsList" style="display: flex; flex-direction: column; gap: 8px;">
+                  <!-- Models will be displayed here -->
+                </div>
               </div>
             </div>
           </div>
@@ -5974,7 +5976,13 @@
 
         // Save to Firebase asynchronously
         if (firebaseReady && firebaseEnabled) {
-          saveToFirebase(logEntry).catch(err => {
+          saveToFirebase(logEntry).then(docId => {
+            if (docId) {
+              logEntry.firebaseId = docId;
+              logEntry.savedToFirebase = true;
+              console.log('✅ Firebase ID stored in log entry:', docId);
+            }
+          }).catch(err => {
             console.error('Firebase save failed, data is in localStorage:', err);
           });
         }
@@ -7471,71 +7479,71 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
 
         let actionsHtml = '';
         if (analysis.actions && analysis.actions.length > 0) {
-          actionsHtml = analysis.actions.map(a => `<li style="margin-bottom:8px; display:flex; align-items:flex-start; gap:8px;">
-            <span class="material-symbols-rounded" style="color:#34a853; font-size:18px; margin-top:2px;">task_alt</span>
-            <span>${a}</span>
+          actionsHtml = analysis.actions.map(a => `<li style="margin-bottom:12px; display:flex; align-items:flex-start; gap:10px;">
+            <span class="material-symbols-rounded" style="color:#34a853; font-size:22px; margin-top:2px;">task_alt</span>
+            <span style="flex:1;">${a}</span>
           </li>`).join('');
         }
 
         let preventionHtml = '';
         if (analysis.prevention && analysis.prevention.length > 0) {
-          preventionHtml = analysis.prevention.map(p => `<li style="margin-bottom:8px; display:flex; align-items:flex-start; gap:8px;">
-            <span class="material-symbols-rounded" style="color:#4285f4; font-size:18px; margin-top:2px;">shield</span>
-            <span>${p}</span>
+          preventionHtml = analysis.prevention.map(p => `<li style="margin-bottom:12px; display:flex; align-items:flex-start; gap:10px;">
+            <span class="material-symbols-rounded" style="color:#4285f4; font-size:22px; margin-top:2px;">shield</span>
+            <span style="flex:1;">${p}</span>
           </li>`).join('');
         }
 
         container.innerHTML = `
-          <div style="padding:20px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span class="material-symbols-rounded" style="color:#34a853; font-size:32px;">check_circle</span>
-                <div style="font-weight:700; color:var(--on-surface); font-size:16px;">${titleText}</div>
+          <div style="padding:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span class="material-symbols-rounded" style="color:#34a853; font-size:40px;">check_circle</span>
+                <div style="font-weight:700; color:var(--on-surface); font-size:20px;">${titleText}</div>
               </div>
               <button id="translate-btn-${analysisId}" onclick="translateGeminiAnalysis('${analysisId}')" 
-                style="background:rgba(66,133,244,0.15); color:#4285f4; border:1px solid rgba(66,133,244,0.3); padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.3s; display:flex; align-items:center; gap:6px;">
-                <span class="material-symbols-rounded" style="font-size:16px;">translate</span>
+                style="background:rgba(66,133,244,0.15); color:#4285f4; border:1px solid rgba(66,133,244,0.3); padding:10px 18px; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; transition:all 0.3s; display:flex; align-items:center; gap:8px;">
+                <span class="material-symbols-rounded" style="font-size:18px;">translate</span>
                 <span id="translate-text-${analysisId}">${buttonText}</span>
               </button>
             </div>
 
             <!-- Explanation Section -->
-            <div style="margin-bottom:24px; background:var(--surface-container); padding:20px; border-radius:12px; border:1px solid var(--outline-variant);">
-              <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; color:#4285f4;">
-                <span class="material-symbols-rounded">psychology</span>
-                <h3 style="font-size:15px; font-weight:700; margin:0;">${expTitle}</h3>
+            <div style="margin-bottom:28px; background:var(--surface-container); padding:24px; border-radius:14px; border:2px solid var(--outline-variant); box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+              <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; color:#4285f4;">
+                <span class="material-symbols-rounded" style="font-size:24px;">psychology</span>
+                <h3 style="font-size:18px; font-weight:700; margin:0;">${expTitle}</h3>
               </div>
-              <p style="font-size:14px; color:var(--on-surface); line-height:1.6; margin:0;">${analysis.explanation}</p>
+              <p style="font-size:16px; color:var(--on-surface); line-height:1.8; margin:0;">${analysis.explanation}</p>
             </div>
 
-            <div style="display:grid; grid-template-columns: 1fr; gap:16px;">
+            <div style="display:grid; grid-template-columns: 1fr; gap:20px;">
               <!-- Action Section -->
               ${actionsHtml ? `
-              <div style="background:rgba(52,168,83,0.05); padding:20px; border-radius:12px; border:1px solid rgba(52,168,83,0.2);">
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; color:#34a853;">
-                  <span class="material-symbols-rounded">medical_services</span>
-                  <h3 style="font-size:15px; font-weight:700; margin:0;">${actTitle}</h3>
+              <div style="background:rgba(52,168,83,0.05); padding:24px; border-radius:14px; border:2px solid rgba(52,168,83,0.2); box-shadow: 0 2px 8px rgba(52,168,83,0.1);">
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; color:#34a853;">
+                  <span class="material-symbols-rounded" style="font-size:24px;">medical_services</span>
+                  <h3 style="font-size:18px; font-weight:700; margin:0;">${actTitle}</h3>
                 </div>
-                <ul style="list-style:none; padding:0; margin:0; font-size:14px; color:var(--on-surface);">
+                <ul style="list-style:none; padding:0; margin:0; font-size:15px; color:var(--on-surface); line-height:1.7;">
                   ${actionsHtml}
                 </ul>
               </div>` : ''}
 
               <!-- Prevention Section -->
               ${preventionHtml ? `
-              <div style="background:rgba(66,133,244,0.05); padding:20px; border-radius:12px; border:1px solid rgba(66,133,244,0.2);">
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; color:#4285f4;">
-                  <span class="material-symbols-rounded">security</span>
-                  <h3 style="font-size:15px; font-weight:700; margin:0;">${preTitle}</h3>
+              <div style="background:rgba(66,133,244,0.05); padding:24px; border-radius:14px; border:2px solid rgba(66,133,244,0.2); box-shadow: 0 2px 8px rgba(66,133,244,0.1);">
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; color:#4285f4;">
+                  <span class="material-symbols-rounded" style="font-size:24px;">security</span>
+                  <h3 style="font-size:18px; font-weight:700; margin:0;">${preTitle}</h3>
                 </div>
-                <ul style="list-style:none; padding:0; margin:0; font-size:14px; color:var(--on-surface);">
+                <ul style="list-style:none; padding:0; margin:0; font-size:15px; color:var(--on-surface); line-height:1.7;">
                   ${preventionHtml}
                 </ul>
               </div>` : ''}
             </div>
 
-            <div style="margin-top:16px; padding:12px; background:rgba(66,133,244,0.05); border-radius:8px; text-align:center;">
-              <div style="font-size:11px; color:var(--on-surface-variant);">
+            <div style="margin-top:20px; padding:16px; background:rgba(66,133,244,0.05); border-radius:10px; text-align:center;">
+              <div style="font-size:12px; color:var(--on-surface-variant); line-height:1.5;">
                 ⚡ ${powerText} • ${warnText}
               </div>
             </div>
