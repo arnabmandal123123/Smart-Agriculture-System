@@ -476,6 +476,12 @@
       }
     }
 
+    /* Disable default hero background for nutrient monitor */
+    .nutrient-hero::before,
+    .nutrient-hero::after {
+      display: none !important;
+    }
+
     .hero-content {
       position: relative;
       z-index: 2;
@@ -4068,14 +4074,21 @@
         </div>
       </div>
 
-      <section class="hero" style="margin-top: 0; padding-top: 32px;">
-        <div class="hero-content">
-          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-            <span class="material-symbols-rounded" style="font-size: 40px; color: var(--primary);">water_drop</span>
-            <h1 style="margin: 0; font-size: 32px; font-weight: 800;">Nutrient Loss Monitor</h1>
+      <section class="hero nutrient-hero" style="margin-top: 0; min-height: 180px; display: flex; align-items: center; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); position: relative; overflow: hidden;">
+        <!-- Custom background for Nutrient Monitor -->
+        <div style="position: absolute; inset: 0; background: url('nutrients_loss_header.jpeg') center/cover no-repeat; z-index: 0;"></div>
+        <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(5, 15, 8, 0.82) 0%, rgba(10, 30, 15, 0.65) 50%, rgba(5, 20, 10, 0.78) 100%); z-index: 1;"></div>
+        
+        <div class="hero-content" style="text-align: center; width: 100%; position: relative; z-index: 2;">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 12px;">
+            <span class="material-symbols-rounded" style="font-size: 48px; color: #4ade80;">water_drop</span>
+            <h1 style="margin: 0; font-size: 36px; font-weight: 800; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.3);">Nutrient Loss Monitor</h1>
           </div>
-          <p style="color: var(--on-surface-variant); font-size: 15px; margin: 8px 0 0 0;">
-            Auto Nutrient Runoff Analysis
+          <p style="color: rgba(255, 255, 255, 0.95); font-size: 17px; margin: 8px 0 0 0; text-shadow: 0 1px 4px rgba(0,0,0,0.2); font-weight: 500;">
+            🌿 Auto Nutrient Runoff Analysis
+          </p>
+          <p style="color: rgba(255, 255, 255, 0.85); font-size: 14px; margin: 12px auto 0; max-width: 600px; text-shadow: 0 1px 3px rgba(0,0,0,0.2);">
+            Track fertilizer loss during irrigation & rainfall • Real-time alerts • Smart recommendations
           </p>
         </div>
       </section>
