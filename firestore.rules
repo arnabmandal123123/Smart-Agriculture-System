@@ -89,6 +89,39 @@ service cloud.firestore {
       allow write: if request.auth != null;
     }
     
+    // ============ NUTRIENT LOSS MONITOR (NEW) ============
+    // Active nutrient monitoring event
+    match /nutrientMonitor/activeEvent {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null
+        && request.resource.data.startTime != null
+        && request.resource.data.initialTDS is number
+        && request.resource.data.initialTDS >= 0;
+      allow delete: if request.auth != null;
+    }
+    
+    // Nutrient event history
+    match /nutrientMonitor/history/{eventId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.startTime != null
+        && request.resource.data.endTime != null
+        && request.resource.data.initialTDS is number
+        && request.resource.data.finalTDS is number
+        && request.resource.data.nutrientLoss is number
+        && request.resource.data.lossPercentage is number;
+      allow update, delete: if request.auth != null;
+    }
+    
+    // Multi-device nutrient alerts
+    match /alerts/nutrientAlert {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && request.resource.data.isActive is bool
+        && request.resource.data.severity is string
+        && request.resource.data.severity in ['safe', 'warning', 'critical'];
+    }
+    
     // ============ USERS ============
     match /users/{documentId} {
       allow read, write: if request.auth != null;

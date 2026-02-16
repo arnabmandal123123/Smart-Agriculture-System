@@ -3929,6 +3929,25 @@
                 style="font-size: 24px; color: var(--on-surface-variant);">chevron_right</span>
             </button>
 
+            <!-- Nutrient Loss Monitor Shortcut (NEW) -->
+            <button class="btn sec" onclick="switchTab('nutrientTab');"
+              style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; width: 100%; cursor: pointer; border: none; border-bottom: 1px solid var(--outline-variant); border-radius: 0; background: transparent; box-shadow: none; text-align: left;">
+              <div style="display: flex; align-items: center; gap: 16px;">
+                <div
+                  style="width: 40px; height: 40px; border-radius: 50%; background: rgba(52, 168, 83, 0.1); display: flex; align-items: center; justify-content: center;">
+                  <span class="material-symbols-rounded"
+                    style="font-size: 20px; color: #34a853;">water_drop</span>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                  <span class="translatable"
+                    style="font-weight: 600; font-size: 15px; color: var(--on-surface);">Nutrient Loss Monitor</span>
+                  <span class="translatable" style="font-size: 12px; color: var(--on-surface-variant);">Track nutrient runoff</span>
+                </div>
+              </div>
+              <span class="material-symbols-rounded"
+                style="font-size: 24px; color: var(--on-surface-variant);">chevron_right</span>
+            </button>
+
             <button class="btn sec" onclick="showLogsPage()"
               style="justify-content: flex-start; text-align: left; padding: 16px 20px; border: none; border-radius: 0; background: transparent; box-shadow: none; width: 100%;">
               <div style="display: flex; align-items: center; gap: 16px; width: 100%;">
@@ -4029,6 +4048,166 @@
 
     <!-- ========================================== -->
 
+    <!-- ==========================================
+         NUTRIENT LOSS MONITOR TAB
+         ========================================== -->
+    <div id="nutrientTab" class="tab-content">
+      <!-- Global Alert Banner (shown when active) -->
+      <div id="nutrientAlertBanner" style="display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 10000; padding: 16px; background: linear-gradient(135deg, #ea4335 0%, #d32f2f 100%); box-shadow: 0 4px 12px rgba(234, 67, 53, 0.3);">
+        <div style="max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 200px;">
+            <span class="material-symbols-rounded" style="font-size: 32px; color: white;">warning</span>
+            <div>
+              <div style="font-weight: 700; font-size: 16px; color: white;">⚠ Nutrient Loss Alert Active</div>
+              <div id="alertBannerMessage" style="font-size: 13px; color: rgba(255,255,255,0.9); margin-top: 4px;"></div>
+            </div>
+          </div>
+          <button onclick="acknowledgeNutrientAlert()" style="background: white; color: #ea4335; border: none; padding: 10px 24px; border-radius: 24px; font-weight: 600; cursor: pointer; font-size: 14px; white-space: nowrap;">
+            Acknowledge
+          </button>
+        </div>
+      </div>
+
+      <section class="hero" style="margin-top: 0; padding-top: 32px;">
+        <div class="hero-content">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+            <span class="material-symbols-rounded" style="font-size: 40px; color: var(--primary);">water_drop</span>
+            <h1 style="margin: 0; font-size: 32px; font-weight: 800;">Nutrient Loss Monitor</h1>
+          </div>
+          <p style="color: var(--on-surface-variant); font-size: 15px; margin: 8px 0 0 0;">
+            Auto Nutrient Runoff Analysis
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 1: Live Event Monitor -->
+      <article class="card">
+        <div class="head">
+          <h2>🟢 Live Event Monitor</h2>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
+          <!-- Rain Status -->
+          <div style="background: var(--surface-container); padding: 16px; border-radius: 12px; text-align: center;">
+            <div style="font-size: 11px; color: var(--on-surface-variant); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Rain Status</div>
+            <div id="nlm_rainStatus" style="font-size: 18px; font-weight: 700; color: var(--on-surface);">Inactive</div>
+          </div>
+          <!-- Pump Status -->
+          <div style="background: var(--surface-container); padding: 16px; border-radius: 12px; text-align: center;">
+            <div style="font-size: 11px; color: var(--on-surface-variant); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Pump Status</div>
+            <div id="nlm_pumpStatus" style="font-size: 18px; font-weight: 700; color: var(--on-surface);">OFF</div>
+          </div>
+          <!-- Event Status -->
+          <div style="background: var(--surface-container); padding: 16px; border-radius: 12px; text-align: center; border: 2px solid transparent;" id="nlm_eventCard">
+            <div style="font-size: 11px; color: var(--on-surface-variant); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Event Status</div>
+            <div id="nlm_eventStatus" style="font-size: 18px; font-weight: 700; color: var(--on-surface-variant);">Idle</div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: 12px;">
+          <!-- Initial TDS -->
+          <div style="background: var(--surface-container); padding: 16px; border-radius: 12px; text-align: center;">
+            <div style="font-size: 11px; color: var(--on-surface-variant); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Initial TDS</div>
+            <div id="nlm_initialTDS" style="font-size: 20px; font-weight: 700; color: #4285f4;">--<span style="font-size: 12px; margin-left: 3px;">ppm</span></div>
+          </div>
+          <!-- Current TDS -->
+          <div style="background: var(--surface-container); padding: 16px; border-radius: 12px; text-align: center;">
+            <div style="font-size: 11px; color: var(--on-surface-variant); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Current TDS</div>
+            <div id="nlm_currentTDS" style="font-size: 20px; font-weight: 700; color: var(--primary);">--<span style="font-size: 12px; margin-left: 3px;">ppm</span></div>
+          </div>
+          <!-- Final TDS -->
+          <div style="background: var(--surface-container); padding: 16px; border-radius: 12px; text-align: center;">
+            <div style="font-size: 11px; color: var(--on-surface-variant); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Final TDS</div>
+            <div id="nlm_finalTDS" style="font-size: 20px; font-weight: 700; color: #34a853;">--<span style="font-size: 12px; margin-left: 3px;">ppm</span></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Section 2: Nutrient Loss Analytics -->
+      <article class="card">
+        <div class="head">
+          <h2>📈 Nutrient Loss Analytics</h2>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
+          <!-- Nutrient Loss -->
+          <div style="background: var(--surface-container); padding: 20px; border-radius: 14px; border: 2px solid var(--outline-variant);">
+            <div style="font-size: 12px; color: var(--on-surface-variant); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Nutrient Loss</div>
+            <div style="display: flex; align-items: baseline; gap: 6px;">
+              <span id="nlm_nutrientLoss" style="font-size: 32px; font-weight: 700; color: var(--primary);">0</span>
+              <span style="font-size: 14px; color: var(--on-surface-variant);">ppm</span>
+            </div>
+          </div>
+          <!-- Loss Percentage -->
+          <div style="background: var(--surface-container); padding: 20px; border-radius: 14px; border: 2px solid var(--outline-variant);">
+            <div style="font-size: 12px; color: var(--on-surface-variant); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Loss Percentage</div>
+            <div style="display: flex; align-items: baseline; gap: 6px;">
+              <span id="nlm_lossPercentage" style="font-size: 32px; font-weight: 700; color: var(--primary);">0</span>
+              <span style="font-size: 14px; color: var(--on-surface-variant);">%</span>
+            </div>
+          </div>
+          <!-- Severity Badge -->
+          <div style="background: var(--surface-container); padding: 20px; border-radius: 14px; border: 2px solid var(--outline-variant);" id="nlm_severityCard">
+            <div style="font-size: 12px; color: var(--on-surface-variant); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Severity</div>
+            <div id="nlm_severity" style="font-size: 18px; font-weight: 700; color: #4ade80;">Safe</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 16px; background: var(--surface-container); padding: 16px; border-radius: 12px;">
+          <div style="font-size: 12px; color: var(--on-surface-variant); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Event Duration</div>
+          <div id="nlm_eventDuration" style="font-size: 16px; font-weight: 600; color: var(--on-surface);">--</div>
+        </div>
+
+        <div style="margin-top: 12px; background: var(--surface-container); padding: 16px; border-radius: 12px;">
+          <div style="font-size: 12px; color: var(--on-surface-variant); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Last Event</div>
+          <div id="nlm_lastEvent" style="font-size: 14px; font-weight: 500; color: var(--on-surface);">No events recorded</div>
+        </div>
+
+        <!-- TDS Chart -->
+        <div style="margin-top: 20px;">
+          <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--on-surface);">TDS Timeline</h3>
+          <canvas id="nlm_tdsChart" style="max-height: 250px;"></canvas>
+        </div>
+      </article>
+
+      <!-- Section 3: History Table -->
+      <article class="card">
+        <div class="head">
+          <h2>📜 Event History</h2>
+        </div>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead>
+              <tr style="background: var(--surface-container); border-bottom: 2px solid var(--outline-variant);">
+                <th style="padding: 12px 8px; text-align: left; color: var(--on-surface-variant); font-weight: 600;">Date</th>
+                <th style="padding: 12px 8px; text-align: left; color: var(--on-surface-variant); font-weight: 600;">Type</th>
+                <th style="padding: 12px 8px; text-align: left; color: var(--on-surface-variant); font-weight: 600;">Initial TDS</th>
+                <th style="padding: 12px 8px; text-align: left; color: var(--on-surface-variant); font-weight: 600;">Final TDS</th>
+                <th style="padding: 12px 8px; text-align: left; color: var(--on-surface-variant); font-weight: 600;">Loss %</th>
+                <th style="padding: 12px 8px; text-align: left; color: var(--on-surface-variant); font-weight: 600;">Severity</th>
+              </tr>
+            </thead>
+            <tbody id="nlm_historyTable">
+              <tr>
+                <td colspan="6" style="padding: 32px; text-align: center; color: var(--on-surface-variant);">
+                  <span class="material-symbols-rounded" style="font-size: 48px; opacity: 0.3;">history</span>
+                  <div style="margin-top: 8px;">No events recorded yet</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <!-- Section 4: Recommendation Panel -->
+      <article class="card" id="nlm_recommendationPanel" style="display: none;">
+        <div class="head">
+          <h2>🌿 Recommendations</h2>
+        </div>
+        <div id="nlm_recommendations" style="padding: 20px; background: var(--surface-container); border-radius: 12px; border-left: 4px solid var(--primary);">
+          <div style="font-size: 15px; font-weight: 600; color: var(--on-surface); margin-bottom: 8px;">Monitor soil condition</div>
+          <div style="font-size: 14px; color: var(--on-surface-variant); line-height: 1.6;">TDS levels are within acceptable range. Continue regular monitoring.</div>
+        </div>
+      </article>
+    </div>
 
     <!-- Toast container for user messages -->
     <div id="toasts" aria-live="polite"
@@ -10811,6 +10990,19 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
               }
             }
 
+            // *** NUTRIENT LOSS MONITORING INTEGRATION ***
+            // Monitor for irrigation/rain events and nutrient loss
+            if (typeof monitorNutrientEvents === 'function') {
+              monitorNutrientEvents({
+                rainSensor: data.rain !== undefined ? (data.rain > 50) : false,
+                rainValue: data.rain,
+                pumpStatus: pumpOn ? 'ON' : 'OFF',
+                pump: pumpOn ? 1 : 0,
+                tds: data.tds,
+                soilQuality: data.tds
+              });
+            }
+
             // Update Arduino status dot (Logic reused from cleanups)
             // We removed the dots, but if we ever decide to re-add logic, it goes here.
             // For now, these ID checks will safely fail if elements are gone.
@@ -12069,6 +12261,536 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
           home.classList.add('active');
         }
       });
+
+
+      // ==========================================
+      // NUTRIENT LOSS MONITOR SYSTEM
+      // ==========================================
+
+      // Global state for nutrient monitoring
+      let nutrientMonitorState = {
+        eventActive: false,
+        initialTDS: null,
+        startTime: null,
+        rainDetected: false,
+        pumpUsed: false,
+        tdsChart: null,
+        alertUnsubscribe: null,
+        activeEventUnsubscribe: null
+      };
+
+      // Initialize Nutrient Monitor (call after Firebase is ready)
+      function initializeNutrientMonitor() {
+        if (!firebaseReady || !db) {
+          console.warn('Firebase not ready for Nutrient Monitor');
+          return;
+        }
+
+        console.log('🌿 Initializing Nutrient Loss Monitor...');
+
+        // Listen for active event changes
+        nutrientMonitorState.activeEventUnsubscribe = db.collection('nutrientMonitor').doc('activeEvent').onSnapshot(doc => {
+          if (doc.exists) {
+            const data = doc.data();
+            nutrientMonitorState.eventActive = true;
+            nutrientMonitorState.initialTDS = data.initialTDS;
+            nutrientMonitorState.startTime = data.startTime;
+            nutrientMonitorState.rainDetected = data.rainDetected || false;
+            nutrientMonitorState.pumpUsed = data.pumpUsed || false;
+            updateNutrientMonitorUI();
+          } else {
+            nutrientMonitorState.eventActive = false;
+            updateNutrientMonitorUI();
+          }
+        }, err => {
+          console.error('Error listening to active event:', err);
+        });
+
+        // Listen for alert changes (multi-device sync)
+        nutrientMonitorState.alertUnsubscribe = db.collection('alerts').doc('nutrientAlert').onSnapshot(doc => {
+          if (doc.exists) {
+            const alert = doc.data();
+            if (alert.isActive) {
+              showNutrientAlert(alert);
+            } else {
+              hideNutrientAlert();
+            }
+          } else {
+            hideNutrientAlert();
+          }
+        }, err => {
+          console.error('Error listening to alerts:', err);
+        });
+
+        // Load history
+        loadNutrientHistory();
+
+        // Initialize chart
+        initializeNutrientChart();
+
+        console.log('✅ Nutrient Loss Monitor initialized');
+      }
+
+      // Monitor sensor data and detect events
+      function monitorNutrientEvents(sensorData) {
+        if (!firebaseReady || !db) return;
+
+        const rainActive = sensorData.rainSensor === true || sensorData.rainValue === 1;
+        const pumpOn = sensorData.pumpStatus === 'ON' || sensorData.pumpStatus === true || sensorData.pump === 1;
+        const currentTDS = sensorData.tds || sensorData.soilQuality || 0;
+
+        // Update current TDS display
+        const currentTDSEl = document.getElementById('nlm_currentTDS');
+        if (currentTDSEl) {
+          currentTDSEl.innerHTML = `${currentTDS}<span style="font-size: 12px; margin-left: 3px;">ppm</span>`;
+        }
+
+        // Update rain status
+        const rainStatusEl = document.getElementById('nlm_rainStatus');
+        if (rainStatusEl) {
+          rainStatusEl.textContent = rainActive ? 'Active' : 'Inactive';
+          rainStatusEl.style.color = rainActive ? '#34a853' : 'var(--on-surface)';
+        }
+
+        // Update pump status
+        const pumpStatusEl = document.getElementById('nlm_pumpStatus');
+        if (pumpStatusEl) {
+          pumpStatusEl.textContent = pumpOn ? 'ON' : 'OFF';
+          pumpStatusEl.style.color = pumpOn ? '#34a853' : 'var(--on-surface)';
+        }
+
+        // Event Start Condition
+        if ((rainActive || pumpOn) && !nutrientMonitorState.eventActive) {
+          startNutrientEvent(currentTDS, rainActive, pumpOn);
+        }
+
+        // Event End Condition  
+        if (!rainActive && !pumpOn && nutrientMonitorState.eventActive) {
+          endNutrientEvent(currentTDS);
+        }
+      }
+
+      // Start nutrient monitoring event
+      async function startNutrientEvent(initialTDS, rainDetected, pumpUsed) {
+        try {
+          const eventData = {
+            startTime: firebase.firestore.FieldValue.serverTimestamp(),
+            initialTDS: initialTDS,
+            rainDetected: rainDetected,
+            pumpUsed: pumpUsed
+          };
+
+          await db.collection('nutrientMonitor').doc('activeEvent').set(eventData);
+          console.log('🟢 Nutrient event started:', eventData);
+        } catch (error) {
+          console.error('Error starting nutrient event:', error);
+        }
+      }
+
+      // End nutrient monitoring event
+      async function endNutrientEvent(finalTDS) {
+        try {
+          const activeEventDoc = await db.collection('nutrientMonitor').doc('activeEvent').get();
+          if (!activeEventDoc.exists) return;
+
+          const activeData = activeEventDoc.data();
+          const initialTDS = activeData.initialTDS;
+          let nutrientLoss = initialTDS - finalTDS;
+          if (nutrientLoss < 0) nutrientLoss = 0;
+
+          const lossPercentage = initialTDS > 0 ? (nutrientLoss / initialTDS) * 100 : 0;
+
+          // Create history entry
+          const eventID = 'event_' + Date.now();
+          const historyData = {
+            startTime: activeData.startTime,
+            endTime: firebase.firestore.FieldValue.serverTimestamp(),
+            initialTDS: initialTDS,
+            finalTDS: finalTDS,
+            nutrientLoss: nutrientLoss,
+            lossPercentage: lossPercentage,
+            rainDetected: activeData.rainDetected,
+            pumpUsed: activeData.pumpUsed
+          };
+
+          await db.collection('nutrientMonitor').collection('history').doc(eventID).set(historyData);
+
+          // Delete active event
+          await db.collection('nutrientMonitor').doc('activeEvent').delete();
+
+          console.log('🔴 Nutrient event ended:', historyData);
+
+          // Check if alert should be created
+          if (lossPercentage >= 5) {
+            createNutrientAlert(lossPercentage, nutrientLoss, finalTDS);
+          }
+
+          // Reload history
+          loadNutrientHistory();
+
+        } catch (error) {
+          console.error('Error ending nutrient event:', error);
+        }
+      }
+
+      // Create alert in Firebase
+      async function createNutrientAlert(lossPercentage, nutrientLoss, finalTDS) {
+        try {
+          let severity, message;
+
+          if (lossPercentage >= 15) {
+            severity = 'critical';
+            message = `Critical nutrient loss detected (${lossPercentage.toFixed(1)}%). Immediate fertilizer application recommended.`;
+          } else {
+            severity = 'warning';
+            message = `Moderate nutrient loss detected (${lossPercentage.toFixed(1)}%). Consider light nutrient supplementation.`;
+          }
+
+          const alertData = {
+            isActive: true,
+            severity: severity,
+            message: message,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            lossPercentage: lossPercentage,
+            nutrientLoss: nutrientLoss,
+            finalTDS: finalTDS
+          };
+
+          await db.collection('alerts').doc('nutrientAlert').set(alertData);
+          console.log('🚨 Nutrient alert created:', alertData);
+
+          // Play alarm sound if critical
+          if (severity === 'critical') {
+            playAlarmSound();
+          }
+
+        } catch (error) {
+          console.error('Error creating nutrient alert:', error);
+        }
+      }
+
+      // Show nutrient alert banner
+      function showNutrientAlert(alert) {
+        const banner = document.getElementById('nutrientAlertBanner');
+        const messageEl = document.getElementById('alertBannerMessage');
+
+        if (banner && messageEl) {
+          messageEl.textContent = alert.message;
+
+          // Set color based on severity
+          if (alert.severity === 'critical') {
+            banner.style.background = 'linear-gradient(135deg, #ea4335 0%, #d32f2f 100%)';
+          } else {
+            banner.style.background = 'linear-gradient(135deg, #fbbc04 0%, #f9a825 100%)';
+          }
+
+          banner.style.display = 'block';
+        }
+      }
+
+      // Hide nutrient alert banner
+      function hideNutrientAlert() {
+        const banner = document.getElementById('nutrientAlertBanner');
+        if (banner) {
+          banner.style.display = 'none';
+        }
+      }
+
+      // Acknowledge alert (dismiss from all devices)
+      async function acknowledgeNutrientAlert() {
+        try {
+          await db.collection('alerts').doc('nutrientAlert').update({
+            isActive: false
+          });
+          console.log('✅ Alert acknowledged');
+        } catch (error) {
+          console.error('Error acknowledging alert:', error);
+        }
+      }
+
+      // Play alarm sound for critical alerts
+      function playAlarmSound() {
+        try {
+          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+
+          oscillator.frequency.value = 800;
+          oscillator.type = 'sine';
+
+          gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+          oscillator.start(audioContext.currentTime);
+          oscillator.stop(audioContext.currentTime + 0.5);
+        } catch (error) {
+          console.error('Error playing alarm sound:', error);
+        }
+      }
+
+      // Update UI based on current state
+      function updateNutrientMonitorUI() {
+        const eventStatusEl = document.getElementById('nlm_eventStatus');
+        const eventCard = document.getElementById('nlm_eventCard');
+        const initialTDSEl = document.getElementById('nlm_initialTDS');
+        const finalTDSEl = document.getElementById('nlm_finalTDS');
+
+        if (nutrientMonitorState.eventActive) {
+          if (eventStatusEl) {
+            eventStatusEl.textContent = 'Monitoring';
+            eventStatusEl.style.color = '#4285f4';
+          }
+          if (eventCard) {
+            eventCard.style.borderColor = '#4285f4';
+            eventCard.style.background = 'rgba(66, 133, 244, 0.05)';
+          }
+          if (initialTDSEl) {
+            initialTDSEl.innerHTML = `${nutrientMonitorState.initialTDS}<span style="font-size: 12px; margin-left: 3px;">ppm</span>`;
+          }
+          if (finalTDSEl) {
+            finalTDSEl.innerHTML = `--<span style="font-size: 12px; margin-left: 3px;">ppm</span>`;
+          }
+        } else {
+          if (eventStatusEl) {
+            eventStatusEl.textContent = 'Idle';
+            eventStatusEl.style.color = 'var(--on-surface-variant)';
+          }
+          if (eventCard) {
+            eventCard.style.borderColor = 'transparent';
+            eventCard.style.background = 'var(--surface-container)';
+          }
+        }
+      }
+
+      // Load history from Firebase
+      async function loadNutrientHistory() {
+        try {
+          const historySnapshot = await db.collection('nutrientMonitor').collection('history')
+            .orderBy('endTime', 'desc')
+            .limit(10)
+            .get();
+
+          const tableBody = document.getElementById('nlm_historyTable');
+          if (!tableBody) return;
+
+          if (historySnapshot.empty) {
+            tableBody.innerHTML = `
+              <tr>
+                <td colspan="6" style="padding: 32px; text-align: center; color: var(--on-surface-variant);">
+                  <span class="material-symbols-rounded" style="font-size: 48px; opacity: 0.3;">history</span>
+                  <div style="margin-top: 8px;">No events recorded yet</div>
+                </td>
+              </tr>
+            `;
+            return;
+          }
+
+          let html = '';
+          let latestEvent = null;
+
+          historySnapshot.forEach(doc => {
+            const event = doc.data();
+            if (!latestEvent) latestEvent = event;
+
+            const date = event.endTime ? new Date(event.endTime.toDate()).toLocaleString() : 'N/A';
+            const type = event.rainDetected && event.pumpUsed ? 'Rain + Pump' : event.rainDetected ? 'Rain' : 'Pump';
+            const severity = event.lossPercentage < 5 ? 'Safe' : event.lossPercentage < 15 ? 'Warning' : 'Critical';
+            const severityColor = event.lossPercentage < 5 ? '#4ade80' : event.lossPercentage < 15 ? '#fbbc04' : '#ea4335';
+
+            html += `
+              <tr style="border-bottom: 1px solid var(--outline-variant);">
+                <td style="padding: 12px 8px;">${date}</td>
+                <td style="padding: 12px 8px;">${type}</td>
+                <td style="padding: 12px 8px;">${event.initialTDS} ppm</td>
+                <td style="padding: 12px 8px;">${event.finalTDS} ppm</td>
+                <td style="padding: 12px 8px; font-weight: 600;">${event.lossPercentage.toFixed(1)}%</td>
+                <td style="padding: 12px 8px;">
+                  <span style="background: ${severityColor}22; color: ${severityColor}; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;">
+                    ${severity}
+                  </span>
+                </td>
+              </tr>
+            `;
+          });
+
+          tableBody.innerHTML = html;
+
+          // Update analytics section
+          if (latestEvent) {
+            updateNutrientAnalytics(latestEvent);
+          }
+
+        } catch (error) {
+          console.error('Error loading nutrient history:', error);
+        }
+      }
+
+      // Update analytics display
+      function updateNutrientAnalytics(event) {
+        // Nutrient Loss
+        const nutrientLossEl = document.getElementById('nlm_nutrientLoss');
+        if (nutrientLossEl) {
+          nutrientLossEl.textContent = Math.round(event.nutrientLoss);
+        }
+
+        // Loss Percentage
+        const lossPercentageEl = document.getElementById('nlm_lossPercentage');
+        if (lossPercentageEl) {
+          lossPercentageEl.textContent = event.lossPercentage.toFixed(1);
+        }
+
+        // Severity
+        const severityEl = document.getElementById('nlm_severity');
+        const severityCard = document.getElementById('nlm_severityCard');
+        if (severityEl && severityCard) {
+          const severity = event.lossPercentage < 5 ? 'Safe' : event.lossPercentage < 15 ? 'Warning' : 'Critical';
+          const color = event.lossPercentage < 5 ? '#4ade80' : event.lossPercentage < 15 ? '#fbbc04' : '#ea4335';
+          severityEl.textContent = severity;
+          severityEl.style.color = color;
+          severityCard.style.borderColor = color;
+          severityCard.style.background = `${color}11`;
+        }
+
+        // Event Duration
+        const durationEl = document.getElementById('nlm_eventDuration');
+        if (durationEl && event.startTime && event.endTime) {
+          const start = new Date(event.startTime.toDate());
+          const end = new Date(event.endTime.toDate());
+          const duration = Math.round((end - start) / 60000); // minutes
+          durationEl.textContent = `${duration} minutes`;
+        }
+
+        // Last Event
+        const lastEventEl = document.getElementById('nlm_lastEvent');
+        if (lastEventEl && event.endTime) {
+          lastEventEl.textContent = new Date(event.endTime.toDate()).toLocaleString();
+        }
+
+        // Final TDS
+        const finalTDSEl = document.getElementById('nlm_finalTDS');
+        if (finalTDSEl) {
+          finalTDSEl.innerHTML = `${event.finalTDS}<span style="font-size: 12px; margin-left: 3px;">ppm</span>`;
+        }
+
+        // Recommendations
+        updateNutrientRecommendations(event.finalTDS, event.lossPercentage);
+      }
+
+      // Update recommendations
+      function updateNutrientRecommendations(finalTDS, lossPercentage) {
+        const panel = document.getElementById('nlm_recommendationPanel');
+        const recommendations = document.getElementById('nlm_recommendations');
+
+        if (!panel || !recommendations) return;
+
+        panel.style.display = 'block';
+
+        let title, description, borderColor;
+
+        if (lossPercentage >= 15) {
+          title = '🚨 Urgent Action Required';
+          if (finalTDS < 300) {
+            description = 'Critical nutrient loss detected. Recommend immediate NPK 19-19-19 foliar spray application. Monitor soil condition closely and consider soil amendment.';
+            borderColor = '#ea4335';
+          } else if (finalTDS < 600) {
+            description = 'Significant nutrient loss detected. Add organic compost or balanced fertilizer immediately. Consider drip fertigation for efficient nutrient delivery.';
+            borderColor = '#ea4335';
+          } else {
+            description = 'Moderate nutrient loss despite high TDS. Monitor nutrient balance and consider targeted micronutrient supplementation.';
+            borderColor = '#fbbc04';
+          }
+        } else if (lossPercentage >= 5) {
+          title = '⚠ Moderate Action Needed';
+          if (finalTDS < 300) {
+            description = 'Light nutrient supplementation recommended. Consider NPK 19-19-19 spray or compost tea application within the next few days.';
+            borderColor = '#fbbc04';
+          } else {
+            description = 'Minor nutrient loss detected. Continue regular monitoring and maintain your current fertilization schedule.';
+            borderColor = '#fbbc04';
+          }
+        } else {
+          title = '✅ Nutrient Levels Stable';
+          description = 'TDS levels are within acceptable range. Continue regular monitoring and maintain your current crop management practices.';
+          borderColor = '#4ade80';
+        }
+
+        recommendations.innerHTML = `
+          <div style="font-size: 15px; font-weight: 600; color: var(--on-surface); margin-bottom: 8px;">${title}</div>
+          <div style="font-size: 14px; color: var(--on-surface-variant); line-height: 1.6;">${description}</div>
+        `;
+        recommendations.style.borderLeftColor = borderColor;
+      }
+
+      // Initialize TDS chart
+      function initializeNutrientChart() {
+        const canvas = document.getElementById('nlm_tdsChart');
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+
+        nutrientMonitorState.tdsChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: [],
+            datasets: [{
+              label: 'TDS (ppm)',
+              data: [],
+              borderColor: '#4285f4',
+              backgroundColor: 'rgba(66, 133, 244, 0.1)',
+              tension: 0.4,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  color: 'var(--on-surface-variant)'
+                },
+                grid: {
+                  color: 'var(--outline-variant)'
+                }
+              },
+              x: {
+                ticks: {
+                  color: 'var(--on-surface-variant)'
+                },
+                grid: {
+                  color: 'var(--outline-variant)'
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // Cleanup listeners on page unload
+      window.addEventListener('beforeunload', () => {
+        if (nutrientMonitorState.alertUnsubscribe) {
+          nutrientMonitorState.alertUnsubscribe();
+        }
+        if (nutrientMonitorState.activeEventUnsubscribe) {
+          nutrientMonitorState.activeEventUnsubscribe();
+        }
+      });
+
+      // Initialize when Firebase is ready
+      if (firebaseReady) {
+        setTimeout(() => {
+          initializeNutrientMonitor();
+        }, 1000);
+      }
 
 
     </script>
