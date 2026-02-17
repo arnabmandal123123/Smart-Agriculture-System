@@ -155,7 +155,7 @@ The system employs a **Multi-Sensor Fusion Algorithm** to reduce false alarms.
 *   **Frontend:** HTML5, CSS3 (Glassmorphism), Vanilla JavaScript (ES6+).
 *   **Protocols:** MQTT (Message Queuing Telemetry Transport) over TCP/IP.
 *   **Backend:** Google Firebase (NoSQL Database).
-*   **AI Engine:** Google Gemini 2.5 Flash (via v1 stable API) for multimodal plant analysis.
+*   **AI Engine:** Google Gemini 2.5 Flash (via v1 API) for multimodal plant analysis with secure header-based API key management.
 
 ### 5.2 Microcontroller Algorithms (ESP32-CAM)
 
@@ -280,6 +280,13 @@ The Analyze page leverages cutting-edge AI to assist in crop health management.
 *   **Bengali-First Interface:** Following the project's localization mandate, all AI results are delivered in native Bengali by default to maximize accessibility for local farmers.
 *   **Structured UI:** Results are presented in a clean, section-based layout (Explanation, Action, Prevention) for better readability.
 *   **Cross-Lingual Toggle:** A dedicated translation engine allows users to switch the expert analysis between Bengali and English instantly.
+*   **Gemini API Security & Management (NEW):**
+    *   **Secure Storage:** Removed hardcoded API keys from the source code. The system now utilizes browser `localStorage` to persist user-provided keys securely.
+    *   **Header-Based Authentication:** To prevent API key leakage in console logs or network traces, the system now passes the key via secure `x-goog-api-key` headers rather than URL query parameters.
+    *   **Advanced Error Handling:** Implemented specific handlers for 429 (Rate Limit) errors, providing user-friendly "Quota Exceeded" feedback in Bengali.
+    *   **User-Centric Configuration:** Integrated a "Gemini API Settings" page in the "More" tab, allowing users to input, save, and manage their own Gemini API keys.
+    *   **Visibility Control:** Features a toggle to hide/show the API key for privacy during configuration.
+    *   **Direct Access:** Provides instructions and a direct link to Google AI Studio for obtaining keys, empowering users to manage their own cloud resources.
 
 #### 5.5.3 Monitor Page: Telemetry & Analytics
 *   **Real-time Visualization:** Uses **Chart.js** to plot sensor data (Moisture, Temp, TDS, etc.) as it arrives.
@@ -617,15 +624,17 @@ ALGORITHM StructuredAgroAnalysis
 2.  INITIALIZE ResponseFormat = JSON_OBJECT
 3.  PREPARE Prompt: "Identify plant species and symptoms... Return in BENGALI... EXACT JSON structure"
 4.  
-5.  POST Image + Prompt TO Gemini v1 API
-6.  PARSE Response: Get primary candidate content parts
-7.  CLEAN Text: Remove markdown formatting (```json)
-8.  IF Language == "bn" THEN
-9.      RENDER SectionedLayout(explanation, actions[], prevention[])
-10. IF UserTriggersTranslation THEN
-11.     FETCH Translation via Gemini v1 API Bridge
-12.     SWAP UI state to English
-13. END
+5.  RETRIEVE GEMINI_API_KEY from localStorage
+6.  IF Key Missing THEN Prompt User to Configure Settings AND EXIT
+7.  POST Image + Prompt TO Gemini v1 API with User Key
+8.  PARSE Response: Get primary candidate content parts
+9.  CLEAN Text: Remove markdown formatting (```json)
+10. IF Language == "bn" THEN
+11.     RENDER SectionedLayout(explanation, actions[], prevention[])
+12. IF UserTriggersTranslation THEN
+13.     FETCH Translation via Gemini v1 API Bridge
+14.     SWAP UI state to English
+15. END
 ```
 
 ### 6.6 Master-Slave Data Synchronization (UART Frames)
@@ -943,6 +952,7 @@ Agri-Nigrani successfully bridges the gap between hardware deterministic control
 *   **Nutrient Loss Monitoring:** Automated tracking and alert system for fertilizer runoff during irrigation/rain events with multi-device synchronization.
 *   **Hardware-Level Safety:** Dry run protection with 30-second timeout prevents pump damage.
 *   **Bilingual Support:** Full Bengali translation for accessibility.
+*   **Enhanced API Security:** Zero-hardcoded key architecture using `localStorage` for Gemini API management.
 *   **Real-Time Monitoring:** Sub-second MQTT latency for responsive control.
 
 ### 8.3 Future Scope
@@ -1024,6 +1034,12 @@ This appendix is a checklist-style reference of the implemented functions across
 - `translateToBangla()`: sets Bangla mode and refreshes UI.
 - `translateToEnglish()`: sets English mode and refreshes UI.
 - `refreshRuntimeTranslations()`: refreshes dynamic/generated text translations.
+- `showGeminiSettingsPage()`: displays the Gemini API configuration UI.
+- `hideGeminiSettingsPage()`: returns to the More menu from Gemini settings.
+- `saveGeminiApiKey()`: persists the user-provided key to `localStorage`.
+- `loadGeminiApiKey()`: retrieves the key for UI display.
+- `toggleApiKeyVisibility()`: toggles the password mask on the API key input.
+- `getGeminiApiKey()`: retrieves the key for use in direct API calls.
 
 **Authentication (Firebase Auth)**
 - `switchAuthView(viewId)`: switches between login/signup/reset UI.
@@ -1082,7 +1098,7 @@ This appendix is a checklist-style reference of the implemented functions across
 - `base64ToBlob(base64, contentType)`: helper for binary upload/display.
 
 **Gemini / LLM Augmentation (Optional UI Section)**
-- `triggerGeminiAIAnalysis(results, consensusData, imageBase64, analysisId)`: requests LLM analysis.
+- `triggerGeminiAIAnalysis(results, consensusData, imageBase64, analysisId, verificationData)`: requests LLM analysis with context fusion.
 - `displayGeminiAnalysis(analysisText, analysisId)`: renders returned analysis.
 - `translateGeminiAnalysis(analysisId)`: translates analysis result.
 - `toggleGeminiAnalysis()`: show/hide Gemini section.

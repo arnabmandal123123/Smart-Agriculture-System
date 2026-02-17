@@ -3255,7 +3255,7 @@
               </button>
             </div>
           </div>
-          <div id="aiAnalysisContent" style="padding:32px 20px; min-height:180px;">
+          <div id="aiAnalysisContent" style="padding:16px 8px; min-height:180px;">
             <div style="text-align:center; color:var(--on-surface-variant);">
               <span class="material-symbols-rounded"
                 style="font-size:64px; opacity:0.5; color:#34a853;">psychology</span>
@@ -3941,6 +3941,25 @@
                 style="font-size: 24px; color: var(--on-surface-variant);">chevron_right</span>
             </button>
 
+            <!-- Gemini API Settings (NEW) -->
+            <button class="btn sec" onclick="showGeminiSettingsPage()"
+              style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; width: 100%; cursor: pointer; border: none; border-bottom: 1px solid var(--outline-variant); border-radius: 0; background: transparent; box-shadow: none; text-align: left;">
+              <div style="display: flex; align-items: center; gap: 16px;">
+                <div
+                  style="width: 40px; height: 40px; border-radius: 50%; background: rgba(66, 133, 244, 0.1); display: flex; align-items: center; justify-content: center;">
+                  <span class="material-symbols-rounded" style="font-size: 20px; color: #4285f4;">key</span>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                  <span class="translatable" style="font-weight: 600; font-size: 15px; color: var(--on-surface);">Gemini
+                    API Settings</span>
+                  <span class="translatable" style="font-size: 12px; color: var(--on-surface-variant);">Configure Gemini
+                    API Key</span>
+                </div>
+              </div>
+              <span class="material-symbols-rounded"
+                style="font-size: 24px; color: var(--on-surface-variant);">chevron_right</span>
+            </button>
+
             <!-- Nutrient Loss Monitor Shortcut (NEW) -->
             <button class="btn sec" onclick="switchTab('nutrientTab');"
               style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; width: 100%; cursor: pointer; border: none; border-bottom: 1px solid var(--outline-variant); border-radius: 0; background: transparent; box-shadow: none; text-align: left;">
@@ -3997,6 +4016,78 @@
               </div>
             </button>
             <!-- Future settings can be added here -->
+          </div>
+        </article>
+      </div>
+
+      <!-- Gemini API Settings Page (hidden by default) -->
+      <div id="geminiSettingsPage" class="logs-page">
+        <button class="back-button" onclick="hideGeminiSettingsPage()">
+          <span class="material-symbols-rounded">arrow_back</span> <span class="translatable">Back to Menu</span>
+        </button>
+
+        <article class="card">
+          <div class="head">
+            <h2 class="translatable">Gemini API Settings</h2>
+            <span class="material-symbols-rounded" style="color:#4285f4;">key</span>
+          </div>
+
+          <div style="padding: 12px;">
+            <p style="font-size: 14px; color: var(--on-surface-variant); line-height: 1.6; margin-bottom: 20px;"
+              class="translatable">
+              To use AI Expert Analysis features, you need to provide your own Google Gemini API key. This key will be
+              stored securely in your local browser storage.
+            </p>
+
+            <div style="margin-bottom: 24px;">
+              <label for="geminiApiKeyInput"
+                style="display: block; font-size: 13px; font-weight: 600; color: var(--on-surface-variant); margin-bottom: 8px;"
+                class="translatable">Gemini API Key</label>
+              <div style="display: flex; gap: 8px;">
+                <input type="password" id="geminiApiKeyInput" placeholder="Enter your API key here..."
+                  style="flex: 1; background: var(--surface-container-highest); border: 1px solid var(--outline-variant); color: var(--on-surface); padding: 12px 16px; border-radius: 10px; font-size: 14px; outline: none; transition: border-color 0.3s;"
+                  onfocus="this.style.borderColor='var(--primary)'"
+                  onblur="this.style.borderColor='var(--outline-variant)'">
+                <button onclick="toggleApiKeyVisibility()" class="btn sec" style="padding: 8px 12px; min-width: 44px;">
+                  <span class="material-symbols-rounded" id="apiVisibilityIcon">visibility</span>
+                </button>
+              </div>
+              <div id="apiKeySaveStatus"
+                style="font-size: 12px; margin-top: 8px; display: none; align-items: center; gap: 4px;">
+                <span class="material-symbols-rounded" style="font-size: 16px;">check_circle</span>
+                <span class="translatable">API Key saved successfully!</span>
+              </div>
+            </div>
+
+            <button class="btn pri" onclick="saveGeminiApiKey()" style="width: 100%; padding: 14px; font-weight: 700;">
+              <span class="material-symbols-rounded">save</span>
+              <span class="translatable">Save API Key</span>
+            </button>
+
+            <div
+              style="margin-top: 32px; padding: 20px; background: rgba(66, 133, 244, 0.05); border-radius: 12px; border: 1px solid rgba(66, 133, 244, 0.1);">
+              <h4
+                style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: #4285f4; display: flex; align-items: center; gap: 8px;">
+                <span class="material-symbols-rounded" style="font-size: 20px;">help</span>
+                How to get an API Key?
+              </h4>
+              <ol
+                style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--on-surface-variant); line-height: 1.6;"
+                class="translatable">
+                <li>Go to <a href="https://aistudio.google.com/app/apikey" target="_blank"
+                    style="color: #4285f4; font-weight: 600; text-decoration: none;">Google AI Studio</a>.</li>
+                <li>Sign in with your Google Account.</li>
+                <li>Click on <strong>"Create API key"</strong>.</li>
+                <li>Copy the key and paste it into the field above.</li>
+              </ol>
+              <div style="margin-top: 16px; text-align: center;">
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="btn sec"
+                  style="display: inline-flex; align-items: center; gap: 8px; font-size: 12px; padding: 8px 16px; text-decoration: none;">
+                  <span class="material-symbols-rounded" style="font-size: 18px;">open_in_new</span>
+                  Go to Google AI Studio
+                </a>
+              </div>
+            </div>
           </div>
         </article>
       </div>
@@ -4864,6 +4955,16 @@
         'TDS': 'টিডিএস',
         'Analysis Complete': 'বিশ্লেষণ সম্পূর্ণ',
         'Powered by Google Gemini Flash': 'গুগল জেমিনি ফ্ল্যাশ দ্বারা চালিত',
+        'Gemini API Settings': 'জেমিনি এআই সেটিংস',
+        'Configure Gemini API Key': 'জেমিনি এপিআই কি কনফিগার করুন',
+        'Back to Menu': 'মেনু-তে ফিরে যান',
+        'Gemini API Key Required': 'জেমিনি এপিআই কি প্রয়োজন',
+        'Please configure your Gemini API key in the settings to enable AI Expert Analysis.': 'এআই বিশেষজ্ঞ বিশ্লেষণের জন্য সেটিংসে আপনার জেমিনি এপিআই কি কনফিগার করুন।',
+        'Go to Settings': 'সেটিংসে যান',
+        'Gemini API Key saved successfully!': 'জেমিনি এপিআই কি সফলভাবে সেভ করা হয়েছে!',
+        'Save API Key': 'এপিআই কি সেভ করুন',
+        'Please configure your Gemini API key in settings first.': 'অনুগ্রহ করে প্রথমে সেটিংসে জেমিনি এপিআই কি কনফিগার করুন।',
+        'Back to More': 'আরো-তে ফিরে যান',
 
         /* Common diseases (subset) */
         'Bacterial Spot': 'ব্যাকটেরিয়াল স্পট',
@@ -5107,7 +5208,9 @@
         '• Works independently (even if app is closed)': '• স্বাধীনভাবে কাজ করে (অ্যাপ বন্ধ থাকলেও)',
         '• Protects against: empty tanks, blocked pipes, valve issues': '• সুরক্ষা দেয়: খালি ট্যাঙ্ক, আটকানো পাইপ, ভালভ সমস্যা',
         'Dry run protection enabled': 'ড্রাই রান সুরক্ষা সক্রিয়',
-        'Dry run protection disabled': 'ড্রাই রান সুরক্ষা নিষ্ক্রিয়'
+        'Dry run protection disabled': 'ড্রাই রান সুরক্ষা নিষ্ক্রিয়',
+        'Quota Exceeded': 'কোটা শেষ হয়েছে',
+        'You have reached the free-tier limit. Please wait a minute and try again.': 'আপনি ফ্রি-টিয়ারের সীমা অতিক্রম করেছেন। দয়া করে এক মিনিট অপেক্ষা করে আবার চেষ্টা করুন।'
       };
 
       // Helper to get current language
@@ -5206,6 +5309,56 @@
       function translateToEnglish() {
         try { localStorage.setItem('lang', 'en'); } catch (e) { /* ignore */ }
         location.reload();
+      }
+
+      // Gemini API Settings Navigation
+      function showGeminiSettingsPage() {
+        document.getElementById('moreMenu').style.display = 'none';
+        document.getElementById('geminiSettingsPage').style.display = 'block';
+        loadGeminiApiKey(); // Populate input if key exists
+      }
+
+      function hideGeminiSettingsPage() {
+        document.getElementById('geminiSettingsPage').style.display = 'none';
+        document.getElementById('moreMenu').style.display = 'block';
+        document.getElementById('apiKeySaveStatus').style.display = 'none';
+      }
+
+      // Gemini API Key Management
+      function saveGeminiApiKey() {
+        const key = document.getElementById('geminiApiKeyInput').value.trim();
+        if (key) {
+          localStorage.setItem('gemini_api_key', key);
+          const status = document.getElementById('apiKeySaveStatus');
+          status.style.display = 'flex';
+          status.style.color = '#34a853';
+          setTimeout(() => { status.style.display = 'none'; }, 3000);
+        } else {
+          alert('Please enter a valid API key.');
+        }
+      }
+
+      function loadGeminiApiKey() {
+        const savedKey = localStorage.getItem('gemini_api_key');
+        if (savedKey) {
+          document.getElementById('geminiApiKeyInput').value = savedKey;
+        }
+      }
+
+      function toggleApiKeyVisibility() {
+        const input = document.getElementById('geminiApiKeyInput');
+        const icon = document.getElementById('apiVisibilityIcon');
+        if (input.type === 'password') {
+          input.type = 'text';
+          icon.textContent = 'visibility_off';
+        } else {
+          input.type = 'password';
+          icon.textContent = 'visibility';
+        }
+      }
+
+      function getGeminiApiKey() {
+        return localStorage.getItem('gemini_api_key') || '';
       }
 
       // Apply persisted language preference on load
@@ -7508,13 +7661,31 @@
 
       // Gemini AI Analysis Function
       async function triggerGeminiAIAnalysis(results, consensusData, imageBase64, analysisId, verificationData) {
-        const GEMINI_API_KEY = 'AIzaSyC9DKdROx2rl-WPUEWjHsCoGVsf53ALg4w';
-        // Note: usage of hardcoded key in previous snippet, I should preserve what was there or Use the variable if it was there.
-        // Actually the previous snippet showed the key. I will just copy the lines carefully.
-        const GEMINI_MODEL = 'gemini-2.5-flash';
-        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
-
+        const GEMINI_API_KEY = getGeminiApiKey();
         const container = document.getElementById('aiAnalysisContent');
+
+        if (!GEMINI_API_KEY) {
+          console.warn('Gemini API key not configured');
+          if (container) {
+            container.innerHTML = `
+              <div style="padding:20px;">
+                <div style="background:rgba(66,133,244,0.1); border:2px solid rgba(66,133,244,0.3); padding:20px; border-radius:12px; text-align:center;">
+                  <span class="material-symbols-rounded" style="color:#4285f4; font-size:48px;">settings</span>
+                  <div style="margin-top:12px; font-weight:600; color:#4285f4; font-size:16px;">${translateText('Gemini API Key Required')}</div>
+                  <div style="font-size:14px; color:var(--on-surface-variant); margin-top:8px;">${translateText('Please configure your Gemini API key in the settings to enable AI Expert Analysis.')}</div>
+                  <button onclick="switchTab('moreTab'); showGeminiSettingsPage();" class="btn pri" style="margin-top:16px; width:100%;">
+                    <span class="material-symbols-rounded">key</span>
+                    <span>${translateText('Go to Settings')}</span>
+                  </button>
+                </div>
+              </div>
+            `;
+          }
+          return;
+        }
+
+        const GEMINI_MODEL = 'gemini-2.5-flash';
+        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1/models/${GEMINI_MODEL}:generateContent`;
 
         if (!container) {
           console.error('AI Analysis content container not found');
@@ -7597,15 +7768,17 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
           const response = await fetch(GEMINI_API_URL, {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/json',
+              'x-goog-api-key': GEMINI_API_KEY
             },
             body: JSON.stringify(requestBody)
           });
 
           if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Gemini API error response:', errorText);
-            throw new Error(`Gemini API error: ${response.status} ${response.statusText}`);
+            if (response.status === 429) {
+              throw new Error('QUOTA_EXCEEDED');
+            }
+            throw new Error(`Gemini API error: ${response.status}`);
           }
 
           const data = await response.json();
@@ -7638,12 +7811,17 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
           console.error('Gemini AI Analysis Error:', error);
 
           // Display error message
+          const isQuota = error.message === 'QUOTA_EXCEEDED';
           container.innerHTML = `
             <div style="padding:20px;">
               <div style="background:rgba(239,68,68,0.1); border:2px solid rgba(239,68,68,0.3); padding:20px; border-radius:12px; text-align:center;">
-                <span class="material-symbols-rounded" style="color:#ef4444; font-size:48px;">error</span>
-                <div style="margin-top:12px; font-weight:600; color:#ef4444; font-size:16px;">${translateText('AI Analysis Unavailable')}</div>
-                <div style="font-size:14px; color:var(--on-surface-variant); margin-top:8px;">${translateText('Could not connect to Gemini AI. Please check your internet connection.')}</div>
+                <span class="material-symbols-rounded" style="color:#ef4444; font-size:48px;">${isQuota ? 'hourglass_empty' : 'error'}</span>
+                <div style="margin-top:12px; font-weight:600; color:#ef4444; font-size:16px;">
+                  ${isQuota ? translateText('Quota Exceeded') : translateText('AI Analysis Unavailable')}
+                </div>
+                <div style="font-size:14px; color:var(--on-surface-variant); margin-top:8px;">
+                  ${isQuota ? translateText('You have reached the free-tier limit. Please wait a minute and try again.') : translateText('Could not connect to Gemini AI. Please check your internet connection.')}
+                </div>
               </div>
             </div>
           `;
@@ -7748,56 +7926,56 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
         }
 
         container.innerHTML = `
-          <div style="padding:24px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
-              <div style="display:flex; align-items:center; gap:10px;">
-                <span class="material-symbols-rounded" style="color:#34a853; font-size:40px;">check_circle</span>
-                <div style="font-weight:700; color:var(--on-surface); font-size:20px;">${titleText}</div>
+          <div style="padding:12px 8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="material-symbols-rounded" style="color:#34a853; font-size:32px;">check_circle</span>
+                <div style="font-weight:700; color:var(--on-surface); font-size:18px;">${titleText}</div>
               </div>
               <button id="translate-btn-${analysisId}" onclick="translateGeminiAnalysis('${analysisId}')" 
-                style="background:rgba(66,133,244,0.15); color:#4285f4; border:1px solid rgba(66,133,244,0.3); padding:10px 18px; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; transition:all 0.3s; display:flex; align-items:center; gap:8px;">
-                <span class="material-symbols-rounded" style="font-size:18px;">translate</span>
+                style="background:rgba(66,133,244,0.15); color:#4285f4; border:1px solid rgba(66,133,244,0.3); padding:8px 14px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.3s; display:flex; align-items:center; gap:6px;">
+                <span class="material-symbols-rounded" style="font-size:16px;">translate</span>
                 <span id="translate-text-${analysisId}">${buttonText}</span>
               </button>
             </div>
 
             <!-- Explanation Section -->
-            <div style="margin-bottom:28px; background:var(--surface-container); padding:24px; border-radius:14px; border:2px solid var(--outline-variant); box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-              <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; color:#4285f4;">
-                <span class="material-symbols-rounded" style="font-size:24px;">psychology</span>
-                <h3 style="font-size:18px; font-weight:700; margin:0;">${expTitle}</h3>
+            <div style="margin-bottom:24px; background:var(--surface-container); padding:18px; border-radius:14px; border:1px solid var(--outline-variant); box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; color:#4ade80;">
+                <span class="material-symbols-rounded" style="font-size:22px;">psychology</span>
+                <h3 style="font-size:17px; font-weight:700; margin:0;">${expTitle}</h3>
               </div>
-              <p style="font-size:16px; color:var(--on-surface); line-height:1.8; margin:0;">${analysis.explanation}</p>
+              <p style="font-size:16.5px; color:var(--on-surface); line-height:1.7; margin:0; word-break: break-word;">${analysis.explanation}</p>
             </div>
 
-            <div style="display:grid; grid-template-columns: 1fr; gap:20px;">
+            <div style="display:grid; grid-template-columns: 1fr; gap:16px;">
               <!-- Action Section -->
               ${actionsHtml ? `
-              <div style="background:rgba(52,168,83,0.05); padding:24px; border-radius:14px; border:2px solid rgba(52,168,83,0.2); box-shadow: 0 2px 8px rgba(52,168,83,0.1);">
-                <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; color:#34a853;">
-                  <span class="material-symbols-rounded" style="font-size:24px;">medical_services</span>
-                  <h3 style="font-size:18px; font-weight:700; margin:0;">${actTitle}</h3>
+              <div style="background:rgba(52,168,83,0.05); padding:18px; border-radius:14px; border:1px solid rgba(52,168,83,0.2); box-shadow: 0 2px 8px rgba(52,168,83,0.1);">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; color:#4ade80;">
+                  <span class="material-symbols-rounded" style="font-size:22px;">medical_services</span>
+                  <h3 style="font-size:17px; font-weight:700; margin:0;">${actTitle}</h3>
                 </div>
-                <ul style="list-style:none; padding:0; margin:0; font-size:15px; color:var(--on-surface); line-height:1.7;">
+                <ul style="list-style:none; padding:0; margin:0; font-size:15.5px; color:var(--on-surface); line-height:1.6;">
                   ${actionsHtml}
                 </ul>
               </div>` : ''}
 
               <!-- Prevention Section -->
               ${preventionHtml ? `
-              <div style="background:rgba(66,133,244,0.05); padding:24px; border-radius:14px; border:2px solid rgba(66,133,244,0.2); box-shadow: 0 2px 8px rgba(66,133,244,0.1);">
-                <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; color:#4285f4;">
-                  <span class="material-symbols-rounded" style="font-size:24px;">security</span>
-                  <h3 style="font-size:18px; font-weight:700; margin:0;">${preTitle}</h3>
+              <div style="background:rgba(66,133,244,0.05); padding:18px; border-radius:14px; border:1px solid rgba(66,133,244,0.2); box-shadow: 0 2px 8px rgba(66,133,244,0.1);">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; color:#4285f4;">
+                  <span class="material-symbols-rounded" style="font-size:22px;">security</span>
+                  <h3 style="font-size:17px; font-weight:700; margin:0;">${preTitle}</h3>
                 </div>
-                <ul style="list-style:none; padding:0; margin:0; font-size:15px; color:var(--on-surface); line-height:1.7;">
+                <ul style="list-style:none; padding:0; margin:0; font-size:15.5px; color:var(--on-surface); line-height:1.6;">
                   ${preventionHtml}
                 </ul>
               </div>` : ''}
             </div>
 
-            <div style="margin-top:20px; padding:16px; background:rgba(66,133,244,0.05); border-radius:10px; text-align:center;">
-              <div style="font-size:12px; color:var(--on-surface-variant); line-height:1.5;">
+            <div style="margin-top:16px; padding:12px; background:rgba(255,255,255,0.03); border-radius:10px; text-align:center;">
+              <div style="font-size:11px; color:var(--on-surface-variant); line-height:1.5;">
                 ⚡ ${powerText} • ${warnText}
               </div>
             </div>
@@ -7805,11 +7983,16 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
         `;
       }
 
-      // Translate Gemini Analysis to Bengali
+      // Translate Gemini Analysis to English
       async function translateGeminiAnalysis(analysisId) {
-        const GEMINI_API_KEY = 'AIzaSyC9DKdROx2rl-WPUEWjHsCoGVsf53ALg4w';
+        const GEMINI_API_KEY = getGeminiApiKey();
         const GEMINI_MODEL = 'gemini-2.5-flash';
-        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1/models/${GEMINI_MODEL}:generateContent`;
+
+        if (!GEMINI_API_KEY) {
+          alert('Please configure your Gemini API key in settings first.');
+          return;
+        }
 
         const currentLang = window['gemini_current_lang_' + analysisId] || 'bn';
         const container = document.getElementById('aiAnalysisContent');
@@ -7859,7 +8042,8 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
           const response = await fetch(GEMINI_API_URL, {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/json',
+              'x-goog-api-key': GEMINI_API_KEY
             },
             body: JSON.stringify(requestBody)
           });
