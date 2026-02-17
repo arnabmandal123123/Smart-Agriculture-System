@@ -1159,10 +1159,23 @@
     /* Analysis Logs Page (nested under More tab) */
     .logs-page {
       display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--background);
+      z-index: 2000;
+      overflow-y: auto;
+      padding: 20px;
+      padding-bottom: 100px;
+      /* Space for bottom nav */
+      box-sizing: border-box;
     }
 
     .logs-page.active {
       display: block;
+      animation: fadeIn 0.3s ease-out;
     }
 
     .back-button {
@@ -6947,6 +6960,10 @@
       saveAnalytics();
 
       // Save to Firebase asynchronously
+      // NOTE: We do NOT call saveToFirebase here explicitly anymore because saveAnalytics()
+      // already iterates through logs and saves unsynced ones. Calling it here causes a double-save race condition.
+
+      /*
       if (firebaseReady && firebaseEnabled) {
         saveToFirebase(logEntry).then(docId => {
           if (docId) {
@@ -6958,6 +6975,7 @@
           console.error('Firebase save failed, data is in localStorage:', err);
         });
       }
+      */
 
       updateAnalyticsDashboard();
       updateHistoryPanel();
@@ -8441,17 +8459,22 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
               }
 
               // Strategy B: Query by internal research ID (Fallback for indexing latency)
+              // Query ALL matching documents to ensure consistency if duplicates exist
               const snapshot = await db.collection('diseaseAnalytics')
                 .where('id', '==', analysisId)
-                .limit(1)
                 .get();
 
               if (!snapshot.empty) {
-                const docId = snapshot.docs[0].id;
-                await snapshot.docs[0].ref.update({ aiAnalysis: analysis });
+                // Update ALL found documents
+                const batchPromises = snapshot.docs.map(doc => doc.ref.update({ aiAnalysis: analysis }));
+                await Promise.all(batchPromises);
+
+                // Use the first doc ID for local reference
+                const docId = snapshot.docs[0].id; // Use first one found
                 // Sync local cache with document ID if was missing
                 if (log) log.firebaseId = docId;
-                console.log('✅ AI result persisted via query:', analysisId);
+
+                console.log(`✅ AI result persisted via query to ${snapshot.size} document(s) for ID: ${analysisId}`);
                 return;
               }
 
@@ -13108,6 +13131,9 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
 
     // Tab Switching Logic
     function switchTab(tabId, navElement) {
+      // 0. Hide any overlays (logs, about, feedback, etc.)
+      hideAllOverlays();
+
       // 1. Hide all tab contents
       document.querySelectorAll('.tab-content').forEach(el => {
         el.classList.remove('active');
@@ -13126,6 +13152,29 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
       if (navElement) {
         navElement.classList.add('active');
       }
+    }
+
+    // Helper to hide all full-screen overlays
+    function hideAllOverlays() {
+      // Hide Logs Page
+      const logsPage = document.getElementById('logsPage');
+      if (logsPage) logsPage.classList.remove('active');
+
+      // Hide About Page
+      const aboutPage = document.getElementById('aboutPage');
+      if (aboutPage) aboutPage.style.display = 'none';
+
+      // Hide Feedback Page
+      const feedbackPage = document.getElementById('feedbackPage');
+      if (feedbackPage) feedbackPage.style.display = 'none';
+
+      // Hide Gemini Settings Page
+      const geminiPage = document.getElementById('geminiSettingsPage');
+      if (geminiPage) geminiPage.classList.remove('active');
+
+      // Ensure More Menu is visible when returning to it
+      const moreMenu = document.getElementById('moreMenu');
+      if (moreMenu) moreMenu.style.display = 'block';
     }
 
     // Ensure Home is visible on load
