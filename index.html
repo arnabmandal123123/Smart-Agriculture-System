@@ -4747,6 +4747,80 @@
           acceptable range. Continue regular monitoring.</div>
       </div>
     </article>
+
+    <!-- NEW: Nutrient Monitor Explanation Dropdown -->
+    <article class="card">
+      <button onclick="toggleNutrientInfo()"
+        style="width: 100%; display: flex; align-items: center; justify-content: space-between; background: transparent; border: none; padding: 0; cursor: pointer;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div
+            style="width: 40px; height: 40px; border-radius: 50%; background: var(--surface-container); display: flex; align-items: center; justify-content: center;">
+            <span class="material-symbols-rounded" style="color: var(--primary);">info</span>
+          </div>
+          <div style="text-align: left;">
+            <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--on-surface);">How Nutrient Monitor
+              Works?</h3>
+            <span style="font-size: 12px; color: var(--on-surface-variant);">Learn about detection & alerts</span>
+          </div>
+        </div>
+        <span id="nutrientInfoArrow" class="material-symbols-rounded"
+          style="color: var(--on-surface-variant); transition: transform 0.3s ease;">expand_more</span>
+      </button>
+
+      <div id="nutrientInfoContent" style="display: none; margin-top: 16px; animation: fadeIn 0.3s ease;">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+
+          <div style="display: flex; gap: 12px;">
+            <span class="material-symbols-rounded" style="color: #4285f4; font-size: 20px;">sensors</span>
+            <div>
+              <div style="font-size: 14px; font-weight: 600; color: var(--on-surface); margin-bottom: 4px;">
+                Auto-Detection
+              </div>
+              <div style="font-size: 13px; color: var(--on-surface-variant); line-height: 1.5;">
+                System automatically starts monitoring when <strong>Rain</strong> is detected or the
+                <strong>Pump</strong>
+                is turned ON.
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px;">
+            <span class="material-symbols-rounded" style="color: var(--primary); font-size: 20px;">analytics</span>
+            <div>
+              <div style="font-size: 14px; font-weight: 600; color: var(--on-surface); margin-bottom: 4px;">Data
+                Collection</div>
+              <div style="font-size: 13px; color: var(--on-surface-variant); line-height: 1.5;">
+                Records <strong>Initial TDS</strong> (at start) and <strong>Final TDS</strong> (at end) to measure
+                concentration changes.
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px;">
+            <span class="material-symbols-rounded" style="color: #fbbc04; font-size: 20px;">calculate</span>
+            <div>
+              <div style="font-size: 14px; font-weight: 600; color: var(--on-surface); margin-bottom: 4px;">Smart
+                Calculation</div>
+              <div style="font-size: 13px; color: var(--on-surface-variant); line-height: 1.5;">
+                Calculates the <strong>Percentage of Nutrient Loss</strong> based on the difference in TDS levels.
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px;">
+            <span class="material-symbols-rounded" style="color: #ea4335; font-size: 20px;">notifications_active</span>
+            <div>
+              <div style="font-size: 14px; font-weight: 600; color: var(--on-surface); margin-bottom: 4px;">Instant
+                Alerts</div>
+              <div style="font-size: 13px; color: var(--on-surface-variant); line-height: 1.5;">
+                Sends immediate alerts if loss exceeds <strong>5%</strong> (Warning) or <strong>15%</strong> (Critical).
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </article>
   </div>
 
   <!-- Toast container for user messages -->
@@ -4923,6 +4997,20 @@
       const content = document.getElementById('teamSectionContent');
       const arrow = document.getElementById('teamArrowIcon');
       const isHidden = content.style.display === 'none' || content.style.display === '';
+
+      if (isHidden) {
+        content.style.display = 'block';
+        arrow.style.transform = 'rotate(180deg)';
+      } else {
+        content.style.display = 'none';
+        arrow.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    function toggleNutrientInfo() {
+      const content = document.getElementById('nutrientInfoContent');
+      const arrow = document.getElementById('nutrientInfoArrow');
+      const isHidden = content.style.display === 'none';
 
       if (isHidden) {
         content.style.display = 'block';
