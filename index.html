@@ -1754,14 +1754,16 @@
 
       /* Analysis Controls for Mobile */
       .analysis-controls {
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         gap: 8px;
+        overflow-x: auto;
+        scrollbar-width: none;
       }
 
       .filter-group {
-        flex-wrap: wrap;
-        justify-content: center;
-        width: 100%;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        width: auto;
       }
     }
 
@@ -2240,6 +2242,26 @@
       font-size: 13px;
       color: var(--on-surface-variant);
       line-height: 1.5;
+    }
+
+    /* AI snippet compact preview in history card */
+    .log-ai-snippet {
+      font-size: 12px;
+      color: var(--on-surface-variant);
+      line-height: 1.5;
+      margin-top: 6px;
+      padding: 6px 10px;
+      background: rgba(66, 133, 244, 0.07);
+      border-left: 2px solid rgba(66, 133, 244, 0.4);
+      border-radius: 0 6px 6px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Expand chevron rotates when card is expanded */
+    .log-card.expanded .log-expand-icon {
+      transform: rotate(180deg);
     }
 
     /* Details Section (Collapsible) */
@@ -3284,6 +3306,62 @@
         </div>
       </section>
 
+      <!-- Compact System Dashboard -->
+      <article class="card"
+        style="padding: 8px 16px; margin: 0; border-radius: var(--radius-sm); border: 1px solid var(--outline); background: var(--surface-glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 40px;">
+          <div
+            style="display: flex; align-items: center; gap: 6px; flex: 1; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;">
+            <style>
+              .status-item {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding: 4px 10px;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 12px;
+                white-space: nowrap;
+                border: 1px solid rgba(255, 255, 255, 0.03);
+              }
+
+              .status-item .dot {
+                margin: 0;
+                width: 8px;
+                height: 8px;
+              }
+
+              .status-item span:last-child {
+                font-size: 11px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.3px;
+              }
+            </style>
+            <!-- Sensor -->
+            <div class="status-item">
+              <span class="dot offline" id="espDot"></span>
+              <span id="espStatus" class="translatable">Sensor</span>
+            </div>
+            <!-- Camera -->
+            <div class="status-item">
+              <span class="dot offline" id="camDot"></span>
+              <span id="cs" class="translatable">Camera</span>
+            </div>
+            <!-- MQTT -->
+            <div class="status-item">
+              <span class="dot offline" id="mqttDot"></span>
+              <span id="mqttStatus" class="translatable">MQTT</span>
+            </div>
+          </div>
+          <!-- Refresh -->
+          <button class="btn sec" onclick="softRefresh(this)"
+            style="padding: 0; width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0; border-color:rgba(255,255,255,0.1);"
+            title="Refresh">
+            <span class="material-symbols-rounded" style="font-size: 20px;">refresh</span>
+          </button>
+        </div>
+      </article>
+
       <!-- ===== Task Scheduler Section ===== -->
       <section class="task-scheduler" id="taskSchedulerSection">
         <div class="task-scheduler-header">
@@ -3389,160 +3467,7 @@
         </div>
       </div>
 
-      <!-- Weather Widget (New) -->
-      <article class="card weather-card"
-        style="background: var(--surface); color: var(--on-widget); border: 1px solid var(--outline);">
-        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 16px;">
-          <div style="flex: 1;">
-            <div id="greeting" style="font-size: 20px; font-weight: 700; color: var(--on-widget); margin-bottom: 4px;">
-              Good Morning, Farmer! 🌾</div>
-            <div id="clock"
-              style="font-size: 13px; font-weight: 500; color: var(--on-widget-variant); background: rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 20px; backdrop-filter: blur(4px); display: inline-block; margin-bottom: 12px;">
-              --:-- • ---</div>
 
-            <div style="display: flex; flex-direction: column;">
-              <div
-                style="display: flex; align-items: center; gap: 6px; color: var(--on-widget-variant); font-weight: 500; font-size: 14px; margin-bottom: 4px; cursor: pointer;"
-                onclick="toggleLocationSearch()" title="Click to change location">
-                <span class="material-symbols-rounded" style="font-size: 18px;">location_on</span>
-                <span id="weatherLocation" style="border-bottom: 1px dashed rgba(255,255,255,0.4);">Locating...</span>
-                <span class="material-symbols-rounded" style="font-size: 16px; opacity: 0.7;">edit</span>
-              </div>
-
-              <!-- Search UI (Hidden) -->
-              <div id="locationSearch" style="display: none; margin-top: 8px; gap: 8px;">
-                <input type="text" id="cityInput" placeholder="City Name" aria-label="City Name"
-                  style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 6px 12px; border-radius: 8px; font-size: 13px; outline: none; width: 140px;">
-                <button onclick="searchLocation()"
-                  style="background: var(--primary); color: var(--on-primary); border: none; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;">Search</button>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
-          <div>
-            <div style="display: flex; align-items: flex-start;">
-              <span id="currentTemp"
-                style="font-size: 56px; font-weight: 800; line-height: 1; letter-spacing: -2px;">--</span>
-              <span style="font-size: 24px; font-weight: 600; margin-top: 4px; opacity: 0.8;">°C</span>
-            </div>
-            <div id="currentCondition" style="font-size: 16px; font-weight: 500; opacity: 0.9; margin-top: 4px;">--
-            </div>
-            <div id="feelsLike" style="font-size: 13px; opacity: 0.7; margin-top: 2px;">Feels --°</div>
-          </div>
-          <span id="currentWeatherIcon" class="material-symbols-rounded"
-            style="font-size: 64px; color: var(--primary); text-shadow: 0 4px 12px rgba(0,0,0,0.2);">cloud</span>
-        </div>
-
-        <!-- Metrics Grid -->
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px;">
-          <div
-            style="background: rgba(255,255,255,0.08); padding: 12px; border-radius: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.05);">
-            <span class="material-symbols-rounded"
-              style="font-size: 20px; margin-bottom: 4px; opacity: 0.8;">water_drop</span>
-            <div style="font-size: 12px; opacity: 0.7; margin-bottom: 2px;">Humidity</div>
-            <div style="font-size: 16px; font-weight: 700;"><span id="currentHumidity">--</span>%</div>
-          </div>
-          <div
-            style="background: rgba(255,255,255,0.08); padding: 12px; border-radius: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.05);">
-            <span class="material-symbols-rounded" style="font-size: 20px; margin-bottom: 4px; opacity: 0.8;">air</span>
-            <div style="font-size: 12px; opacity: 0.7; margin-bottom: 2px;">Wind</div>
-            <div style="font-size: 16px; font-weight: 700;"><span id="currentWind">--</span> <span
-                style="font-size: 12px; font-weight: 400;">km/h</span></div>
-          </div>
-          <div
-            style="background: rgba(255,255,255,0.08); padding: 12px; border-radius: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.05);">
-            <span class="material-symbols-rounded"
-              style="font-size: 20px; margin-bottom: 4px; opacity: 0.8;">rainy</span>
-            <div style="font-size: 12px; opacity: 0.7; margin-bottom: 2px;">Rain</div>
-            <div style="font-size: 16px; font-weight: 700;"><span id="agriRain">--</span> <span
-                style="font-size: 12px; font-weight: 400;">mm</span></div>
-          </div>
-        </div>
-
-        <!-- Attribution -->
-        <div
-          style="text-align: center; font-size: 10px; color: rgba(255,255,255,0.3); margin-top: -12px; margin-bottom: 20px; font-weight: 400; letter-spacing: 0.5px;">
-          Sources: NOAA, ECMWF, DWD via Open-Meteo
-        </div>
-
-        <!-- Farming Insights -->
-        <div style="margin-bottom: 24px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
-          <h5
-            style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: var(--on-widget); display: flex; align-items: center; gap: 8px;">
-            <span class="material-symbols-rounded" style="font-size: 18px; color: var(--primary);">grass</span>
-            Farming Insights
-          </h5>
-          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
-
-            <!-- Soil Moisture -->
-            <div
-              style="background: rgba(255,255,255,0.08); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); text-align: center; display: flex; flex-direction: column; align-items: center;">
-              <span class="material-symbols-rounded"
-                style="color: #a18374; font-size: 24px; margin-bottom: 4px;">opacity</span>
-              <div style="font-size: 11px; color: rgba(255,255,255,0.7); margin-bottom: 4px;">Soil Moisture</div>
-              <div id="agriSoil" style="font-size: 16px; font-weight: 700; color: white;">--</div>
-              <div style="font-size: 10px; color: rgba(255,255,255,0.5);">(3-9cm)</div>
-            </div>
-
-            <!-- ET0 -->
-            <div
-              style="background: rgba(255,255,255,0.08); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); text-align: center; display: flex; flex-direction: column; align-items: center;">
-              <span class="material-symbols-rounded"
-                style="color: #fbbf24; font-size: 24px; margin-bottom: 4px;">wb_sunny</span>
-              <div style="font-size: 11px; color: rgba(255,255,255,0.7); margin-bottom: 4px;">Evapotranspiration
-              </div>
-              <div id="agriEt0" style="font-size: 16px; font-weight: 700; color: white;">--</div>
-              <div style="font-size: 10px; color: rgba(255,255,255,0.5);">mm/day</div>
-            </div>
-
-            <!-- Rainfall -->
-            <div
-              style="background: rgba(255,255,255,0.08); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); text-align: center; display: flex; flex-direction: column; align-items: center;">
-              <span class="material-symbols-rounded"
-                style="color: #60a5fa; font-size: 24px; margin-bottom: 4px;">rainy</span>
-              <div style="font-size: 11px; color: rgba(255,255,255,0.7); margin-bottom: 4px;">Rainfall</div>
-              <div id="agriRainInsight" style="font-size: 16px; font-weight: 700; color: white;">--</div>
-              <div style="font-size: 10px; color: rgba(255,255,255,0.5);">mm</div>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- 7-Day Forecast Scroll -->
-        <div style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 12px; scrollbar-width: none;"
-          id="forecastScroll">
-          <!-- Forecast items injected by JS -->
-          <div
-            style="min-width: 60px; text-align: center; padding: 12px 8px; background: rgba(255,255,255,0.6); border-radius: 16px; border: 1px solid var(--outline-variant);">
-            <div style="font-size: 12px; font-weight: 600; color: var(--on-surface-variant); margin-bottom: 8px;">--
-            </div>
-            <span class="material-symbols-rounded"
-              style="color: var(--on-surface-variant); font-size: 24px; margin-bottom: 8px;">more_horiz</span>
-            <div style="font-size: 14px; font-weight: 700; color: var(--on-surface);">--°</div>
-          </div>
-        </div>
-      </article>
-
-      <article class="card">
-        <div class="head">
-          <h2 class="translatable">System Dashboard</h2>
-          <button class="btn sec" onclick="softRefresh(this)"><span class="material-symbols-rounded">refresh</span>
-            <span class="translatable">Refresh</span></button>
-        </div>
-        <section class="status">
-          <div class="chip"><span class="dot offline" id="espDot"></span><span id="espStatus"
-              class="translatable">ESP</span></div>
-          <div class="chip"><span class="dot offline" id="camDot"></span><span id="cs"
-              class="translatable">Camera</span></div>
-          <div class="chip"><span class="dot offline" id="mqttDot"></span><span id="mqttStatus"
-              class="translatable">MQTT</span></div>
-          <div class="chip"><span class="dot offline" id="firebaseDot"></span><span id="firebaseText"
-              class="translatable">Firebase</span></div>
-        </section>
-      </article>
 
       <!-- Pump Control on Home Tab -->
       <!-- 
@@ -3626,7 +3551,9 @@
                 Live: <span id="moisturePercentLabel">0%</span>
               </span>
             </div>
-            <label for="cropProfile" class="translatable" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;">Select Crop Profile</label>
+            <label for="cropProfile" class="translatable"
+              style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;">Select
+              Crop Profile</label>
             <select id="cropProfile" onchange="updateAutoProfile()"
               style="width: 100%; padding: 12px 14px; background: rgba(10, 20, 14, 0.92); border: 1px solid var(--outline); border-radius: 10px; color: var(--on-surface); font-size: 13px; outline: none; cursor: pointer; -webkit-appearance: none; appearance: none; background-image: url('data:image/svg+xml;utf8,<svg fill=\'white\' xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\'><path d=\'M7 10l5 5 5-5z\'/></svg>'); background-repeat: no-repeat; background-position: right 10px center; background-size: 18px;">
               <optgroup label="🌾 Kharif Crops (Monsoon)" style="background: #1a1a1a;">
@@ -3862,7 +3789,7 @@
                 <span class="translatable">Selected:</span> <span id="selectedPlantName"
                   style="color: var(--primary);">🌿 All Plants</span>
               </div>
-              <div style="font-size: 12px; color: var(--on-surface-variant);" id="selectedPlantDesc">Using all 7 AI
+              <div style="font-size: 12px; color: var(--on-surface-variant);" id="selectedPlantDesc">Using all 6 AI
                 models for comprehensive analysis</div>
             </div>
           </div>
@@ -4181,6 +4108,45 @@
             </div>
           </div>
         </article>
+
+        <!-- Diagnostic History Section -->
+        <article class="card" style="display: flex; flex-direction: column; flex: 1; height: 100%;">
+          <div class="head">
+            <h2 class="translatable" style="margin-bottom: 0;">Diagnostic History</h2>
+            <div id="firebaseStatus" style="display: none !important;">
+              <span id="firebaseIcon" class="material-symbols-rounded">cloud_sync</span>
+              <span id="firebaseStatusText" class="translatable">Cloud Sync</span>
+            </div>
+          </div>
+
+          <div style="padding: 8px 16px 20px 16px; display: flex; flex-direction: column; gap: 16px; flex: 1;">
+            <div class="analysis-controls"
+              style="display: flex; justify-content: space-between; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none;">
+              <div class="filter-group" style="display: flex; gap: 8px; flex-wrap: nowrap;">
+                <button class="filter-chip active" onclick="filterHistory('all')" data-filter="all"
+                  style="white-space: nowrap; flex-shrink: 0;">All Logs</button>
+                <button class="filter-chip" onclick="filterHistory('diseases')" data-filter="diseases"
+                  style="white-space: nowrap; flex-shrink: 0;">Diseases</button>
+              </div>
+
+              <button class="btn sec" onclick="clearAnalyticsData()"
+                style="color: var(--error); border-color: rgba(234, 67, 53, 0.2); padding: 0 12px; height: 36px; margin-left: auto; flex-shrink: 0; white-space: nowrap; display: flex; align-items: center; gap: 4px;">
+                <span class="material-symbols-rounded" style="font-size: 16px;">delete</span>
+                <span class="translatable" style="font-size: 13px;">Clear</span>
+              </button>
+            </div>
+
+            <div class="history-panel" id="historyPanel"
+              style="min-height: 380px; max-height: 800px; overflow-y: auto; background: var(--surface-container-low); border-radius: 12px; border: 1px solid var(--outline-variant); flex: 1;">
+              <div style="text-align: center; color: var(--on-surface-variant); padding: 40px 20px;">
+                <span class="material-symbols-rounded"
+                  style="font-size: 32px; opacity: 0.5; margin-bottom: 12px;">history</span>
+                <p class="translatable" style="font-size: 13px;">No diagnostic history found. Please run an analysis to
+                  generate logs.</p>
+              </div>
+            </div>
+          </div>
+        </article>
       </section>
     </div>
 
@@ -4337,12 +4303,7 @@
         </div>
 
       </article>
-    </div>
 
-    <!-- ==========================================
-         ANALYTICS TAB - Charts & Performance
-         ========================================== -->
-    <div id="analyticsTab" class="tab-content">
       <!-- Environmental Sensor Charts -->
       <article class="card">
         <div class="head">
@@ -4421,7 +4382,6 @@
             <canvas id="soilTemperatureChart"></canvas>
           </div>
         </div>
-
         <!-- Soil Quality (TDS) Chart -->
         <div class="card" style="padding: 20px; margin-bottom: 16px;">
           <h3
@@ -4510,10 +4470,12 @@
           </div>
         </article>
       </article>
+    </div>
 
-
-
-
+    <!-- ==========================================
+         ANALYTICS TAB - Charts & Performance
+         ========================================== -->
+    <div id="analyticsTab" class="tab-content">
     </div>
 
     <!-- ==========================================
@@ -4535,17 +4497,17 @@
         <div style="display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap;">
           <!-- Auto Security Toggle -->
           <div
-            style="flex: 1; min-width: 250px; background: var(--surface-container-low); border: 1px solid var(--outline-variant); border-radius: 12px; padding: 16px; display: flex; align-items: center; justify-content: space-between;">
-            <div>
+            style="flex: 1; min-width: 250px; background: var(--surface-container-low); border: 1px solid var(--outline-variant); border-radius: 12px; padding: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <div style="flex: 1; min-width: 0;">
               <div style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--on-surface);">
-                <span class="material-symbols-rounded" style="color: var(--primary);">routine</span>
+                <span class="material-symbols-rounded" style="color: var(--primary); flex-shrink: 0;">routine</span>
                 <span class="translatable">Auto-Arm (Night Mode)</span>
               </div>
               <div style="font-size: 12px; color: var(--on-surface-variant); margin-top: 4px;" class="translatable">
                 Automatically arms the system at night based on LDR sensor.
               </div>
             </div>
-            <label class="switch">
+            <label class="switch" style="flex-shrink: 0;">
               <input type="checkbox" id="autoSecurityToggle" onchange="toggleAutoSecurity(this.checked)">
               <span class="slider round"></span>
             </label>
@@ -4553,17 +4515,17 @@
 
           <!-- Manual Security Toggle -->
           <div
-            style="flex: 1; min-width: 250px; background: var(--surface-container-low); border: 1px solid var(--outline-variant); border-radius: 12px; padding: 16px; display: flex; align-items: center; justify-content: space-between;">
-            <div>
+            style="flex: 1; min-width: 250px; background: var(--surface-container-low); border: 1px solid var(--outline-variant); border-radius: 12px; padding: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <div style="flex: 1; min-width: 0;">
               <div style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--on-surface);">
-                <span class="material-symbols-rounded" style="color: var(--error);">gpp_maybe</span>
+                <span class="material-symbols-rounded" style="color: var(--error); flex-shrink: 0;">gpp_maybe</span>
                 <span class="translatable">Arm System (Manual)</span>
               </div>
               <div style="font-size: 12px; color: var(--on-surface-variant); margin-top: 4px;" class="translatable">
                 Manually enable or disable the security alarm.
               </div>
             </div>
-            <label class="switch">
+            <label class="switch" style="flex-shrink: 0;">
               <input type="checkbox" id="manualSecurityToggle" onchange="toggleManualSecurity(this.checked)" checked>
               <span class="slider round"></span>
             </label>
@@ -4728,18 +4690,6 @@
           </div>
         </div>
 
-        <!-- Security Analysis Chart -->
-        <div class="sec-card" style="padding: 20px; margin-bottom: 16px;">
-          <h3
-            style="font-size: 16px; margin: 0 0 16px 0; color: var(--primary); font-weight: 600; display: flex; align-items: center; gap: 8px;">
-            <span class="material-symbols-rounded">show_chart</span>
-            <span class="translatable">Security Confidence</span>
-          </h3>
-          <div style="position: relative; height: 300px; width: 100%;">
-            <canvas id="securityChart"></canvas>
-          </div>
-        </div>
-
         <!-- Security History List -->
         <div class="sec-card">
           <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 600; color: var(--on-surface);">
@@ -4850,25 +4800,6 @@
 
 
 
-            <!-- Analytics Page Shortcut -->
-            <button class="btn sec" onclick="switchTab('analyticsTab');"
-              style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; width: 100%; cursor: pointer; border: none; border-bottom: 1px solid var(--outline-variant); border-radius: 0; background: transparent; box-shadow: none; text-align: left;">
-              <span style="display: flex; align-items: center; gap: 16px;">
-                <span
-                  style="width: 40px; height: 40px; border-radius: 50%; background: var(--surface-container); display: flex; align-items: center; justify-content: center;">
-                  <span class="material-symbols-rounded"
-                    style="font-size: 20px; color: var(--primary);">monitoring</span>
-                </span>
-                <span style="display: flex; flex-direction: column; align-items: flex-start;">
-                  <span class="translatable"
-                    style="font-weight: 600; font-size: 15px; color: var(--on-surface);">Analytics</span>
-                  <span class="translatable" style="font-size: 12px; color: var(--on-surface-variant);">View Charts &
-                    Reports</span>
-                </span>
-              </span>
-              <span class="material-symbols-rounded"
-                style="font-size: 24px; color: var(--on-surface-variant);">chevron_right</span>
-            </button>
 
             <!-- Gemini API Settings (NEW) -->
             <button class="btn sec" onclick="showGeminiSettingsPage()"
@@ -4908,25 +4839,6 @@
                 style="font-size: 24px; color: var(--on-surface-variant);">chevron_right</span>
             </button>
 
-            <button class="btn sec" onclick="showLogsPage()"
-              style="justify-content: flex-start; text-align: left; padding: 16px 20px; border: none; border-bottom: 1px solid var(--outline-variant); border-radius: 0; background: transparent; box-shadow: none; width: 100%;">
-              <span style="display: flex; align-items: center; gap: 16px; width: 100%;">
-                <span
-                  style="width: 40px; height: 40px; border-radius: 50%; background: var(--surface-container); display: flex; align-items: center; justify-content: center;">
-                  <span class="material-symbols-rounded"
-                    style="font-size: 20px; color: var(--on-surface);">list_alt</span>
-                </span>
-                <span style="display: flex; flex-direction: column; align-items: flex-start;">
-                  <span class="translatable"
-                    style="font-weight: 600; font-size: 15px; color: var(--on-surface);">Analysis
-                    Logs</span>
-                  <span class="translatable" style="font-size: 12px; color: var(--on-surface-variant);">View
-                    history</span>
-                </span>
-                <span class="material-symbols-rounded"
-                  style="margin-left: auto; color: var(--on-surface-variant);">chevron_right</span>
-              </span>
-            </button>
 
             <!-- Feedback & Support Button -->
             <button class="btn sec" onclick="showFeedbackPage()"
@@ -5301,13 +5213,13 @@
             How to get an API Key?
           </h4>
           <ol
-            style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--on-surface-variant); line-height: 1.6;"
-            class="translatable">
-            <li>Go to <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer"
-                style="color: #4285f4; font-weight: 600; text-decoration: none;">Google AI Studio</a>.</li>
-            <li>Sign in with your Google Account.</li>
-            <li>Click on <strong>"Create API key"</strong>.</li>
-            <li>Copy the key and paste it into the field above.</li>
+            style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--on-surface-variant); line-height: 1.6;">
+            <li><span class="translatable">Go to</span> <a href="https://aistudio.google.com/app/apikey" target="_blank"
+                rel="noopener noreferrer" style="color: #4285f4; font-weight: 600; text-decoration: none;"
+                class="translatable">Google AI Studio</a>.</li>
+            <li class="translatable">Sign in with your Google Account.</li>
+            <li><span class="translatable">Click on</span> <strong class="translatable">"Create API key"</strong>.</li>
+            <li class="translatable">Copy the key and paste it into the field above.</li>
           </ol>
           <div style="margin-top: 16px; text-align: center;">
             <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="btn sec"
@@ -5321,59 +5233,6 @@
     </article>
   </div>
 
-  <!-- Analysis Logs Page (hidden by default) -->
-  <div id="logsPage" class="logs-page">
-    <button class="back-button" onclick="hideLogsPage()">
-      <span class="material-symbols-rounded">arrow_back</span> <span class="translatable">Back to More</span>
-    </button>
-
-    <article class="card">
-      <div class="head">
-        <h2 class="translatable">Diagnostic History</h2>
-        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-          <span class="firebase-status" id="firebaseStatus">
-            <span id="firebaseIcon" class="material-symbols-rounded"
-              style="font-size: 18px;">radio_button_unchecked</span>
-            <span id="firebaseStatusText" class="translatable">Not connected</span>
-          </span>
-          <button class="btn sec" onclick="syncWithFirebase()"><span class="translatable">Sync</span></button>
-          <button class="btn sec" onclick="resyncLocalLogs()"><span class="translatable">Resync</span></button>
-          <div id="resyncProgress" class="resync-progress" style="display:none; align-items:center; gap:8px;">
-            <div class="resync-bar" aria-hidden="true">
-              <div class="resync-bar-fill" style="width:0%"></div>
-            </div>
-            <div class="resync-text" id="resyncProgressText"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card" style="padding: 12px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-          <h3 style="font-size: 14px; margin: 0; color: var(--on-surface-variant);" class="translatable">
-            Analysis
-            Log</h3>
-          <div class="analysis-controls"
-            style="display: flex; gap: 8px; align-items: center; width: 100%; flex-wrap: wrap;">
-            <div class="filter-group">
-              <button class="filter-chip active" onclick="filterHistory('all')" data-filter="all">All</button>
-              <button class="filter-chip" onclick="filterHistory('diseases')" data-filter="diseases">Diseases</button>
-              <button class="filter-chip" onclick="filterHistory('healthy')" data-filter="healthy">Healthy</button>
-            </div>
-            <button class="btn sec translatable" onclick="loadFromFirebase()"
-              style="padding: 6px 12px; font-size: 12px;">📥 Load</button>
-            <button class="btn pri" onclick="clearAnalyticsData()" style="padding: 8px 16px; font-size: 13px;"><span
-                class="material-symbols-rounded" style="font-size: 16px;">delete</span> <span class="translatable">Clear
-                Diagnostic
-                Log</span></button>
-          </div>
-        </div>
-        <div class="history-panel" id="historyPanel">
-          <p style="text-align: center; color: var(--on-surface-variant); padding: 32px;" class="translatable">No
-            diagnostic logs yet. Run your first analysis to get started.</p>
-        </div>
-      </div>
-    </article>
-  </div>
 
   <!-- Feedback Page (hidden by default) -->
   <div id="feedbackPage" class="logs-page">
@@ -5590,13 +5449,6 @@
         <div id="nlm_lastEvent" style="font-size: 14px; font-weight: 500; color: var(--on-surface);">No events
           recorded</div>
       </div>
-
-      <!-- TDS Chart -->
-      <div style="margin-top: 20px;">
-        <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--on-surface);">TDS Timeline
-        </h3>
-        <canvas id="nlm_tdsChart" style="max-height: 250px;"></canvas>
-      </div>
     </article>
 
     <!-- Section 3: History Table -->
@@ -5658,7 +5510,8 @@
             <span class="material-symbols-rounded" style="color: var(--primary);">info</span>
           </span>
           <span style="text-align: left;">
-            <span style="display: block; margin: 0; font-size: 15px; font-weight: 700; color: var(--on-surface);">How Nutrient Monitor
+            <span style="display: block; margin: 0; font-size: 15px; font-weight: 700; color: var(--on-surface);">How
+              Nutrient Monitor
               Works?</span>
             <span style="font-size: 12px; color: var(--on-surface-variant);">Learn about detection &amp; alerts</span>
           </span>
@@ -6153,15 +6006,39 @@
         }
 
         // Get active models based on plant selection
-        const plantName = PLANT_TYPES.find(p => p.id === selectedPlantType)?.name || 'All Plants';
+        const plantNames = PLANT_TYPES.filter(p => selectedPlantTypes.includes(p.id)).map(p => translateText(p.name)).join(', ') || 'Plants';
         const activeModels = getActiveModels();
 
-        document.getElementById('res').innerHTML = `<div class="rc"><div class="t">Analyzing local image of ${plantName} with ${activeModels.length} AI models...</div><p style="color: var(--on-surface-variant); font-size: 14px;">Processing image...</p></div>`;
-
         const base64Image = resizedDataUrl.split(',')[1];
-
-        // Store the image for Gemini AI analysis
         window.lastCapturedImage = base64Image;
+
+        // --- GEMINI ONLY BYPASS ---
+        if (selectedPlantTypes.includes('none')) {
+          const geminiEnabled = localStorage.getItem('geminiAnalysisEnabled') !== 'false';
+          if (!geminiEnabled) {
+            document.getElementById('res').innerHTML = `<div class="rc"><div class="t" style="color: #ef4444;">⚠️ AI Analysis Disabled</div><p style="color: var(--on-surface-variant); font-size: 14px;">Select a crop to use local ML models, or enable Gemini AI in settings for AI-only analysis.</p></div>`;
+            analyzeBtn.disabled = false;
+            analyzeBtn.innerHTML = '<span class="material-symbols-rounded">image_search</span> <span class="translatable">' + translateText('Analyze Image') + '</span>';
+            return;
+          }
+
+          document.getElementById('res').innerHTML = `<div class="rc"><div class="t">Analyzing with Gemini AI Expert...</div><p style="color: var(--on-surface-variant); font-size: 14px;">Bypassing local ML models.</p></div>`;
+          document.getElementById('res').innerHTML += `<div style="text-align:center; padding:20px;">
+                <div style="display:inline-block; animation: spin 1s linear infinite;">
+                  <span class="material-symbols-rounded" style="color:#4285f4; font-size:48px;">autorenew</span>
+                </div>
+              </div>`;
+
+          // Run standalone Gemini analysis
+          await runStandaloneGeminiAnalysis(base64Image, 'local_' + Date.now());
+
+          analyzeBtn.disabled = false;
+          analyzeBtn.innerHTML = '<span class="material-symbols-rounded">image_search</span> <span class="translatable">' + translateText('Analyze Image') + '</span>';
+          return; // Skip the rest of the ML flow
+        }
+        // --------------------------
+
+        document.getElementById('res').innerHTML = `<div class="rc"><div class="t">Analyzing local image of ${plantNames} with ${activeModels.length} AI models...</div><p style="color: var(--on-surface-variant); font-size: 14px;">Processing image...</p></div>`;
 
         // Show and initialize progress
         const progressEl = document.getElementById('batchProgress');
@@ -6178,7 +6055,25 @@
           if (progressLabel) progressLabel.textContent = done + ' / ' + total + ' models';
         });
 
-        const consensusData = calculateConsensus(results);
+        let consensusData = calculateConsensus(results);
+
+        // --- GEMINI VERIFICATION LAYER ---
+        const geminiEnabled = localStorage.getItem('geminiAnalysisEnabled') !== 'false';
+        if (geminiEnabled) {
+          document.getElementById('res').innerHTML = `<div class="rc"><div class="t">Verifying with AI Experts...</div><p style="color: var(--on-surface-variant); font-size: 14px;">Cross-checking ML results to ensure accuracy.</p></div>`;
+          const verification = await verifyWithGemini(base64Image, consensusData.disease, consensusData.confidence);
+
+          if (!verification.isPlant) {
+            document.getElementById('res').innerHTML = `<div class="rc"><div class="t" style="color: #ef4444;">⚠️ Invalid Image</div><p style="color: var(--on-surface-variant); font-size: 14px;">No plant or crop leaf detected in the image. Please upload a clear photo of a plant to get an accurate diagnosis.</p></div>`;
+            return; // Stop the flow
+          }
+
+          // Override ML consensus with verified results
+          consensusData.disease = verification.verifiedDisease;
+          consensusData.confidence = verification.confidence;
+        }
+        // ---------------------------------
+
         geminiRecommendation = null; // Set to null for local analysis
         showMultiModelResults(results, null, consensusData);
 
@@ -6207,7 +6102,7 @@
     const TRANSLATIONS_BN = {
       /* UI */
       'Advanced Crop Diagnostics Platform': 'উন্নত ফসল নির্ণয়ের প্ল্যাটফর্ম',
-      'Agri-Nigrani: Crop Analysis': 'কৃষি-নিগ্রানি: ফসল বিশ্লেষণ',
+      'Agri-Nigrani: Crop Analysis': 'Agri-Nigrani',
       'Real-time analysis, AI-driven insights, and sensor integration.': 'রিয়েল-টাইম বিশ্লেষণ, এআই-চালিত অন্তর্দৃষ্টি এবং সেন্সর ইন্টিগ্রেশন।',
 
       /* Navigation */
@@ -6234,7 +6129,7 @@
       'Enter ESP32 IP address above': 'উপরের ইএসপি৩২ আইপি ঠিকানা লিখুন',
       '🌱 Select Crop for Analysis': '🌱 বিশ্লেষণের জন্য ফসল নির্বাচন করুন',
       'Selected:': 'নির্বাচিত:',
-      'Using all 7 AI models for comprehensive analysis': 'সম্পূর্ণ বিশ্লেষণের জন্য ৭টি এআই মডেল ব্যবহার করা হচ্ছে',
+      'Using all 6 AI models for comprehensive analysis': 'সম্পূর্ণ বিশ্লেষণের জন্য ৬টি এআই মডেল ব্যবহার করা হচ্ছে',
       'Analyze Stream': 'স্ট্রিম বিশ্লেষণ করুন',
       'Start Stream': 'স্ট্রিম শুরু করুন',
       'Analyze Local Image': 'স্থানীয় চিত্র বিশ্লেষণ করুন',
@@ -6264,6 +6159,8 @@
       'No diagnostic logs yet. Run your first analysis to get started.': 'এখনও কোনও ডায়াগনস্টিক লগ নেই। শুরু করতে আপনার প্রথম বিশ্লেষণ চালান।',
 
       /* Plants */
+      'None': 'কিছুই না',
+      'Skip ML models, use only Gemini AI expert analysis': 'এমএল মডেল এড়িয়ে যান, শুধুমাত্র জেমিনি এআই ব্যবহার করুন',
       'All Plants (General)': 'সব ফসল (সাধারণ)',
       'Rice': 'ধান',
       'Wheat': 'গম',
@@ -6271,15 +6168,16 @@
       'Potato': 'আলু',
       'Tomato': 'টমেটো',
       'Eggplant/Brinjal': 'বেগুন/ব্রিনজাল',
+      'Onion': 'পেঁয়াজ',
       'models': 'মডেল',
 
       /* Models */
-      'Object Detection (YOLOv8)': 'অবজেক্ট সনাক্তকরণ (YOLOv8)',
       'Rice Disease Detection (YOLOv8s)': 'ধান রোগ সনাক্তকরণ (YOLOv8s)',
       'Wheat Disease (100% Accuracy)': 'গম রোগ (১০০% নির্ভুলতা)',
       'Chili Plant Disease (81% mAP)': 'মরিচ গাছের রোগ (৮১% mAP)',
       'Potato Disease (98.8% mAP)': 'আলু রোগ (৯৮.৮% mAP)',
-      'Tomato Disease (92.3% mAP)': 'টমেটো রোগ (৯২.৩% mAP)',
+      'Tomato Disease (99.9% Acc)': 'টমেটো রোগ (৯৯.৯% Acc)',
+      'Onion Disease (90.3% Acc)': 'পেঁয়াজ রোগ (৯০.৩% Acc)',
       'Eggplant Disease (47.8% mAP)': 'বেগুন রোগ (৪৭.৮% mAP)',
 
       /* Result / UI strings */
@@ -6674,7 +6572,7 @@
       'Reload this page and try connecting again.': 'এই পৃষ্ঠাটি রিলোড করুন এবং আবার সংযোগ করার চেষ্টা করুন।',
 
       /* Task Scheduler */
-      'Farm Tasks': 'কৃষি কাজ',
+      'Farm Tasks': 'কাজ',
       'No tasks scheduled': 'কোনো কাজ নির্ধারিত নেই',
       'Tap + to add your first farm task': 'আপনার প্রথম কৃষি কাজ যোগ করতে + ট্যাপ করুন',
       'Schedule Task': 'কাজ নির্ধারণ করুন',
@@ -6788,18 +6686,51 @@
       'Rain History': 'বৃষ্টির ইতিহাস',
       'Sunlight Received': 'সূর্যালোক গ্রহণ',
 
-      /* Security */
+      /* Security & Events & AI Settings */
       'Farm Security': 'খামার নিরাপত্তা',
       'System Armed': 'সিস্টেম সক্রিয়',
+      'System Disarmed': 'সিস্টেম বন্ধ',
+      'Auto-Arm (Night Mode)': 'অটো-আর্ম (রাতের মোড)',
+      'Automatically arms the system at night based on LDR sensor.': 'এলডিআর সেন্সরের উপর ভিত্তি করে রাতে স্বয়ংক্রিয়ভাবে সিস্টেম চালু করে।',
+      'Arm System (Manual)': 'আর্ম সিস্টেম (ম্যানুয়াল)',
+      'Manually enable or disable the security alarm.': 'নিরাপত্তা অ্যালার্ম ম্যানুয়ালি সক্ষম বা অক্ষম করুন।',
       'How the Security System Works': 'নিরাপত্তা সিস্টেম কীভাবে কাজ করে',
       'Confirmed Intrusion': 'নিশ্চিত অনুপ্রবেশ',
+      'Critical Intrusion': 'মারাত্মক অনুপ্রবেশ',
+      'Motion + Ultrasonic (CONFIRMED)': 'গতি + অতিস্বনক (নিশ্চিত)',
       'Motion Alert': 'মোশন সতর্কতা',
       'Only PIR Motion Sensor triggers.': 'শুধুমাত্র PIR মোশন সেন্সর ট্রিগার করে।',
+      'Motion Only (PIR)': 'শুধুমাত্র গতি (পিআইআর)',
       'Proximity Alert': 'নৈকট্য সতর্কতা',
       'Only Ultrasonic Sensor triggers (< 50cm).': 'শুধুমাত্র আল্ট্রাসনিক সেন্সর ট্রিগার করে (< ৫০ সেমি)।',
+      'Ultrasonic Only': 'শুধুমাত্র অতিস্বনক',
       'Security Confidence': 'নিরাপত্তা আত্মবিশ্বাস',
       'Security History': 'নিরাপত্তা ইতিহাস',
       'No security events recorded': 'কোনো নিরাপত্তা ইভেন্ট রেকর্ড হয়নি',
+
+      'Main Pump': 'প্রধান পাম্প',
+      'Manual override control': 'ম্যানুয়াল ওভাররাইড কন্ট্রোল',
+      'Auto Irrigation Mode': 'অটো সেচ মোড',
+      'Pump based on moisture': 'আর্দ্রতার উপর ভিত্তি করে পাম্প',
+      'Select Crop Profile': 'ফসল প্রোফাইল নির্বাচন করুন',
+      'Ideal Range:': 'আদর্শ স্তর:',
+      'Start:': 'শুরু:',
+      'Closed-loop: Auto-stop': 'স্বয়ংক্রিয়ভাবে বন্ধ',
+      'moisture': 'আর্দ্রতা',
+      'Dry Run protection': 'ড্রাই রান সুরক্ষা',
+      'Auto-stop if no water flow': 'জলের প্রবাহ না থাকলে স্বয়ংক্রিয় বন্ধ',
+
+      'To use AI Expert Analysis features, you need to provide your own Google Gemini API key. This key will be stored securely in your local browser storage.': 'এআই বিশেষজ্ঞ বিশ্লেষণ বৈশিষ্ট্যগুলি ব্যবহার করতে, আপনাকে আপনার নিজস্ব গুগল জেমিনি এপিআই কী দিতে হবে। এই চাবিটি নিরাপদে আপনার ব্রাউজার স্টোরেজে সংরক্ষিত থাকবে।',
+      'Gemini API Key': 'জেমিনি এপিআই কি',
+      'How to get an API Key?': 'কিভাবে এপিআই কী পাবেন?',
+      'Go to': 'যান',
+      'Google AI Studio': 'গুগল এআই স্টুডিও',
+      'Sign in with your Google Account.': 'আপনার গুগল অ্যাকাউন্ট দিয়ে সাইন ইন করুন।',
+      'Click on': 'ক্লিক করুন',
+      'Create API key': 'এপিআই কী তৈরি করুন',
+      'Copy the key and paste it into the field above.': 'কী কপি করুন এবং উপরের ফিল্ডে পেস্ট করুন।',
+      'Peace of Mind': 'মানসিক প্রশান্তি',
+      'Relax knowing your fields are protected 24/7 with immediate cross-device intruder alerts and offline hardware failsafes.': 'আপনার জমি ২৪/৭ সুরক্ষিত আছে জেনে নিশ্চিন্ত থাকুন, সাথে তাত্ক্ষণিক অনুপ্রবেশকারী সতর্কতা এবং ধীরগতির হার্ডওয়্যার ব্যাকআপ সুবিধা রয়েছে।',
 
       /* Menu extras */
       'Gemini API Settings': 'জেমিনি এপিআই সেটিংস',
@@ -6974,6 +6905,15 @@
       // Re-render dynamic pieces in English
       try { initPlantSelector(); displayActiveModels(); updateFirebaseStatus(firebaseReady); refreshRuntimeTranslations(); } catch (e) { /* ignore */ }
     }
+
+    // Initialize preferred language on load
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedLang = getLang();
+      if (savedLang === 'bn') {
+        // Only run after a short delay to ensure DOM is fully parsed
+        setTimeout(translateToBangla, 100);
+      }
+    });
 
     // Gemini API Settings Navigation
     function showGeminiSettingsPage() {
@@ -7446,18 +7386,6 @@
 
     // Class name mapping for models that return numeric IDs
     const CLASS_NAME_MAPPING = {
-      'tomato-disease-k8es2/2': {
-        '0': 'Tomato Early Blight',
-        '1': 'Tomato Late Blight',
-        '2': 'Tomato Bacterial Spot',
-        '3': 'Tomato Septoria Leaf Spot',
-        '4': 'Tomato Target Spot',
-        '5': 'Tomato Leaf Mold',
-        '6': 'Tomato Yellow Leaf Curl Virus',
-        '7': 'Tomato Mosaic Virus',
-        '8': 'Tomato Spider Mites',
-        '9': 'Tomato Healthy'
-      },
       'potato-disease-balnv/2': {
         '0': 'Potato Early Blight',
         '1': 'Potato Late Blight',
@@ -7467,27 +7395,33 @@
 
     // Multiple models for comparison
     const MODELS = [
-      { id: 'plant-disease-detection-z9xot/2', name: 'Object Detection (YOLOv8)', type: 'detection', forPlants: 'all' },
-      { id: 'rice-disease-detection-zwaa8/4', name: 'Rice Disease Detection (YOLOv8s)', type: 'detection', forPlants: ['rice'] },
+      { id: 'rice-leaf-disease-twtlz/1', name: 'Rice Disease (98.2% Acc)', type: 'classification', forPlants: ['rice'] },
       { id: 'wheat-disease-detection-zsn0p/1', name: 'Wheat Disease (100% Accuracy)', type: 'classification', forPlants: ['wheat'] },
-      { id: 'chili-plant/2', name: 'Chili Plant Disease (81% mAP)', type: 'detection', forPlants: ['chili', 'pepper'] },
+      { id: 'chili-leaves-disease-classification/1', name: 'Chili Disease (94.0% Acc)', type: 'classification', forPlants: ['chili', 'pepper'] },
       { id: 'potato-disease-balnv/2', name: 'Potato Disease (98.8% mAP)', type: 'detection', forPlants: ['potato'] },
-      { id: 'tomato-disease-k8es2/2', name: 'Tomato Disease (92.3% mAP)', type: 'detection', forPlants: ['tomato'] },
-      { id: 'eggplant-fruit-disease-detection/21', name: 'Eggplant Disease (47.8% mAP)', type: 'detection', forPlants: ['eggplant', 'brinjal'] }
+      { id: 'zekeriya_tomato_disease_model/1', name: 'Tomato Disease (99.9% Acc)', type: 'classification', forPlants: ['tomato'] },
+      { id: 'onion-disease-leaf-ze2zv/1', name: 'Onion Disease (90.3% Acc)', type: 'classification', forPlants: ['onion'] },
+      { id: 'eggplant-kwv5k/5', name: 'Eggplant Disease (91.5% Acc)', type: 'classification', forPlants: ['eggplant', 'brinjal'] },
+      { id: 'sugarcane-disease-ds-original/5', name: 'Sugarcane Disease (97.5% Acc)', type: 'classification', forPlants: ['sugarcane'] },
+      { id: 'banana-disease-tbmmy/2', name: 'Banana Disease (99.8% Acc)', type: 'classification', forPlants: ['banana'] }
     ];
 
     // Plant types available for selection
     const PLANT_TYPES = [
-      { id: 'all', name: 'All Plants (General)', icon: '🌿', models: 7, description: 'Use all 7 models for comprehensive analysis' },
-      { id: 'rice', name: 'Rice', icon: '🌾', models: 2, description: 'General model + Rice specialist' },
-      { id: 'wheat', name: 'Wheat', icon: '🌾', models: 2, description: 'General model + Wheat specialist' },
-      { id: 'chili', name: 'Chili/Pepper', icon: '🌶️', models: 2, description: 'General model + Chili specialist' },
-      { id: 'potato', name: 'Potato', icon: '🥔', models: 2, description: 'General model + Potato specialist' },
-      { id: 'tomato', name: 'Tomato', icon: '🍅', models: 2, description: 'General model + Tomato specialist' },
-      { id: 'eggplant', name: 'Eggplant/Brinjal', icon: '🍆', models: 2, description: 'General model + Eggplant specialist' }
+      { id: 'all', name: 'All Plants (General)', icon: '🌿', models: 9, description: 'Use all 9 models for comprehensive analysis' },
+      { id: 'none', name: 'None', icon: '✨', models: 0, description: 'Skip ML models, use only Gemini AI expert analysis' },
+      { id: 'rice', name: 'Rice', icon: '🌾', models: 1, description: 'Rice specialist model for focused detection' },
+      { id: 'wheat', name: 'Wheat', icon: '🌾', models: 1, description: 'Wheat specialist model for focused detection' },
+      { id: 'chili', name: 'Chili/Pepper', icon: '🌶️', models: 1, description: 'Chili specialist model for focused detection' },
+      { id: 'potato', name: 'Potato', icon: '🥔', models: 1, description: 'Potato specialist model for focused detection' },
+      { id: 'tomato', name: 'Tomato', icon: '🍅', models: 1, description: 'Tomato specialist model for focused detection' },
+      { id: 'onion', name: 'Onion', icon: '🧅', models: 1, description: 'Onion specialist model for focused detection' },
+      { id: 'eggplant', name: 'Eggplant/Brinjal', icon: '🍆', models: 1, description: 'Eggplant specialist model for focused detection' },
+      { id: 'sugarcane', name: 'Sugarcane', icon: '🎋', models: 1, description: 'Sugarcane specialist model for focused detection' },
+      { id: 'banana', name: 'Banana', icon: '🍌', models: 1, description: 'Banana specialist model for focused detection' }
     ];
 
-    let selectedPlantType = 'all'; // Default to all plants
+    let selectedPlantTypes = ['none']; // Default to none
 
     // Disease remedies database
     const REMEDIES = {
@@ -8585,7 +8519,7 @@
         if (log.primaryDisease !== 'Healthy' && !log.environmentalContext) severity = 'moderate';
         if (log.primaryDisease === 'Healthy') severity = 'low';
 
-        const isHealthy = log.primaryDisease === 'Healthy';
+        const isHealthy = log.primaryDisease && log.primaryDisease.toLowerCase().includes('healthy');
         const icon = isHealthy ? 'check_circle' : 'coronavirus';
 
         // Generate Summary Text
@@ -8602,9 +8536,21 @@
           }
         }
 
+        // --- AI Expert result (compact preview) ---
+        const aiSnippet = log.aiAnalysis?.explanation
+          ? (log.aiAnalysis.explanation.length > 90
+            ? log.aiAnalysis.explanation.substring(0, 90) + '…'
+            : log.aiAnalysis.explanation)
+          : null;
+
+        // --- Smart Consensus (from verificationResult) ---
+        const consensusVerdict = log.verificationResult
+          ? log.verificationResult.condition
+          : null;
+
         html += `
           <div class="log-card ${severity}" id="log_${log.id}">
-            <!-- Header -->
+            <!-- Header row: date + severity badge + delete -->
             <div class="log-header">
               <div class="log-meta">
                 <span class="log-date">${dateStr} • ${timeStr}</span>
@@ -8615,26 +8561,33 @@
               </button>
             </div>
 
-            <!-- Body (Click to expand) -->
+            <!-- Compact body (always visible, click to expand) -->
             <div class="log-body" onclick="toggleHistoryDetails('${log.id}')">
               <div class="log-main-row">
                 <div class="log-title">
                   <span class="material-symbols-rounded" style="color: ${isHealthy ? 'var(--success)' : 'var(--error)'};">${icon}</span>
+                  <span style="font-size:11px; color:#4285f4; font-weight:600; text-transform:uppercase; margin-right:2px;">AI</span>
                   ${log.primaryDisease}
                 </div>
-                <div class="log-confidence">${log.avgConfidence.toFixed(0)}<span style="font-size:12px; margin-left:2px;">%</span></div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <div class="log-confidence">${log.avgConfidence.toFixed(0)}<span style="font-size:12px; margin-left:2px;">%</span></div>
+                  <span class="material-symbols-rounded log-expand-icon" style="font-size:18px; color:var(--on-surface-variant); transition:transform 0.3s;">expand_more</span>
+                </div>
               </div>
-              <div class="log-summary">${summaryText}</div>
+              ${aiSnippet
+            ? `<div class="log-ai-snippet">🤖 ${aiSnippet}</div>`
+            : `<div class="log-summary">${summaryText}</div>`
+          }
             </div>
 
             <!-- Details (Collapsible) -->
             <div class="log-details" id="details_${log.id}">
-              
-              <!-- AI Analysis Section (Priority) -->
+
+              <!-- PRIORITY 1: Full AI Expert Analysis -->
               ${log.aiAnalysis ? `
-                <div class="log-section-title" style="color:#4285f4; border-bottom: 2px solid rgba(66,133,244,0.2);">🤖 AI Expert Advice</div>
-                <div style="background: rgba(66,133,244,0.05); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
-                  <div style="font-size: 13px; color: var(--on-surface); line-height: 1.5; margin-bottom: 12px;">${log.aiAnalysis.explanation}</div>
+                <div class="log-section-title" style="color:#4285f4; border-bottom: 2px solid rgba(66,133,244,0.2);">🤖 AI Expert Analysis</div>
+                <div style="background: rgba(66,133,244,0.07); padding: 12px; border-radius: 8px; margin-bottom: 16px; border-left: 3px solid #4285f4;">
+                  <div style="font-size: 13px; color: var(--on-surface); line-height: 1.6; margin-bottom: 10px;">${log.aiAnalysis.explanation}</div>
                   ${log.aiAnalysis.actions && log.aiAnalysis.actions.length > 0 ? `
                     <div style="font-size: 11px; font-weight: 600; color: #34a853; text-transform: uppercase; margin-bottom: 6px;">Recommended Actions:</div>
                     <ul style="margin: 0; padding-left: 18px; font-size: 12px; color: var(--on-surface-variant);">
@@ -8644,19 +8597,19 @@
                 </div>
               ` : ''}
 
-              <!-- Verification Matrix Section -->
+              <!-- PRIORITY 2: Smart Consensus Decision -->
               ${log.verificationResult ? `
-                <div class="log-section-title">Context Verification</div>
+                <div class="log-section-title" style="color: ${log.verificationResult.verified ? '#34a853' : '#fbbc04'}; border-bottom: 2px solid rgba(128,128,128,0.15);">
+                  <span class="material-symbols-rounded" style="font-size:15px; vertical-align:middle;">${log.verificationResult.verified ? 'check_circle' : 'warning'}</span>
+                  Smart Consensus Decision
+                </div>
                 <div style="background: rgba(0,0,0,0.1); padding: 12px; border-radius: 8px; border-left: 4px solid ${log.verificationResult.verified ? '#4ade80' : '#fbbf24'}; margin-bottom: 16px;">
-                   <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                      <span class="material-symbols-rounded" style="color:${log.verificationResult.verified ? '#4ade80' : '#fbbf24'}; font-size:18px;">${log.verificationResult.verified ? 'check_circle' : 'warning'}</span>
-                      <strong style="font-size:13px; color:var(--on-surface);">${log.verificationResult.condition}</strong>
-                   </div>
-                   <div style="font-size:12px; color:var(--on-surface-variant); margin-left:26px;">${log.verificationResult.details}</div>
+                  <div style="font-size:13px; font-weight:600; color:var(--on-surface); margin-bottom:4px;">${log.verificationResult.condition}</div>
+                  <div style="font-size:12px; color:var(--on-surface-variant);">${log.verificationResult.details}</div>
                 </div>
               ` : ''}
 
-              <!-- Sensor Data Section -->
+              <!-- PRIORITY 3: Environment Sensors -->
               ${log.sensorData ? `
                 <div class="log-section-title">Environment Sensors</div>
                 <div class="log-sensor-grid">
@@ -8675,24 +8628,24 @@
                 </div>
               ` : ''}
 
-              <!-- Model Results Section -->
-              <div class="log-section-title">AI Model Consensus</div>
+              <!-- PRIORITY 4: Individual ML Model Results -->
+              <div class="log-section-title">ML Model Results</div>
               <div class="log-model-list">
                 ${(log.allModelResults || []).map(m => {
-          const mName = m.modelName.replace(/\(.*\)/, '').trim(); // Clean name
-          const mRes = m.error ? 'Error' : (m.detectedClass || 'No detection');
-          const mConf = m.confidence ? `(${m.confidence.toFixed(0)}%)` : '';
-          const mColor = m.detectedClass && m.detectedClass !== 'Healthy' ? 'var(--error)' : 'var(--on-surface-variant)';
-          return `
+            const mName = m.modelName.replace(/\(.*\)/, '').trim();
+            const mRes = m.error ? 'Error' : (m.detectedClass || 'No detection');
+            const mConf = m.confidence ? `(${m.confidence.toFixed(0)}%)` : '';
+            const mColor = m.detectedClass && m.detectedClass !== 'Healthy' ? 'var(--error)' : 'var(--on-surface-variant)';
+            return `
                     <div class="log-model-row">
                       <span class="log-model-name">${mName}</span>
                       <span class="log-model-result" style="color: ${mColor}">${mRes} ${mConf}</span>
                     </div>
                   `;
-        }).join('')}
+          }).join('')}
               </div>
-              
-              <!-- Footer Actions -->
+
+              <!-- Footer -->
               <div style="margin-top: 16px; text-align: right;">
                  <span style="font-size: 10px; color: var(--on-surface-variant); text-transform: uppercase;">ID: ${log.id.substring(4, 14)}...</span>
               </div>
@@ -9337,19 +9290,25 @@
       if (!modelsList) return;
 
       let html = '';
-      MODELS.forEach((model, index) => {
+      // Use getActiveModels() if intended to show only selected models, 
+      // otherwise stay with MODELS as per original code but with layout fix.
+      const displayList = getActiveModels().length > 0 ? getActiveModels() : MODELS;
+
+      displayList.forEach((model, index) => {
         const typeIcon = model.type === 'detection' ? '🎯' : '📊';
         const typeBadge = model.type === 'detection' ? translateText('Detection') : translateText('Classification');
 
-        html += '<div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: var(--surface); border-radius: 6px; border: 1px solid rgba(26, 115, 232, 0.2);">';
-        html += '<div style="display: flex; align-items: center; gap: 10px;">';
-        html += '<span style="font-size: 20px;">' + typeIcon + '</span>';
-        html += '<div>';
-        html += '<div style="font-weight: 500; font-size: 13px; color: var(--on-surface);">' + translateText(model.name) + '</div>';
-        html += '<div style="font-size: 11px; color: var(--on-surface-variant); margin-top: 2px;">' + translateText('Model:') + ' ' + model.id + '</div>';
+        html += '<div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(132, 204, 22, 0.1); overflow: hidden; gap: 12px; transition: transform 0.2s;">';
+        html += '<div style="display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1;">';
+        html += '<div style="width: 42px; height: 42px; border-radius: 12px; background: var(--surface-container); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.05);">';
+        html += '<span style="font-size: 22px;">' + typeIcon + '</span>';
+        html += '</div>';
+        html += '<div style="min-width: 0; flex: 1;">';
+        html += '<div style="font-weight: 600; font-size: 14px; color: var(--on-surface); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' + translateText(model.name) + '</div>';
+        html += '<div style="font-size: 11px; color: var(--on-surface-variant); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.7;">' + translateText('Model:') + ' ' + model.id + '</div>';
         html += '</div>';
         html += '</div>';
-        html += '<span style="padding: 4px 8px; background: rgba(26, 115, 232, 0.1); color: var(--primary); border-radius: 4px; font-size: 11px; font-weight: 600;">' + typeBadge + '</span>';
+        html += '<span style="padding: 6px 10px; background: rgba(132, 204, 22, 0.1); color: var(--primary); border-radius: 8px; font-size: 11px; font-weight: 700; flex-shrink: 0; border: 1px solid rgba(132, 204, 22, 0.2); white-space: nowrap;">' + typeBadge + '</span>';
         html += '</div>';
       });
 
@@ -9363,7 +9322,7 @@
 
       let html = '';
       PLANT_TYPES.forEach(plant => {
-        const isSelected = selectedPlantType === plant.id;
+        const isSelected = selectedPlantTypes.includes(plant.id);
         html += '<button onclick="selectPlant(\'' + plant.id + '\')" style="';
         html += 'padding: 16px; border: 1px solid ' + (isSelected ? 'var(--primary)' : 'var(--outline-variant)') + ' !important; ';
         html += 'background: ' + (isSelected ? 'var(--primary-container)' : 'var(--surface)') + ' !important; ';
@@ -9380,39 +9339,59 @@
 
     // Select plant type
     function selectPlant(plantId) {
-      selectedPlantType = plantId;
+      if (plantId === 'all' || plantId === 'none') {
+        selectedPlantTypes = [plantId];
+      } else {
+        selectedPlantTypes = selectedPlantTypes.filter(id => id !== 'all' && id !== 'none');
+        if (selectedPlantTypes.includes(plantId)) {
+          selectedPlantTypes = selectedPlantTypes.filter(id => id !== plantId);
+        } else {
+          selectedPlantTypes.push(plantId);
+        }
+        if (selectedPlantTypes.length === 0) {
+          selectedPlantTypes = ['none'];
+        }
+      }
 
       // Update button styles
       PLANT_TYPES.forEach(plant => {
         const btn = document.getElementById('plant_' + plant.id);
         if (btn) {
-          const isSelected = plant.id === plantId;
+          const isSelected = selectedPlantTypes.includes(plant.id);
           btn.style.border = '1px solid ' + (isSelected ? 'var(--primary)' : 'var(--outline-variant)') + ' !important';
           btn.style.background = (isSelected ? 'var(--primary-container)' : 'var(--surface)') + ' !important';
         }
       });
 
       // Update info display
-      const selectedPlant = PLANT_TYPES.find(p => p.id === plantId);
-      if (selectedPlant) {
-        document.getElementById('selectedPlantName').textContent = selectedPlant.icon + ' ' + translateText(selectedPlant.name);
-        document.getElementById('selectedPlantDesc').textContent = translateText(selectedPlant.description);
+      const selectedPlants = PLANT_TYPES.filter(p => selectedPlantTypes.includes(p.id));
+      if (selectedPlants.length > 0) {
+        document.getElementById('selectedPlantName').innerHTML = selectedPlants.map(p => p.icon + ' ' + translateText(p.name)).join(', ');
+        if (selectedPlants.length === 1) {
+          document.getElementById('selectedPlantDesc').textContent = translateText(selectedPlants[0].description);
+        } else {
+          const totalModels = getActiveModels().length;
+          document.getElementById('selectedPlantDesc').textContent = translateText('Combined analysis using') + ' ' + totalModels + ' ' + translateText('specialized models');
+        }
       }
 
-      console.log('\ud83c\udf31 Plant type selected:', plantId);
+      console.log('🌱 Plant types selected:', selectedPlantTypes);
     }
 
     // Get filtered models based on selected plant
     function getActiveModels() {
-      if (selectedPlantType === 'all') {
+      if (selectedPlantTypes.includes('all')) {
         return MODELS; // Return all models
       }
+      if (selectedPlantTypes.includes('none')) {
+        return [];
+      }
 
-      // Filter models: include 'all' models + models specific to selected plant
+      // Filter models: include 'all' models + models specific to selected plants
       return MODELS.filter(model => {
         if (model.forPlants === 'all') return true; // General models always included
         if (Array.isArray(model.forPlants)) {
-          return model.forPlants.includes(selectedPlantType);
+          return model.forPlants.some(p => selectedPlantTypes.includes(p));
         }
         return false;
       });
@@ -9423,9 +9402,173 @@
       if (!res) return;
 
       const activeModels = getActiveModels();
-      const plantInfo = PLANT_TYPES.find(p => p.id === selectedPlantType);
-      const plantName = plantInfo ? plantInfo.icon + ' ' + translateText(plantInfo.name) : translateText('Plant');
-      res.innerHTML = '<div class="rc"><div class="t">' + translateText('Analyzing') + ' ' + plantName + ' ' + translateText('with') + ' ' + activeModels.length + ' ' + translateText('AI models') + '...</div><p style="color: var(--on-surface-variant); font-size: 14px;">' + translateText('Capturing and processing image') + '</p></div>';
+      const plantNames = PLANT_TYPES.filter(p => selectedPlantTypes.includes(p.id)).map(p => p.icon + ' ' + translateText(p.name)).join(', ') || translateText('Plant');
+      res.innerHTML = '<div class="rc"><div class="t">' + translateText('Analyzing') + ' ' + plantNames + ' ' + translateText('with') + ' ' + activeModels.length + ' ' + translateText('AI models') + '...</div><p style="color: var(--on-surface-variant); font-size: 14px;">' + translateText('Capturing and processing image') + '</p></div>';
+    }
+
+    // New Gemini Verification Layer Function (Checks if actual plant & corrects ML mistakes)
+    async function verifyWithGemini(imageBase64, mlDisease, mlConfidence) {
+      const GEMINI_API_KEY = getGeminiApiKey();
+      if (!GEMINI_API_KEY) return { isPlant: true, verifiedDisease: mlDisease, confidence: mlConfidence }; // Default fallback
+
+      const GEMINI_MODEL = 'gemini-2.5-flash';
+      const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1/models/${GEMINI_MODEL}:generateContent`;
+
+      const prompt = `You are an expert agricultural AI. You are validating the output of a machine learning model.
+The ML model thinks this image shows: "${mlDisease}" with ${mlConfidence}% confidence.
+
+Your crucial tasks:
+1. First, check if the image actually contains a plant, leaf, or crop. If the image is of a person, animal, random object, plain background, or completely irrelevant, you MUST set "isPlant" to false.
+2. If it IS a plant, verify if the disease "${mlDisease}" is correct based on visual symptoms. If the ML model is wrong (e.g., it's a different disease, or it's just healthy), provide the correct diagnosis. Be highly critical of false positives.
+
+Reply strictly with this JSON structure without markdown formatting or code blocks:
+{
+  "isPlant": boolean,
+  "verifiedDisease": "string (disease name or 'Healthy')"
+}`;
+
+      const requestBody = {
+        contents: [{
+          parts: [
+            { text: prompt },
+            { inline_data: { mime_type: 'image/jpeg', data: imageBase64 } }
+          ]
+        }]
+      };
+
+      try {
+        const response = await fetch(GEMINI_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY },
+          body: JSON.stringify(requestBody)
+        });
+
+        if (!response.ok) return { isPlant: true, verifiedDisease: mlDisease, confidence: mlConfidence };
+
+        const data = await response.json();
+        const rawText = data.candidates[0].content.parts[0].text;
+        const jsonStr = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+        const result = JSON.parse(jsonStr);
+
+        return {
+          isPlant: result.isPlant !== false, // default true if missing
+          verifiedDisease: result.verifiedDisease || mlDisease,
+          confidence: result.verifiedDisease !== mlDisease ? 99.8 : mlConfidence // Highlight it's verified
+        };
+      } catch (e) {
+        console.error('Verification failed', e);
+        return { isPlant: true, verifiedDisease: mlDisease, confidence: mlConfidence };
+      }
+    }
+
+    // New Standalone Gemini Analysis (When ML models are bypassed / "None" is selected)
+    async function runStandaloneGeminiAnalysis(imageBase64, analysisId) {
+      const GEMINI_API_KEY = getGeminiApiKey();
+      const resContainer = document.getElementById('res');
+
+      const GEMINI_MODEL = 'gemini-2.5-flash';
+      const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1/models/${GEMINI_MODEL}:generateContent`;
+
+      const prompt = `You are an expert agricultural AI evaluating a plant image directly. There is no prior machine learning data available.
+First, check if the image actually contains a plant, leaf, crop, or agricultural scene. If it does NOT (e.g. human face, animal, random object, plain background), you MUST set "isPlant" to false and leave the rest mostly blank.
+
+If it IS a plant, diagnose its disease or state if it is Healthy. Provide your explanation and recommended actions in BENGALI.
+
+Reply strictly with this JSON structure without markdown formatting or code blocks:
+{
+  "isPlant": boolean,
+  "verifiedDisease": "string (disease name or 'Healthy')",
+  "explanation": "Simple explanation in Bengali",
+  "actions": ["Action 1 in Bengali", "Action 2 in Bengali"],
+  "prevention": ["Prevention 1 in Bengali"]
+}`;
+
+      const requestBody = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: 'image/jpeg', data: imageBase64 } }] }] };
+
+      // --- Create a stub log entry NOW so displayGeminiAnalysis can persist the AI result ---
+      const stubLog = {
+        id: analysisId,
+        timestamp: new Date().toISOString(),
+        timestampReadable: new Date().toLocaleString(),
+        diseases: [],
+        allModelResults: [],
+        sensorData: null,
+        environmentalContext: null,
+        verificationResult: null,
+        aiAnalysis: null,
+        primaryDisease: 'Analyzing…',
+        avgConfidence: 0,
+        overallSeverity: 'unknown',
+        consensus: null,
+        aiOnly: true,   // Flag to mark this as an AI-only entry
+        deviceInfo: {
+          userAgent: navigator.userAgent,
+          platform: navigator.platform,
+          screenResolution: window.screen.width + 'x' + window.screen.height
+        }
+      };
+      analyticsData.logs.push(stubLog);
+      saveAnalytics();
+
+      // Save stub to Firebase so aiAnalysis update can find it
+      if (firebaseReady && firebaseEnabled && db) {
+        try {
+          const docRef = await db.collection('diseaseAnalytics').add({
+            ...stubLog,
+            savedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          stubLog.firebaseId = docRef.id;
+          stubLog.savedToFirebase = true;
+        } catch (e) {
+          console.warn('Could not save AI-only stub to Firebase:', e);
+        }
+      }
+      // ----------------------------------------------------------------------------------
+
+      try {
+        const response = await fetch(GEMINI_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY },
+          body: JSON.stringify(requestBody)
+        });
+
+        if (!response.ok) {
+          const isQuota = response.status === 429;
+          resContainer.innerHTML = `<div class="rc"><div class="t" style="color: #ef4444;">⚠️ AI Analysis Failed</div><p style="color: var(--on-surface-variant); font-size: 14px;">${isQuota ? 'Quota Exceeded. Please try again later.' : 'API Error ' + response.status}</p></div>`;
+          return;
+        }
+
+        const data = await response.json();
+        const rawText = data.candidates[0].content.parts[0].text;
+        const jsonStr = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+        const result = JSON.parse(jsonStr);
+
+        if (result.isPlant === false) {
+          resContainer.innerHTML = `<div class="rc"><div class="t" style="color: #ef4444;">⚠️ Invalid Image</div><p style="color: var(--on-surface-variant); font-size: 14px;">No plant or crop leaf detected in the image. Please upload a clear photo of a plant to get an accurate diagnosis.</p></div>`;
+          // Remove stub since no valid result
+          analyticsData.logs = analyticsData.logs.filter(l => l.id !== analysisId);
+          saveAnalytics();
+          return;
+        }
+
+        // Generate a custom UI string to display the results mimicking the regular output layout but exclusively Gemini
+        resContainer.innerHTML = `
+          <div class="rc">
+            <div class="t" style="color: var(--primary);">✨ Gemini Expert Diagnosis</div>
+            <h3 style="margin-top: 8px; font-size: 18px;">${result.verifiedDisease}</h3>
+            <p style="color: var(--on-surface-variant); font-size: 14px; margin-top:4px;">Machine learning models were bypassed.</p>
+          </div>
+          <div id="aiAnalysisContent"></div>
+        `;
+
+        // Render standard Gemini analysis card inside the newly created container
+        // This also persists aiAnalysis onto our stub log entry
+        displayGeminiAnalysis(result, analysisId);
+
+      } catch (e) {
+        console.error('Standalone Gemini Analysis failed', e);
+        resContainer.innerHTML = `<div class="rc"><div class="t" style="color: #ef4444;">⚠️ AI Analysis Error</div><p style="color: var(--on-surface-variant); font-size: 14px;">Failed to parse AI response. Ensure your internet connection is stable.</p></div>`;
+      }
     }
 
     // Gemini AI Analysis Function
@@ -9613,6 +9756,12 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
       const logIdx = analyticsData.logs.findIndex(l => l.id === analysisId);
       if (logIdx !== -1) {
         analyticsData.logs[logIdx].aiAnalysis = analysis;
+
+        // Ensure AI verdict is promoted to primaryDisease
+        if (analysis && analysis.verifiedDisease) {
+          analyticsData.logs[logIdx].primaryDisease = analysis.verifiedDisease;
+        }
+
         saveAnalytics(); // Save to localStorage
 
         // Save to Firebase with Hybrid Persistence Strategy
@@ -9626,7 +9775,11 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
               // Strategy A: Direct Update via Firebase Document ID (Fastest & most reliable)
               const log = analyticsData.logs.find(l => l.id === analysisId);
               if (log && log.firebaseId) {
-                await db.collection('diseaseAnalytics').doc(log.firebaseId).update({ aiAnalysis: analysis });
+                const updatePayload = { aiAnalysis: analysis };
+                if (analysis && analysis.verifiedDisease) {
+                  updatePayload.primaryDisease = analysis.verifiedDisease;
+                }
+                await db.collection('diseaseAnalytics').doc(log.firebaseId).update(updatePayload);
                 console.log('✅ AI result persisted directly via document ID:', log.firebaseId);
                 return;
               }
@@ -9639,7 +9792,11 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
 
               if (!snapshot.empty) {
                 // Update ALL found documents
-                const batchPromises = snapshot.docs.map(doc => doc.ref.update({ aiAnalysis: analysis }));
+                const updatePayload = { aiAnalysis: analysis };
+                if (analysis && analysis.verifiedDisease) {
+                  updatePayload.primaryDisease = analysis.verifiedDisease;
+                }
+                const batchPromises = snapshot.docs.map(doc => doc.ref.update(updatePayload));
                 await Promise.all(batchPromises);
 
                 // Use the first doc ID for local reference
@@ -10477,9 +10634,39 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
           // Store the captured image for Gemini AI analysis
           window.lastCapturedImage = b64;
 
+          let analysisId = 'stream_' + Date.now();
+
           // Get filtered models based on selected plant
           const activeModels = getActiveModels();
-          console.log('Step 6: Running ' + activeModels.length + ' models for ' + selectedPlantType + '...');
+
+          // --- GEMINI ONLY BYPASS ---
+          if (selectedPlantTypes.includes('none')) {
+            const geminiEnabled = localStorage.getItem('geminiAnalysisEnabled') !== 'false';
+            if (!geminiEnabled) {
+              document.getElementById('res').innerHTML = `<div class="rc"><div class="t" style="color: #ef4444;">⚠️ AI Analysis Disabled</div><p style="color: var(--on-surface-variant); font-size: 14px;">Select a crop to use ML models, or enable Gemini AI in settings.</p></div>`;
+              btn.disabled = false;
+              btn.textContent = origText;
+              if (wasStreaming && !streamActive) { setTimeout(() => toggleStream(), 500); }
+              return;
+            }
+
+            document.getElementById('res').innerHTML = `<div class="rc"><div class="t">Analyzing with Gemini AI Expert...</div><p style="color: var(--on-surface-variant); font-size: 14px;">Bypassing local ML models.</p></div>`;
+            document.getElementById('res').innerHTML += `<div style="text-align:center; padding:20px;">
+                <div style="display:inline-block; animation: spin 1s linear infinite;">
+                  <span class="material-symbols-rounded" style="color:#4285f4; font-size:48px;">autorenew</span>
+                </div>
+              </div>`;
+
+            await runStandaloneGeminiAnalysis(b64, analysisId);
+
+            btn.disabled = false;
+            btn.textContent = origText;
+            if (wasStreaming && !streamActive) { setTimeout(() => toggleStream(), 500); }
+            return; // Skip ML flow
+          }
+          // --------------------------
+
+          console.log('Step 6: Running ' + activeModels.length + ' models for ' + selectedPlantTypes.join(', ') + '...');
           console.log('Active models:', activeModels.map(m => m.name));
 
           // Run active models simultaneously
@@ -10489,7 +10676,26 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
             const results = await Promise.all(modelPromises);
             console.log('All models completed:', results);
 
-            const consensusData = calculateConsensus(results);
+            let consensusData = calculateConsensus(results);
+
+            // --- GEMINI VERIFICATION LAYER ---
+            const geminiEnabled = localStorage.getItem('geminiAnalysisEnabled') !== 'false';
+            if (geminiEnabled) {
+              document.getElementById('res').innerHTML = `<div class="rc"><div class="t">Verifying with AI Experts...</div><p style="color: var(--on-surface-variant); font-size: 14px;">Cross-checking ML results to ensure accuracy.</p></div>`;
+              const verification = await verifyWithGemini(b64, consensusData.disease, consensusData.confidence);
+
+              if (!verification.isPlant) {
+                document.getElementById('res').innerHTML = `<div class="rc"><div class="t" style="color: #ef4444;">⚠️ Invalid Image</div><p style="color: var(--on-surface-variant); font-size: 14px;">No plant or crop leaf detected in the image. Please try again with a valid photo.</p></div>`;
+                btn.disabled = false;
+                btn.textContent = origText;
+                if (wasStreaming && !streamActive) { setTimeout(() => toggleStream(), 500); }
+                return;
+              }
+
+              consensusData.disease = verification.verifiedDisease;
+              consensusData.confidence = verification.confidence;
+            }
+            // ---------------------------------
 
             // Skip legacy Gemini API call
             geminiRecommendation = null;
@@ -10970,7 +11176,7 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
 
     // ========== SECURITY LOGIC & HISTORY ==========
     let securityEvents = [];
-    let securityChartInstance = null;
+
     let securityState = {
       motion: false,
       distance: 0,
@@ -11044,7 +11250,8 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
         type: type,
         message: message,
         confidence: confidence,
-        timeString: new Date(timestamp).toLocaleTimeString()
+        timeString: new Date(timestamp).toLocaleTimeString(),
+        dateString: new Date(timestamp).toLocaleDateString()
       };
 
       // Add to local list
@@ -11052,7 +11259,6 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
       if (securityEvents.length > 50) securityEvents.pop();
 
       updateSecurityUI();
-      updateSecurityChart();
 
       // Save to Firebase
       if (firebaseReady && firebaseEnabled && db) {
@@ -11074,7 +11280,7 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
       if (window.AndroidBridge && typeof window.AndroidBridge.showNotification === 'function') {
         window.AndroidBridge.showNotification(notifTitle, notifBody, notifTag);
       } else if ('Notification' in window && Notification.permission === 'granted') {
-        try { new Notification(notifTitle, { body: notifBody, tag: notifTag, requireInteraction: true }); } catch (e) {}
+        try { new Notification(notifTitle, { body: notifBody, tag: notifTag, requireInteraction: true }); } catch (e) { }
       }
 
       // Trigger Main Alarm if enabled
@@ -11092,7 +11298,7 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
         listEl.innerHTML = `
             <div style="text-align: center; padding: 32px; color: var(--on-surface-variant);">
               <span class="material-symbols-rounded" style="font-size: 48px; opacity: 0.3; display: block; margin-bottom: 8px;">lock_clock</span>
-              <div style="font-size: 14px;">No security events recorded</div>
+              <div style="font-size: 14px;" class="translatable">${translateText('No security events recorded')}</div>
             </div>`;
         return;
       }
@@ -11104,83 +11310,18 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
             <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--surface-container-highest); border-radius: 8px; margin-bottom: 8px; border-left: 4px solid ${color};">
               <span class="material-symbols-rounded" style="color: ${color}; font-size: 20px;">${icon}</span>
               <div style="flex: 1;">
-                <div style="font-size: 14px; font-weight: 600; color: var(--on-surface);">${event.type}</div>
-                <div style="font-size: 12px; color: var(--on-surface-variant);">${event.message}</div>
+                <div style="font-size: 14px; font-weight: 600; color: var(--on-surface);" class="translatable">${translateText(event.type)}</div>
+                <div style="font-size: 12px; color: var(--on-surface-variant);" class="translatable">${translateText(event.message)}</div>
               </div>
               <div style="text-align: right;">
                  <div style="font-size: 14px; font-weight: 700; color: ${color};">${event.confidence}%</div>
-                 <div style="font-size: 11px; color: var(--on-surface-variant);">${event.timeString}</div>
+                 <div style="font-size: 11px; color: var(--on-surface-variant);">${event.dateString || new Date(event.timestamp).toLocaleDateString()} ${event.timeString}</div>
               </div>
             </div>
           `;
       }).join('');
     }
 
-    function updateSecurityChart() {
-      const canvas = document.getElementById('securityChart');
-      if (!canvas) return;
-
-      // Prepare data (reversed for chronological order)
-      const chronologicalEvents = [...securityEvents].reverse();
-
-      if (chronologicalEvents.length === 0) {
-        if (securityChartInstance) {
-          securityChartInstance.destroy();
-          securityChartInstance = null;
-        }
-        return;
-      }
-
-      const labels = chronologicalEvents.map(e => e.timeString);
-      const dataPoints = chronologicalEvents.map(e => e.confidence);
-      const pointColors = chronologicalEvents.map(e => e.confidence === 100 ? '#EF4444' : '#F59E0B');
-
-      if (securityChartInstance) {
-        securityChartInstance.destroy();
-      }
-
-      securityChartInstance = new Chart(canvas, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Confidence (%)',
-            data: dataPoints,
-            backgroundColor: pointColors,
-            borderRadius: 4,
-            barThickness: 10
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: function (context) {
-                  const idx = context.dataIndex;
-                  const event = chronologicalEvents[idx];
-                  return `${event.type}: ${event.confidence}%`;
-                }
-              }
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 110,
-              ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface-variant') },
-              grid: { color: 'rgba(255, 255, 255, 0.05)' }
-            },
-            x: {
-              ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--on-surface-variant') },
-              grid: { display: false }
-            }
-          }
-        }
-      });
-    }
 
     async function loadSecurityEvents() {
       if (!firebaseReady || !firebaseEnabled || !db) return;
@@ -11197,7 +11338,6 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
         });
 
         updateSecurityUI();
-        updateSecurityChart();
         console.log(`🔒 Loaded ${securityEvents.length} security events`);
       } catch (error) {
         console.error('Error loading security events:', error);
@@ -11605,54 +11745,54 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
     let _lastSoilAlertTag = '';
 
     function updateSoilHealthUI(tdsVal) {
-      const statusEl  = document.getElementById('soilHealthStatus');
-      const actionEl  = document.getElementById('soilHealthAction');
-      const cardEl    = document.getElementById('soilHealthCard');
+      const statusEl = document.getElementById('soilHealthStatus');
+      const actionEl = document.getElementById('soilHealthAction');
+      const cardEl = document.getElementById('soilHealthCard');
       if (!statusEl || !actionEl) return;
 
       let statusText, actionText, borderColor, notifTitle, notifBody, notifTag;
 
       if (tdsVal < 200) {
-        statusText  = 'Hungry 🌱';
-        actionText  = 'Add Fertilizer';
+        statusText = 'Hungry 🌱';
+        actionText = 'Add Fertilizer';
         borderColor = '#fbbc04'; // amber
-        notifTitle  = '🌱 Low Soil Nutrients!';
-        notifBody   = `TDS is only ${tdsVal} PPM — plants are hungry. Add fertilizer now.`;
-        notifTag    = 'soil-hungry';
+        notifTitle = '🌱 Low Soil Nutrients!';
+        notifBody = `TDS is only ${tdsVal} PPM — plants are hungry. Add fertilizer now.`;
+        notifTag = 'soil-hungry';
       } else if (tdsVal <= 800) {
-        statusText  = 'Optimal ✅';
-        actionText  = 'Do Nothing';
+        statusText = 'Optimal ✅';
+        actionText = 'Do Nothing';
         borderColor = '#34a853'; // green
-        notifTitle  = null; // no alert in optimal range
-        notifTag    = '';
+        notifTitle = null; // no alert in optimal range
+        notifTag = '';
       } else if (tdsVal <= 1500) {
-        statusText  = 'High ⚠️';
-        actionText  = 'Water Only';
+        statusText = 'High ⚠️';
+        actionText = 'Water Only';
         borderColor = '#ff9800'; // orange
-        notifTitle  = '⚠️ High Soil TDS!';
-        notifBody   = `TDS is ${tdsVal} PPM — nutrient concentration too high. Water only (no fertilizer).`;
-        notifTag    = 'soil-high';
+        notifTitle = '⚠️ High Soil TDS!';
+        notifBody = `TDS is ${tdsVal} PPM — nutrient concentration too high. Water only (no fertilizer).`;
+        notifTag = 'soil-high';
       } else if (tdsVal <= 2000) {
-        statusText  = 'Very High ⚠️';
-        actionText  = 'Water Heavily';
+        statusText = 'Very High ⚠️';
+        actionText = 'Water Heavily';
         borderColor = '#f44336'; // red-orange
-        notifTitle  = '⚠️ Very High Soil TDS!';
-        notifBody   = `TDS is ${tdsVal} PPM — dangerously high. Water heavily to dilute.`;
-        notifTag    = 'soil-very-high';
+        notifTitle = '⚠️ Very High Soil TDS!';
+        notifBody = `TDS is ${tdsVal} PPM — dangerously high. Water heavily to dilute.`;
+        notifTag = 'soil-very-high';
       } else {
-        statusText  = 'TOXIC ☠️';
-        actionText  = 'FLUSH SOIL IMMEDIATELY';
+        statusText = 'TOXIC ☠️';
+        actionText = 'FLUSH SOIL IMMEDIATELY';
         borderColor = '#b71c1c'; // dark red
-        notifTitle  = '☠️ TOXIC Soil TDS!';
-        notifBody   = `TDS is ${tdsVal} PPM — TOXIC level! Flush soil immediately to prevent crop death.`;
-        notifTag    = 'soil-toxic';
+        notifTitle = '☠️ TOXIC Soil TDS!';
+        notifBody = `TDS is ${tdsVal} PPM — TOXIC level! Flush soil immediately to prevent crop death.`;
+        notifTag = 'soil-toxic';
       }
 
       statusEl.textContent = statusText;
       actionEl.textContent = actionText;
       if (cardEl) {
         cardEl.style.borderColor = borderColor;
-        cardEl.style.background  = borderColor + '18';
+        cardEl.style.background = borderColor + '18';
       }
 
       // Fire native notification (with cooldown + dedup by tag)
@@ -11660,11 +11800,11 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
         const now = Date.now();
         if (now - _lastSoilAlertTime > SOIL_ALERT_COOLDOWN || _lastSoilAlertTag !== notifTag) {
           _lastSoilAlertTime = now;
-          _lastSoilAlertTag  = notifTag;
+          _lastSoilAlertTag = notifTag;
           if (window.AndroidBridge && typeof window.AndroidBridge.showNotification === 'function') {
             window.AndroidBridge.showNotification(notifTitle, notifBody, notifTag);
           } else if ('Notification' in window && Notification.permission === 'granted') {
-            try { new Notification(notifTitle, { body: notifBody, tag: notifTag, requireInteraction: true }); } catch (e) {}
+            try { new Notification(notifTitle, { body: notifBody, tag: notifTag, requireInteraction: true }); } catch (e) { }
           }
         }
       }
@@ -11682,7 +11822,7 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
       if (window.AndroidBridge && typeof window.AndroidBridge.showNotification === 'function') {
         window.AndroidBridge.showNotification(title, body, tag);
       } else if ('Notification' in window && Notification.permission === 'granted') {
-        try { new Notification(title, { body: body, tag: tag, requireInteraction: true }); } catch (e) {}
+        try { new Notification(title, { body: body, tag: tag, requireInteraction: true }); } catch (e) { }
       }
     }
 
@@ -12744,10 +12884,10 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
         feedbackEl.innerHTML = `
             <div style="display: flex; flex-direction: column; gap: 4px;">
               <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span>Ideal Range: <b style="color: var(--primary);">${crop.ideal}</b></span>
-                <span style="font-size: 10px; opacity: 0.7;">Start: ${crop.start}%</span>
+                <span><span class="translatable">${translateText('Ideal Range:')}</span> <b style="color: var(--primary);">${crop.ideal}</b></span>
+                <span style="font-size: 10px; opacity: 0.7;"><span class="translatable">${translateText('Start:')}</span> ${crop.start}%</span>
               </div>
-              <div style="color: var(--success); font-weight: 600;">Closed-loop: Auto-stop at ${crop.stop}% moisture 🟢</div>
+              <div style="color: var(--success); font-weight: 600;"><span class="translatable">${translateText('Closed-loop: Auto-stop')}</span> ${translateText('at')} ${crop.stop}% ${translateText('moisture')} 🟢</div>
             </div>
           `;
         feedbackEl.style.display = 'block';
@@ -13158,15 +13298,15 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
           // the persistent foreground-service notification so the user can see
           // them on the lock screen / notification shade without opening the app.
           if (window.AndroidBridge && typeof window.AndroidBridge.updateSoilSensorNotification === 'function') {
-            const _notifMoisture = data.moisture  !== undefined ? String(parseInt(data.moisture))                     : null;
+            const _notifMoisture = data.moisture !== undefined ? String(parseInt(data.moisture)) : null;
             const _notifSoilTemp = data.soilTemperature !== undefined ? String(parseFloat(data.soilTemperature).toFixed(1)) : null;
-            const _notifTDS      = data.tds         !== undefined ? String(Math.round(data.tds))                      : null;
+            const _notifTDS = data.tds !== undefined ? String(Math.round(data.tds)) : null;
             // Only call if at least one soil value is present
             if (_notifMoisture !== null || _notifSoilTemp !== null || _notifTDS !== null) {
               window.AndroidBridge.updateSoilSensorNotification(
                 _notifMoisture || '--',
                 _notifSoilTemp || '--',
-                _notifTDS      || '--'
+                _notifTDS || '--'
               );
             }
           }
@@ -13472,23 +13612,23 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
         try {
           const status = JSON.parse(payload);
           console.log('📊 Pump Status Update:', status);
-      if (status.mode === 'AUTO') {
-        console.log(`💧 Auto Mode Active: Pump ${status.pump} | Moisture: ${document.getElementById('soilMoisture') ? document.getElementById('soilMoisture').innerText : 'Unknown'}%`);
-        // Notify when auto-mode changes pump state
-        const prevPump = window._lastAutoPumpState;
-        if (prevPump !== undefined && prevPump !== status.pump) {
-          const isOn = status.pump === 'ON';
-          const notifTitle = isOn ? '💧 Auto-Irrigation Started' : '✅ Auto-Irrigation Stopped';
-          const moistureVal = document.getElementById('soilMoisture') ? document.getElementById('soilMoisture').innerText : '--';
-          const notifBody = isOn
-            ? `Auto mode activated the pump (Moisture: ${moistureVal}).`
-            : `Auto mode deactivated the pump (Moisture: ${moistureVal}).`;
-          if (window.AndroidBridge && typeof window.AndroidBridge.showNotification === 'function') {
-            window.AndroidBridge.showNotification(notifTitle, notifBody, 'auto-pump-' + Date.now());
+          if (status.mode === 'AUTO') {
+            console.log(`💧 Auto Mode Active: Pump ${status.pump} | Moisture: ${document.getElementById('soilMoisture') ? document.getElementById('soilMoisture').innerText : 'Unknown'}%`);
+            // Notify when auto-mode changes pump state
+            const prevPump = window._lastAutoPumpState;
+            if (prevPump !== undefined && prevPump !== status.pump) {
+              const isOn = status.pump === 'ON';
+              const notifTitle = isOn ? '💧 Auto-Irrigation Started' : '✅ Auto-Irrigation Stopped';
+              const moistureVal = document.getElementById('soilMoisture') ? document.getElementById('soilMoisture').innerText : '--';
+              const notifBody = isOn
+                ? `Auto mode activated the pump (Moisture: ${moistureVal}).`
+                : `Auto mode deactivated the pump (Moisture: ${moistureVal}).`;
+              if (window.AndroidBridge && typeof window.AndroidBridge.showNotification === 'function') {
+                window.AndroidBridge.showNotification(notifTitle, notifBody, 'auto-pump-' + Date.now());
+              }
+            }
+            window._lastAutoPumpState = status.pump;
           }
-        }
-        window._lastAutoPumpState = status.pump;
-      }
           updatePumpStatus(status);
           return;
         } catch (e) {
@@ -13510,9 +13650,9 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
 
           // ── Live Soil Sensor → Android Notification Panel (legacy path) ───
           if (window.AndroidBridge && typeof window.AndroidBridge.updateSoilSensorNotification === 'function') {
-            const _lm = data.soilMoisture    !== undefined ? String(parseInt(data.soilMoisture))                          : null;
-            const _lt = data.soilTemperature !== undefined ? String(parseFloat(data.soilTemperature).toFixed(1))           : null;
-            const _ld = data.tds             !== undefined ? String(Math.round(data.tds))                                  : null;
+            const _lm = data.soilMoisture !== undefined ? String(parseInt(data.soilMoisture)) : null;
+            const _lt = data.soilTemperature !== undefined ? String(parseFloat(data.soilTemperature).toFixed(1)) : null;
+            const _ld = data.tds !== undefined ? String(Math.round(data.tds)) : null;
             if (_lm !== null || _lt !== null || _ld !== null) {
               window.AndroidBridge.updateSoilSensorNotification(_lm || '--', _lt || '--', _ld || '--');
             }
@@ -14826,8 +14966,8 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
       // Scroll to top instantly
       window.scrollTo(0, 0);
 
-      // Lazy-init charts if switching to analytics
-      if (tabId === 'analyticsTab') {
+      // Lazy-init charts if switching to metrics tabs
+      if (tabId === 'analyticsTab' || tabId === 'monitorTab') {
         const _ric = window.requestIdleCallback || ((cb) => setTimeout(cb, 16));
         _ric(() => {
           if (typeof updateSensorCharts === 'function') updateSensorCharts();
@@ -15148,11 +15288,11 @@ Ensure the Bengali text is high-quality, practical, and easy for local farmers t
 
         // Native Android / browser push notification (works even when app is killed)
         const notifTitle = severity === 'critical' ? '🚨 Critical Nutrient Loss!' : '⚠️ Nutrient Loss Warning';
-        const notifTag  = 'nutrient-alert-' + Date.now();
+        const notifTag = 'nutrient-alert-' + Date.now();
         if (window.AndroidBridge && typeof window.AndroidBridge.showNotification === 'function') {
           window.AndroidBridge.showNotification(notifTitle, message, notifTag);
         } else if ('Notification' in window && Notification.permission === 'granted') {
-          try { new Notification(notifTitle, { body: message, tag: notifTag, requireInteraction: true }); } catch (e) {}
+          try { new Notification(notifTitle, { body: message, tag: notifTag, requireInteraction: true }); } catch (e) { }
         }
 
       } catch (error) {

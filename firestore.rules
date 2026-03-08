@@ -28,7 +28,8 @@ service cloud.firestore {
 
     // ============ SECURITY EVENTS (NEW) ============
     match /securityEvents/{documentId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if request.auth != null
+        && (request.method != 'create' || (request.resource.data.timestamp is number && request.resource.data.timestamp > 0));
     }
     
     // ============ SECURITY SETTINGS ============
@@ -37,7 +38,8 @@ service cloud.firestore {
     }
     
     match /securityLogs/{documentId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if request.auth != null
+        && (request.method != 'create' || (request.resource.data.timestamp is number && request.resource.data.timestamp > 0));
     }
     
     // ============ USER SETTINGS ============
