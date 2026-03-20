@@ -2676,8 +2676,13 @@
       }
 
       .hero {
-        padding: 24px;
+        padding: 0;
         text-align: center;
+        min-height: 90px;
+      }
+
+      .hero-content {
+        padding: 16px 14px;
       }
 
       .hero h1 {
@@ -3225,7 +3230,12 @@
         <div id="loginView" class="auth-view active">
           <div class="error-msg" id="loginError"></div>
           <input type="email" id="loginEmail" class="auth-input" placeholder="Email Address" aria-label="Email Address">
-          <input type="password" id="loginPassword" class="auth-input" placeholder="Password" aria-label="Password">
+          <div style="position:relative; width:100%; margin-bottom:12px;">
+            <input type="password" id="loginPassword" class="auth-input" placeholder="Password" aria-label="Password" style="padding-right:44px; margin-bottom:0; width:100%;">
+            <button type="button" onclick="toggleLoginPassword()" id="loginPasswordToggle" aria-label="Toggle password visibility" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.25); border:none; cursor:pointer; padding:0; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; z-index:2;">
+              <span class="material-symbols-rounded" id="loginPasswordEyeIcon" style="font-size:18px; color:rgba(255,255,255,0.85); font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;">visibility</span>
+            </button>
+          </div>
 
           <button class="auth-btn btn-primary" onclick="emailSignIn()">
             <span class="translatable">Sign In</span>
@@ -7130,6 +7140,19 @@
       el.style.display = 'block';
     }
 
+    // Toggle password visibility on login form
+    function toggleLoginPassword() {
+      const input = document.getElementById('loginPassword');
+      const icon = document.getElementById('loginPasswordEyeIcon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.textContent = 'visibility_off';
+      } else {
+        input.type = 'password';
+        icon.textContent = 'visibility';
+      }
+    }
+
     // Email Sign In
     function emailSignIn() {
       const email = document.getElementById('loginEmail').value;
@@ -7261,6 +7284,9 @@
       db = firebase.firestore();
       auth = firebase.auth();
       functions = firebase.functions();
+
+      // Prevent auto-login: sign out any persisted session on page load
+      auth.signOut();
 
       // Auth State Listener
       firebaseReadyPromise = new Promise((resolve, reject) => {
